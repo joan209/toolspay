@@ -1,64 +1,45 @@
-/* General body styling */
 body {
     font-family: Arial, sans-serif;
-    background-color: black;
+    background-color: #000;
     color: gold;
     margin: 0;
     padding: 0;
     text-align: center;
 }
 
-/* Header styling */
 header {
     background-color: gold;
     color: black;
-    padding: 20px 0;
-    font-size: 24px;
-    font-weight: bold;
-}
-
-/* Navigation menu */
-nav a {
-    color: gold;
-    background-color: black;
-    padding: 10px 15px;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-nav a:hover {
-    background-color: gold;
-    color: black;
-}
-
-/* Main content */
-main {
     padding: 20px;
 }
 
-/* Buttons */
+h1 {
+    margin: 0;
+}
+
+.rate-section {
+    margin: 30px auto;
+    padding: 20px;
+    border: 2px solid gold;
+    border-radius: 8px;
+    width: 300px;
+}
+
 button {
     background-color: gold;
     color: black;
-    border: none;
     padding: 10px 20px;
+    border: none;
     cursor: pointer;
-    font-size: 16px;
     font-weight: bold;
 }
 
 button:hover {
-    background-color: black;
-    color: gold;
-    border: 1px solid gold;
+    background-color: #d4af37;
 }
 
-/* Footer */
 footer {
-    background-color: gold;
-    color: black;
-    padding: 10px 0;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
+    margin-top: 30px;
+    padding: 10px;
+    border-top: 1px solid gold;
 }

@@ -3,45 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ToolsPay - Trade USD to Naira</title>
+    <title>ToolsPay Exchange</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
-        <h1>ToolsPay</h1>
-        <p>Fast & Secure USD to Naira Exchange</p>
+        <h1>ToolsPay Exchange</h1>
+        <p>Buy & Sell USD at the Best Rates</p>
     </header>
 
     <main>
-        <section class="rates">
+        <section class="rate-box">
             <h2>Current Rate</h2>
-            <p id="rate">₦750 per $</p>
+            <p class="rate">₦ <span id="rate">1500</span> / $</p>
+            <button onclick="editRate()">Edit Rate</button>
         </section>
 
-        <section class="trade-form">
-            <h2>Start Trade</h2>
-            <form id="tradeForm">
-                <label>Your Name</label>
-                <input type="text" name="name" required>
+        <section class="instructions">
+            <h2>How to Trade</h2>
+            <ol>
+                <li>Check the current exchange rate above.</li>
+                <li>Contact us to get the **Payment Tag**.</li>
+                <li>Send USD to the given tag.</li>
+                <li>Receive Naira instantly in your account.</li>
+            </ol>
+        </section>
 
-                <label>Email</label>
-                <input type="email" name="email" required>
-
-                <label>Amount in USD</label>
-                <input type="number" name="amount" required>
-
-                <label>Naira Bank Account</label>
-                <input type="text" name="bank" required>
-
-                <button type="submit">Request Trade</button>
-            </form>
+        <section class="contact">
+            <h2>Contact Admin</h2>
+            <p>Chat on WhatsApp: <a href="https://wa.me/2348100000000" target="_blank">Click Here</a></p>
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2025 ToolsPay. All rights reserved.</p>
+        <p>&copy; 2025 ToolsPay Exchange - All Rights Reserved.</p>
     </footer>
 
-    <script src="script.js"></script>
+    <script>
+        function editRate() {
+            let newRate = prompt("Enter new rate in Naira per USD:");
+            if (newRate) {
+                document.getElementById("rate").textContent = newRate;
+            }
+        }
+    </script>
 </body>
 </html>

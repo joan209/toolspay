@@ -3,49 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ToolsPay Exchange</title>
+    <title>ToolsPay</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
-        <h1>ToolsPay Exchange</h1>
-        <p>Buy & Sell USD at the Best Rates</p>
+        <h1>ToolsPay</h1>
+        <p>Fast and secure dollar-to-naira exchange</p>
     </header>
 
     <main>
-        <section class="rate-box">
+        <section class="rate-section">
             <h2>Current Rate</h2>
-            <p class="rate">₦ <span id="rate">1500</span> / $</p>
-            <button onclick="editRate()">Edit Rate</button>
+            <p class="rate">1 USD = <strong>₦1500</strong></p>
+            <button>Contact Admin</button>
         </section>
 
-        <section class="instructions">
-            <h2>How to Trade</h2>
+        <section class="how-section">
+            <h2>How it Works</h2>
             <ol>
-                <li>Check the current exchange rate above.</li>
-                <li>Contact us to get the **Payment Tag**.</li>
-                <li>Send USD to the given tag.</li>
-                <li>Receive Naira instantly in your account.</li>
+                <li>Check the rate above</li>
+                <li>Contact admin for payment tag</li>
+                <li>Pay in Naira & receive USD instantly</li>
             </ol>
-        </section>
-
-        <section class="contact">
-            <h2>Contact Admin</h2>
-            <p>Chat on WhatsApp: <a href="https://wa.me/2348100000000" target="_blank">Click Here</a></p>
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2025 ToolsPay Exchange - All Rights Reserved.</p>
+        <p>© 2025 ToolsPay - All Rights Reserved</p>
     </footer>
-
-    <script>
-        function editRate() {
-            let newRate = prompt("Enter new rate in Naira per USD:");
-            if (newRate) {
-                document.getElementById("rate").textContent = newRate;
-            }
-        }
-    </script>
 </body>
 </html>

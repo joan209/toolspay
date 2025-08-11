@@ -1,77 +1,64 @@
-/* style.css - Gold & Black Theme */
-
-/* Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
-
+/* General body styling */
 body {
-  background-color: #000; /* Black background */
-  color: gold;
-  min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: black;
+    color: gold;
+    margin: 0;
+    padding: 0;
+    text-align: center;
 }
 
-/* Header */
+/* Header styling */
 header {
-  background-color: gold;
-  color: black;
-  padding: 1rem;
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: bold;
+    background-color: gold;
+    color: black;
+    padding: 20px 0;
+    font-size: 24px;
+    font-weight: bold;
 }
 
-/* Navigation */
+/* Navigation menu */
 nav a {
-  color: black;
-  margin: 0 10px;
-  text-decoration: none;
-  font-weight: bold;
+    color: gold;
+    background-color: black;
+    padding: 10px 15px;
+    text-decoration: none;
+    font-weight: bold;
 }
 
 nav a:hover {
-  text-decoration: underline;
+    background-color: gold;
+    color: black;
 }
 
-/* Main Content */
+/* Main content */
 main {
-  padding: 20px;
-}
-
-/* Card/Section style */
-.card {
-  background-color: #111;
-  border: 2px solid gold;
-  padding: 20px;
-  margin-bottom: 20px;
-  border-radius: 8px;
+    padding: 20px;
 }
 
 /* Buttons */
 button {
-  background-color: gold;
-  color: black;
-  border: none;
-  padding: 10px 20px;
-  font-size: 1rem;
-  border-radius: 5px;
-  cursor: pointer;
+    background-color: gold;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
 }
 
 button:hover {
-  background-color: #ffcc00;
+    background-color: black;
+    color: gold;
+    border: 1px solid gold;
 }
 
 /* Footer */
 footer {
-  text-align: center;
-  padding: 10px;
-  background-color: gold;
-  color: black;
-  position: fixed;
-  bottom: 0;
-  width: 100%;
+    background-color: gold;
+    color: black;
+    padding: 10px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
 }

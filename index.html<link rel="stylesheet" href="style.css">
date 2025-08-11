@@ -27,6 +27,12 @@
                 <li>Pay in Naira & receive USD instantly</li>
             </ol>
         </section>
+
+        <!-- Login Buttons -->
+        <div style="text-align:center; margin-top:30px;">
+            <a href="customer-login.html" style="padding:10px 20px; background:gold; color:black; font-weight:bold; text-decoration:none; border-radius:5px;">Customer Login</a>
+            <a href="admin.html" style="padding:10px 20px; background:black; color:gold; font-weight:bold; text-decoration:none; border:2px solid gold; border-radius:5px; margin-left:10px;">Admin Login</a>
+        </div>
     </main>
 
     <footer>

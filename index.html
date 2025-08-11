@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToolsPay - Trade USD to Naira</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>ToolsPay</h1>
+        <p>Fast & Secure USD to Naira Exchange</p>
+    </header>
+
+    <main>
+        <section class="rates">
+            <h2>Current Rate</h2>
+            <p id="rate">₦750 per $</p>
+        </section>
+
+        <section class="trade-form">
+            <h2>Start Trade</h2>
+            <form id="tradeForm">
+                <label>Your Name</label>
+                <input type="text" name="name" required>
+
+                <label>Email</label>
+                <input type="email" name="email" required>
+
+                <label>Amount in USD</label>
+                <input type="number" name="amount" required>
+
+                <label>Naira Bank Account</label>
+                <input type="text" name="bank" required>
+
+                <button type="submit">Request Trade</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 ToolsPay. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

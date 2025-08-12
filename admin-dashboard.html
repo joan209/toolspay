@@ -78,5 +78,13 @@
             <button style="padding:10px; background:gold; color:black; font-weight:bold; border:none; border-radius:5px; cursor:pointer; margin-left:10px;">Approve Withdrawals</button>
         </div>
     </main>
+  <script>
+  // Hide loader after 2.5 seconds
+  window.addEventListener("load", function () {
+    setTimeout(function () {
+      document.getElementById("admin-loader").style.display = "none";
+    }, 2500);
+  });
+  </script>
 </body>
 </html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Dashboard - Toolspay</title>
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* Loader */
+        #loader {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: blue;
+            z-index: 9999;
+        }
+
+        /* Dashboard styling */
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+        }
+        .section {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+        select, input, button {
+            padding: 8px;
+            margin: 8px 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loader">Loading Toolspay...</div>
+
+<!-- Dashboard Content -->
+<div class="container" style="display:none;">
+    <h1>Welcome to Toolspay</h1>
+    <p>Select your gift card type and country, then upload details for trade.</p>
+
+    <!-- Gift Card Selection -->
+    <div class="section">
+        <h3>Select Gift Card Type</h3>
+        <select id="giftCardType">
+            <option value="">-- Choose a gift card --</option>
+            <option>Apple / iTunes</option>
+            <option>Amazon</option>
+            <option>Steam</option>
+            <option>Visa Vanilla</option>
+            <option>Razer Gold</option>
+            <option>Xbox</option>
+        </select>
+    </div>
+
+    <!-- Country Selection -->
+    <div class="section">
+        <h3>Select Country</h3>
+        <select id="giftCardCountry">
+            <option value="">-- Choose a country --</option>
+            <option>USA</option>
+            <option>UK</option>
+            <option>EU</option>
+            <option>Canada</option>
+            <option>Australia</option>
+        </select>
+    </div>
+
+    <!-- Wallet Type -->
+    <div class="section">
+        <h3>Choose Wallet Type for Payment</h3>
+        <select id="walletType">
+            <option value="">-- Select wallet type --</option>
+            <option>Chime</option>
+            <option>PayPal</option>
+            <option>Zelle</option>
+            <option>Venmo</option>
+            <option>Bitcoin</option>
+            <option>USDT (TRC20)</option>
+            <option>USDT (BEP20)</option>
+        </select>
+    </div>
+
+    <!-- Upload Gift Card -->
+    <div class="section">
+        <h3>Upload Gift Card</h3>
+        <input type="file" id="giftCardImage">
+        <button onclick="submitTrade()">Submit Trade</button>
+    </div>
+</div>
+
+<script>
+    // Loader logic
+    window.onload = function() {
+        setTimeout(() => {
+            document.getElementById('loader').style.display = 'none';
+            document.querySelector('.container').style.display = 'block';
+        }, 2500);
+    };
+
+    function submitTrade() {
+        alert('Trade submitted successfully! (Backend connection needed)');
+    }
+</script>
+
+</body>
+</html>

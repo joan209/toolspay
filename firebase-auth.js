@@ -166,3 +166,21 @@ export {
   listGiftcards, getGiftcard, saveGiftcard, addAdminByEmail,
   createChatThread, postChatMessage, getDoc, getDocs, collection, doc, updateDoc, query, where, onSnapshot
 };
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAs_YwDtcTLojVFnrs9kUIYN1KT_BWEoEo",
+  authDomain: "toolspay-b2aab.firebaseapp.com",
+  projectId: "toolspay-b2aab",
+  storageBucket: "toolspay-b2aab.firebasestorage.app",
+  messagingSenderId: "812183091284",
+  appId: "1:812183091284:web:f46fb99e912154acb4d5c1"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);

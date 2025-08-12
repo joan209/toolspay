@@ -1,58 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ToolsPay</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - ToolsPay</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #0d6efd, #20c997);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-box {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      width: 100%;
+      max-width: 400px;
+    }
+    .login-box h2 {
+      color: #0d6efd;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .login-box input {
+      width: 100%;
+      padding: 10px;
+      margin: 0.5rem 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .login-box button {
+      width: 100%;
+      padding: 10px;
+      background: #0d6efd;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .login-box button:hover {
+      background: #084298;
+    }
+    .link {
+      display: block;
+      text-align: center;
+      margin-top: 1rem;
+      color: #0d6efd;
+      font-weight: bold;
+      text-decoration: none;
+      font-size: 1.1rem;
+    }
+    .link:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>ToolsPay</h1>
-        <p>Fast and secure dollar-to-naira exchange</p>
-    </header>
+  <div class="login-box">
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email" required />
+    <input type="password" id="loginPassword" placeholder="Password" required />
+    <button onclick="login()">Login</button>
+    <a href="signup.html" class="link">Create Account</a>
+  </div>
 
-    <main>
-        <section class="rate-section">
-            <h2>Current Rate</h2>
-            <p class="rate">1 USD = <strong>₦1500</strong></p>
-            <button>Contact Admin</button>
-        </section>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
-        <section class="how-section">
-            <h2>How it Works</h2>
-            <ol>
-                <li>Check the rate above</li>
-                <li>Contact admin for payment tag</li>
-                <li>Pay in Naira & receive USD instantly</li>
-            </ol>
-        </section>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAs_YwDtcTLojVFnrs9kUIYN1KT_BWEoEo",
+      authDomain: "toolspay-b2aab.firebaseapp.com",
+      projectId: "toolspay-b2aab",
+      storageBucket: "toolspay-b2aab.firebasestorage.app",
+      messagingSenderId: "812183091284",
+      appId: "1:812183091284:web:f46fb99e912154acb4d5c1"
+    };
 
-        <!-- Login Buttons -->
-        <div style="text-align:center; margin-top:30px;">
-            <a href="customer-login.html" style="padding:10px 20px; background:gold; color:black; font-weight:bold; text-decoration:none; border-radius:5px;">Customer Login</a>
-            <a href="admin.html" style="padding:10px 20px; background:black; color:gold; font-weight:bold; text-decoration:none; border:2px solid gold; border-radius:5px; margin-left:10px;">Admin Login</a>
-        </div>
-    </main>
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-    <footer>
-        <p>© 2025 ToolsPay - All Rights Reserved</p>
-    </footer> 
+    async function login() {
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
 
-    <!-- rebuild -->
-    <script src="firebase-auth.js"></script>
-</body<!-- Place this inside <body> of index.html where you want the login form -->
-<h2>Login to Your Account</h2>
-<form id="loginForm">
-  <label for="email">Email:</label>
-  <input type="email" id="email" placeholder="Enter your email" required>
+      if (!email || !password) {
+        alert("Please fill in all fields.");
+        return;
+      }
 
-  <label for="password">Password:</label>
-  <input type="password" id="password" placeholder="Enter your password" required>
-
-  <button type="submit">Login</button>
-</form>
-
-<!-- Link to Firebase Auth script at the bottom before </body> -->
-<script src="firebase-auth.js"></script>>
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        alert("Login successful!");
+        window.location.href = "dashboard.html"; // redirect to dashboard
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+  </script>
+</body>
 </html>

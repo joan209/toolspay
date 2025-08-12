@@ -50,6 +50,14 @@
     }, 2500); // 2.5 seconds
   });
   </script>
+  <script>
+  // Hide loader after 2.5 seconds
+  window.addEventListener("load", function () {
+    setTimeout(function () {
+      document.getElementById("customer-loader").style.display = "none";
+    }, 2500);
+  });
+  </script>
 </body><!-- Customer Loader -->
 <div id="customer-loader">
   <div class="loader-content">

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sell Online Wallet Funds — Toolspay</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .container{max-width:980px;margin:0 auto;padding:16px;}
+    .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:16px;margin:12px 0;}
+    label{display:block;font-weight:600;margin:6px 0;}
+    input,select,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;}
+    .btn{padding:12px 14px;border-radius:10px;border:0;background:#8b5cf6;color:#fff;font-weight:700;cursor:pointer;}
+    .muted{color:#6b7280;font-size:12px;}
+  </style>
+</head>
+<body>
+  <header style="padding:16px;border-bottom:1px solid #eee;background:#0b1220;color:#fff;">
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
+      <h2>Sell Online Wallet Funds</h2>
+      <a href="customer-dashboard.html" class="muted" style="color:#cbd5e1;">← Back</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <label>Wallet Type</label>
+      <select id="walletSel">
+        <option>PayPal</option>
+        <option>Chime</option>
+        <option>Zelle</option>
+        <option>Venmo</option>
+      </select>
+
+      <label>Country</label>
+      <input id="country" placeholder="USA, UK, EU, CA, etc."/>
+
+      <label>Amount (USD)</label>
+      <input id="amountUsd" type="number" placeholder="Enter $ amount"/>
+
+      <div id="rateLine" class="muted" style="margin:6px 0;">Rate: —</div>
+
+      <button id="chatBtn" class="btn">Chat Admin for Tag</button>
+      <div class="muted" style="margin-top:8px;">After you receive the tag in chat, send funds and share proof. Admin verifies and pays you in NGN.</div>
+    </div>
+  </main>
+
+  <!-- Tawk script (ensure you have it) -->
+  <!-- If your Tawk is not global, paste your widget here -->
+
+  <script type="module">
+    import { auth, db, onAuthStateChanged, doc, getDoc } from './firebase-auth.js';
+
+    const walletSel = document.getElementById('walletSel');
+    const countryEl = document.getElementById('country');
+    const amountUsd = document.getElementById('amountUsd');
+    const rateLine = document.getElementById('rateLine');
+    const chatBtn = document.getElementById('chatBtn');
+
+    function key(wallet, country){ return `${(wallet||'').trim().toUpperCase()}__${(country||'').trim().toUpperCase()}`; }
+
+    let ratesMap = new Map(); // key -> {wallet,country,rate,enabled}
+    let tags = {}; // from wallets/default.tags for your quick reference in chat (not shown to user by default)
+
+    async function refreshRate(){
+      const wallet = walletSel.value;
+      const country = countryEl.value;
+      const usd = Number(amountUsd.value||0);
+      const k = key(wallet, country);
+      const v = ratesMap.get(k);
+      if(v && v.enabled){
+        const line = `Rate: ₦${v.rate} per $1`;
+        if(usd>0){ rateLine.textContent = line + ` | You’ll receive ~ ₦${(usd*v.rate).toLocaleString()}`; }
+        else { rateLine.textContent = line; }
+      } else {
+        rateLine.textContent = 'Rate: —';
+      }
+    }
+
+    walletSel.onchange = refreshRate;
+    countryEl.oninput = refreshRate;
+    amountUsd.oninput = refreshRate;
+
+    chatBtn.onclick = ()=>{
+      // open Tawk chat drawer
+      if (window.Tawk_API && window.Tawk_API.maximize) {
+        const wallet = walletSel.value;
+        const country = countryEl.value;
+        const usd = amountUsd.value || '';
+        // Send a prefilled message to help you reply fast
+        window.Tawk_API.addTags([wallet, country || 'NoCountry']);
+        window.Tawk_API.setAttributes({ wallet, country, usd }, function(){});
+        window.Tawk_API.maximize();
+      } else {
+        alert('Chat not ready. Please wait a moment and try again.');
+      }
+    };
+
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user){ location.href='index.html'; return; }
+
+      // Load walletRates collection
+      // We’ll download all once (small) and store in map
+      const base = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const { getDocs, collection } = base;
+      const snap = await getDocs(collection(db,'walletRates'));
+      ratesMap.clear();
+      snap.forEach(d=>{ const v=d.data(); ratesMap.set(key(v.wallet,v.country), v); });
+
+      // Load tags so you can paste fast when chatting (not displayed)
+      const w = await getDoc(doc(db,'wallets','default'));
+      tags = w.exists() ? (w.data().tags||{}) : {};
+      refreshRate();
+    });
+  </script>
+</body>
+</html>

@@ -64,7 +64,97 @@
 
   <p id="statusMsg"></p>
 
-  <script type="module">
+  <script type="module">import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { app } from "./firebase-config.js";
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const methodSelect = document.getElementById("method");
+const extraFields = document.getElementById("extraFields");
+const paymentForm = document.getElementById("paymentForm");
+const paymentStatus = document.getElementById("paymentStatus");
+
+methodSelect.addEventListener("change", () => {
+  const method = methodSelect.value;
+  extraFields.innerHTML = "";
+
+  if (method === "Bank") {
+    extraFields.innerHTML = `
+      <label>Bank Name:</label><input type="text" id="bankName" required>
+      <label>Account Name:</label><input type="text" id="accountName" required>
+      <label>Account Number:</label><input type="text" id="accountNumber" required>
+    `;
+  } 
+  else if (method === "BTC") {
+    extraFields.innerHTML = `
+      <label>BTC Wallet Address:</label><input type="text" id="btcAddress" required>
+    `;
+  } 
+  else if (method === "USDT") {
+    extraFields.innerHTML = `
+      <label>Chain Type:</label>
+      <select id="chainType" required>
+        <option value="">-- Select Chain --</option>
+        <option value="TRC20">TRC20</option>
+        <option value="ERC20">ERC20</option>
+        <option value="BEP20">BEP20</option>
+      </select>
+      <label>USDT Wallet Address:</label><input type="text" id="usdtAddress" required>
+    `;
+  }
+  else if (method === "OnlineWallet") {
+    extraFields.innerHTML = `
+      <label>Wallet Name:</label><input type="text" id="walletName" required>
+      <label>Wallet Tag:</label><input type="text" id="walletTag" required>
+    `;
+  }
+});
+
+paymentForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const method = methodSelect.value;
+  let paymentData = { method };
+
+  if (method === "Bank") {
+    paymentData.bankName = document.getElementById("bankName").value;
+    paymentData.accountName = document.getElementById("accountName").value;
+    paymentData.accountNumber = document.getElementById("accountNumber").value;
+  }
+  else if (method === "BTC") {
+    paymentData.btcAddress = document.getElementById("btcAddress").value;
+  }
+  else if (method === "USDT") {
+    paymentData.chainType = document.getElementById("chainType").value;
+    paymentData.usdtAddress = document.getElementById("usdtAddress").value;
+  }
+  else if (method === "OnlineWallet") {
+    paymentData.walletName = document.getElementById("walletName").value;
+    paymentData.walletTag = document.getElementById("walletTag").value;
+  }
+
+  try {
+    await setDoc(doc(db, "paymentMethods", user.uid), paymentData);
+    paymentStatus.textContent = "✅ Payment method saved successfully!";
+    paymentStatus.style.color = "green";
+  } catch (error) {
+    paymentStatus.textContent = "❌ Error saving payment method.";
+    paymentStatus.style.color = "red";
+  }
+});
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    const docSnap = await getDoc(doc(db, "paymentMethods", user.uid));
+    if (docSnap.exists()) {
+      methodSelect.value = docSnap.data().method;
+    }
+  }
+});
     import { 
       auth, signOut, onAuthStateChanged, db, 
       doc, setDoc, getDoc 

@@ -25,7 +25,62 @@
     <button type="submit">Submit</button>
   </form>
 
-  <script type="module">
+  <script type="module"// Firestore refs
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const auth = getAuth();
+const db = getFirestore();
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    alert("Please log in to sell a gift card.");
+    window.location.href = "login.html";
+    return;
+  }
+
+  // Fetch user's payment info
+  const userRef = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userRef);
+  let paymentDetails = {};
+  if (userSnap.exists()) {
+    paymentDetails = userSnap.data().paymentMethods || {};
+  }
+
+  // Handle sell form submission
+  document.getElementById("sellForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const cardType = document.getElementById("cardType").value;
+    const amount = document.getElementById("amount").value;
+    const proofFile = document.getElementById("proof").files[0];
+
+    if (!proofFile) {
+      alert("Please upload proof of your card.");
+      return;
+    }
+
+    try {
+      // Store trade in Firestore
+      await addDoc(collection(db, "trades"), {
+        uid: user.uid,
+        cardType: cardType,
+        amount: amount,
+        proofName: proofFile.name,
+        paymentDetails: paymentDetails,
+        status: "Pending",
+        createdAt: serverTimestamp()
+      });
+
+      alert("Gift card submitted successfully! Waiting for approval.");
+      window.location.href = "dashboard.html";
+
+    } catch (error) {
+      console.error("Error submitting trade:", error);
+      alert("Something went wrong. Try again.");
+    }
+  });
+});>
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";

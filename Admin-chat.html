@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin Chat • ToolsPay</title>
+  <style>
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#f4f5f7}
+    header{background:#111;color:#fff;padding:14px 16px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+    .wrap{max-width:1100px;margin:16px auto;padding:0 12px}
+    .grid{display:grid;grid-template-columns:280px 1fr;gap:12px}
+    .panel{background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:hidden}
+    .list-head,.chat-head{padding:10px 12px;border-bottom:1px solid #eee;font-weight:600}
+    .list{max-height:70vh;overflow:auto}
+    .item{padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer}
+    .item:hover{background:#fafafa}
+    .chat-body{height:60vh;overflow:auto;padding:12px;background:#fafafa}
+    .msg{margin:8px 0;max-width:80%;padding:10px 12px;border-radius:12px;line-height:1.3;word-break:break-word}
+    .me{background:#111;color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+    .them{background:#e9edf3;color:#111;border-bottom-left-radius:4px}
+    .msg img{max-width:100%;border-radius:10px;margin-top:6px}
+    .chat-send{display:flex;gap:8px;padding:10px;border-top:1px solid #eee;background:#fff}
+    .chat-send input[type="text"]{flex:1;padding:10px;border:1px solid #ddd;border-radius:10px}
+    .btn{background:#111;color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:600}
+    .pill{font-size:12px;background:#ffd54d;color:#111;padding:4px 8px;border-radius:999px}
+  </style>
+</head>
+<body>
+  <header>
+    <div>ToolsPay • Admin Live Chat</div>
+    <div><a href="admin-dashboard.html" class="pill" style="color:#111;background:#ffd54d;text-decoration:none">← Admin Dashboard</a></div>
+  </header>
+
+  <div class="wrap">
+    <div class="grid">
+      <!-- chat list -->
+      <div class="panel">
+        <div class="list-head">Customer Chats</div>
+        <div id="chatList" class="list">Loading…</div>
+      </div>
+
+      <!-- messages -->
+      <div class="panel">
+        <div id="chatTitle" class="chat-head">Select a chat</div>
+        <div id="chatBody" class="chat-body"></div>
+        <div class="chat-send">
+          <input id="chatText" type="text" placeholder="Type a reply…"/>
+          <input id="chatImage" type="file" accept="image/*" />
+          <button id="sendBtn" class="btn">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+    import { 
+      getFirestore, collection, doc, getDoc, getDocs, onSnapshot, query, orderBy, addDoc, serverTimestamp, updateDoc 
+    } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-storage.js";
+
+    // SAME project config here (replace placeholders)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    const chatList = document.getElementById("chatList");
+    const chatBody = document.getElementById("chatBody");
+    const chatTitle = document.getElementById("chatTitle");
+    const chatText = document.getElementById("chatText");
+    const chatImage = document.getElementById("chatImage");
+    const sendBtn = document.getElementById("sendBtn");
+
+    let adminUser = null;
+    let activeChatId = null;
+    let unsubMessages = null;
+
+    function renderMessage(m, isMe) {
+      const div = document.createElement("div");
+      div.className = "msg " + (isMe ? "me" : "them");
+      if (m.text) div.innerHTML = m.text.replace(/\n/g, "<br/>");
+      if (m.imageUrl) {
+        const img = document.createElement("img");
+        img.src = m.imageUrl;
+        div.appendChild(document.createElement("br"));
+        div.appendChild(img);
+      }
+      chatBody.appendChild(div);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    async function ensureAdmin(email) {
+      const a = await getDoc(doc(db, "admins", email));
+      return a.exists();
+    }
+
+    async function loadChatList() {
+      chatList.innerHTML = "Loading…";
+      const snap = await getDocs(collection(db, "chats"));
+      chatList.innerHTML = "";
+      snap.forEach(d => {
+        const data = d.data();
+        const el = document.createElement("div");
+        el.className = "item";
+        el.textContent = data.userEmail || d.id;
+        el.onclick = () => openChat(d.id, data.userEmail || d.id);
+        chatList.appendChild(el);
+      });
+    }
+
+    function openChat(id, label) {
+      activeChatId = id;
+      chatTitle.textContent = "Chat with: " + label;
+      chatBody.innerHTML = "";
+
+      if (unsubMessages) unsubMessages();
+      const mref = collection(db, "chats", id, "messages");
+      const q = query(mref, orderBy("createdAt"));
+      unsubMessages = onSnapshot(q, (snap) => {
+        chatBody.innerHTML = "";
+        snap.forEach(docSnap => {
+          const m = docSnap.data();
+          renderMessage(m, m.senderUid === adminUser?.uid);
+        });
+      });
+    }
+
+    async function sendMessage() {
+      if (!activeChatId) return;
+      const text = chatText.value.trim();
+      const file = chatImage.files[0];
+
+      if (!text && !file) return;
+
+      let imageUrl = null;
+      if (file) {
+        const key = `chats/${activeChatId}/${Date.now()}-${file.name}`;
+        const r = ref(storage, key);
+        await uploadBytes(r, file);
+        imageUrl = await getDownloadURL(r);
+        chatImage.value = "";
+      }
+
+      await addDoc(collection(db, "chats", activeChatId, "messages"), {
+        text: text || null,
+        imageUrl: imageUrl || null,
+        senderUid: adminUser.uid,
+        senderEmail: adminUser.email || null,
+        createdAt: serverTimestamp()
+      });
+      await updateDoc(doc(db, "chats", activeChatId), { updatedAt: serverTimestamp() });
+
+      chatText.value = "";
+      chatText.focus();
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    chatText.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    onAuthStateChanged(auth, async (u) => {
+      if (!u) {
+        // force admin to login on your admin login page
+        window.location.href = "admin.html";
+        return;
+      }
+      // check if user is admin
+      const ok = await ensureAdmin(u.email);
+      if (!ok) {
+        alert("This page is restricted to admins.");
+        window.location.href = "customer-dashboard.html";
+        return;
+      }
+      adminUser = u;
+      await loadChatList();
+    });
+  </script>
+</body>
+</html>

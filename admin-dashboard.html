@@ -7,49 +7,61 @@
   <link rel="stylesheet" href="style.css"/>
 
   <style>
-    .container{max-width:1100px;margin:0 auto;padding:16px}
-    .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:16px;margin:14px 0}
-    .row{display:grid;gap:12px}
-    @media(min-width:780px){.row-2{grid-template-columns:1fr 1fr}.row-3{grid-template-columns:1fr 1fr 1fr}.row-4{grid-template-columns:1fr 1fr 1fr 1fr}}
-    label{font-weight:600;font-size:14px;margin-bottom:6px;display:block}
-    input,select,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px}
-    button{padding:10px 14px;border-radius:10px;border:0;cursor:pointer}
-    .btn-primary{background:#0b1220;color:#ffd700;border:2px solid #ffd700}
-    .btn-ghost{background:#f4f4f4}
-    .muted{color:#6b7280;font-size:12px}
-    .header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .hidden{display:none}
-    .list{border:1px dashed #ddd;border-radius:10px;padding:10px}
-    table{width:100%;border-collapse:collapse}
-    th,td{border-bottom:1px solid #eee;padding:8px;text-align:left}
-    .pill{padding:4px 10px;border:1px solid #ddd;border-radius:999px;font-size:12px}
+    /* Minimal clean styling */
+    :root { --bg:#0b1220; --gold:#ffd700; }
+    body{background:#f7f7fb;}
+    .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .card { background:#fff; border:1px solid #eee; border-radius:12px; padding:16px; margin:14px 0; }
+    .row { display:grid; gap:12px; }
+    @media (min-width: 780px){ .row-2{ grid-template-columns:1fr 1fr } .row-3{ grid-template-columns:1fr 1fr 1fr } }
+    label { font-weight: 600; font-size: 14px; margin-bottom: 6px; display:block; }
+    input, select, textarea { width:100%; padding:10px; border:1px solid #dcdcdc; border-radius:10px; font-size:14px; }
+    textarea{ resize:vertical; }
+    button { padding:10px 14px; border-radius:10px; border:0; cursor:pointer; font-weight:600; }
+    .btn-primary { background:#000; color:var(--gold); border:2px solid var(--gold); }
+    .btn-ghost { background:#f1f1f4; }
+    .btn-danger{ background:#b91c1c; color:#fff; }
+    .muted{ color:#6b7280; font-size:12px; }
+    .tag{ padding:6px 10px; border:1px solid #ddd; border-radius:999px; font-size:12px; background:#fafafa; }
+    .flex{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .hidden{ display:none; }
+    .list{ border:1px dashed #ddd; border-radius:10px; padding:10px; }
+    .section-title{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .brand-row{ border:1px solid #eee; border-radius:10px; padding:10px; margin:10px 0; background:#fafafa; }
+    .country-row{ display:grid; grid-template-columns: 130px 1fr 90px; gap:8px; align-items:center; margin:6px 0; }
+    @media (max-width:560px){ .country-row{ grid-template-columns: 1fr 1fr; } .country-row .remove{ grid-column: 1 / -1; } }
   </style>
 </head>
+
 <body>
-  <header style="padding:16px;border-bottom:1px solid #eee;background:#0b1220;">
-    <div class="container header" style="color:#fff;">
+  <header style="padding:16px; border-bottom:1px solid #eee; background:var(--bg);">
+    <div class="container" style="display:flex; align-items:center; justify-content:space-between; color:#fff;">
       <div class="flex">
-        <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#111,#ffd700);display:flex;align-items:center;justify-content:center;font-weight:800;">TP</div>
+        <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#111,var(--gold));display:flex;align-items:center;justify-content:center;font-weight:800;">TP</div>
         <div>
           <div style="font-weight:800;">Toolspay — Admin</div>
-          <div class="muted" style="color:#cbd5e1;">Manage rates, wallets, cards, and announcements</div>
+          <div class="muted" style="color:#cbd5e1;">Manage rates, wallets, gift cards & announcements</div>
         </div>
       </div>
-      <div class="flex">
-        <button id="logoutBtn" class="btn-ghost">Sign out</button>
-      </div>
+      <button id="logoutBtn" class="btn-ghost">Sign out</button>
     </div>
   </header>
 
   <main class="container">
-    <!-- AUTH -->
+
+    <!-- AUTH GATE -->
     <div id="authBlock" class="card">
       <h2>Admin sign in</h2>
       <p class="muted">Only emails in <code>admins</code> can access.</p>
       <div class="row row-2" style="margin-top:10px;">
-        <div><label>Email</label><input id="email" type="email" placeholder="you@example.com"/></div>
-        <div><label>Password</label><input id="password" type="password" placeholder="••••••••"/></div>
+        <div>
+          <label>Email</label>
+          <input id="email" type="email" placeholder="you@example.com"/>
+        </div>
+        <div>
+          <label>Password</label>
+          <input id="password" type="password" placeholder="••••••••"/>
+        </div>
       </div>
       <div class="flex" style="margin-top:10px;">
         <button id="loginBtn" class="btn-primary">Sign in</button>
@@ -58,60 +70,168 @@
       <div id="authMsg" class="muted" style="margin-top:8px;"></div>
     </div>
 
-    <!-- NOT ADMIN -->
+    <!-- NOT AUTHORIZED -->
     <div id="notAdmin" class="card hidden">
-      <h3 style="color:#b91c1c">Not authorized</h3>
-      <p class="muted">This account is not in <code>admins</code>. Use your <a href="grant-admin.html">Grant Admin</a> page once, then reload.</p>
+      <h3 style="color:#b91c1c;">Not authorized</h3>
+      <p class="muted">Click below to add your signed-in email to <code>admins</code> (one-time setup).</p>
+      <button id="grantBtn" class="btn-primary">Grant admin to my email</button>
+      <div id="grantMsg" class="muted" style="margin-top:8px;"></div>
     </div>
 
     <!-- ADMIN PANEL -->
     <section id="adminPanel" class="hidden">
 
-      <!-- Rates -->
+      <!-- Global rates -->
       <div class="card">
-        <div class="header">
-          <h2>Rates</h2>
-          <span class="muted">Firestore: <code>rates/default</code></span>
+        <div class="section-title">
+          <h2>Global Rates</h2>
+          <span class="muted">Doc: <code>rates/default</code></span>
         </div>
         <div class="row row-2" style="margin-top:10px;">
           <div>
             <label>USD → NGN</label>
             <input id="usdToNgn" type="number" placeholder="1500"/>
-            <div class="muted">Shown to customers.</div>
+            <div class="muted">Displayed to users and used as default conversion.</div>
           </div>
           <div>
-            <label>Gift card base (₦ per $1)</label>
+            <label>Default gift card base (₦ per $1)</label>
             <input id="giftcardBase" type="number" placeholder="1450"/>
-            <div class="muted">Default fallback.</div>
+            <div class="muted">Brand/country can override below.</div>
           </div>
         </div>
         <div style="margin-top:10px;">
-          <button id="saveRates" class="btn-primary">Save rates</button>
+          <button id="saveRates" class="btn-primary">Save global rates</button>
           <span id="ratesMsg" class="muted"></span>
         </div>
       </div>
 
-      <!-- Wallets -->
+      <!-- Gift cards manager -->
       <div class="card">
-        <div class="header">
-          <h2>Wallets (BTC, USDT, Online Wallet rates)</h2>
-          <span class="muted">Firestore: <code>wallets/default</code></span>
+        <div class="section-title">
+          <h2>Gift Cards (per-brand, per-country rates)</h2>
+          <span class="muted">Collection: <code>giftcards</code> (one doc per brand)</span>
         </div>
 
+        <div id="brandsWrap"></div>
+
+        <div class="row row-3" style="margin-top:10px;">
+          <div><input id="newBrandId" placeholder="brand id (e.g. apple, amazon)"/></div>
+          <div><input id="newBrandName" placeholder="Display name (e.g. Apple / iTunes)"/></div>
+          <div><button id="addBrandBtn" class="btn-ghost">Add new brand</button></div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <button id="saveAllBrands" class="btn-primary">Save all gift cards</button>
+          <span id="brandsMsg" class="muted"></span>
+        </div>
+
+        <div class="muted" style="margin-top:8px;">
+          Tip: Users will see each brand with the country dropdown and the **rate in front**.  
+          When they enter face value, their payout (₦) is calculated instantly from your rate.
+        </div>
+      </div>
+
+      <!-- Online wallet rates -->
+      <div class="card">
+        <div class="section-title">
+          <h2>Online Wallets (rates & enable/disable)</h2>
+          <span class="muted">Doc: <code>wallets/default</code></span>
+        </div>
+
+        <div class="row row-2">
+          <div class="brand-row">
+            <div class="flex" style="justify-content:space-between;">
+              <strong>Chime</strong>
+              <label class="flex"><input type="checkbox" id="chimeEnable"/> Enable</label>
+            </div>
+            <div class="row row-2" style="margin-top:8px;">
+              <div>
+                <label>Rate (₦ per $1)</label>
+                <input id="chimeRate" type="number" placeholder="e.g. 1400"/>
+              </div>
+              <div>
+                <label>Tag / Note (optional)</label>
+                <input id="chimeTag" placeholder="Your Chime tag"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="brand-row">
+            <div class="flex" style="justify-content:space-between;">
+              <strong>Zelle</strong>
+              <label class="flex"><input type="checkbox" id="zelleEnable"/> Enable</label>
+            </div>
+            <div class="row row-2" style="margin-top:8px;">
+              <div>
+                <label>Rate (₦ per $1)</label>
+                <input id="zelleRate" type="number" placeholder="e.g. 1380"/>
+              </div>
+              <div>
+                <label>Tag / Email (optional)</label>
+                <input id="zelleTag" placeholder="Zelle email/phone"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="brand-row">
+            <div class="flex" style="justify-content:space-between;">
+              <strong>Venmo</strong>
+              <label class="flex"><input type="checkbox" id="venmoEnable"/> Enable</label>
+            </div>
+            <div class="row row-2" style="margin-top:8px;">
+              <div>
+                <label>Rate (₦ per $1)</label>
+                <input id="venmoRate" type="number" placeholder="e.g. 1360"/>
+              </div>
+              <div>
+                <label>@Tag (optional)</label>
+                <input id="venmoTag" placeholder="@venmo"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="brand-row">
+            <div class="flex" style="justify-content:space-between;">
+              <strong>PayPal</strong>
+              <label class="flex"><input type="checkbox" id="paypalEnable"/> Enable</label>
+            </div>
+            <div class="row row-2" style="margin-top:8px;">
+              <div>
+                <label>Rate (₦ per $1)</label>
+                <input id="paypalRate" type="number" placeholder="e.g. 1300"/>
+              </div>
+              <div>
+                <label>Email (optional)</label>
+                <input id="paypalTag" placeholder="PayPal email"/>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <button id="saveWalletRates" class="btn-primary">Save wallet rates</button>
+          <span id="walletRatesMsg" class="muted"></span>
+        </div>
+
+        <div class="muted" style="margin-top:8px;">
+          Customers won’t upload for online wallets; they will click the wallet, see the rate in front, then **open live chat** to request your tag. You paste your tag there.
+        </div>
+      </div>
+
+      <!-- Crypto wallets -->
+      <div class="card">
+        <div class="section-title">
+          <h2>Crypto Wallets</h2>
+          <span class="muted">Doc: <code>wallets/default</code></span>
+        </div>
         <div class="row row-2" style="margin-top:10px;">
           <div>
             <label>BTC Address</label>
-            <input id="btcAddress" placeholder="bc1... or 1..."/>
+            <input id="btcAddress" placeholder="bc1... / 1..."/>
           </div>
           <div>
-            <label>Online Wallet Tags (optional quick-paste)</label>
-            <div class="row">
-              <input id="tagChime" placeholder="Chime tag"/>
-              <input id="tagZelle" placeholder="Zelle tag/email"/>
-              <input id="tagVenmo" placeholder="@venmo"/>
-              <input id="tagPaypal" placeholder="PayPal email"/>
-            </div>
-            <div class="muted">Customers will chat you for the tag. These help you answer fast.</div>
+            <label>USD→NGN (for crypto display)</label>
+            <input id="displayUsdToNgn" type="number" placeholder="(uses global if empty)"/>
           </div>
         </div>
 
@@ -125,87 +245,21 @@
           </div>
         </div>
 
-        <div class="card" style="background:#fafafa;">
-          <h3>Online Wallets & Rates (you pay NGN)</h3>
-          <div class="muted">Each row = one wallet (e.g., Chime, PayPal…). Rate = ₦ per 1 unit of the selected currency.</div>
-          <div id="owList" class="list" style="margin-top:8px;"></div>
-          <div class="row row-4" style="margin-top:8px;">
-            <div><input id="owName" placeholder="Wallet name (Chime)"/></div>
-            <div>
-              <select id="owCurrency">
-                <option value="USD">USD</option>
-                <option value="GBP">GBP</option>
-                <option value="EUR">EUR</option>
-                <option value="AUD">AUD</option>
-              </select>
-            </div>
-            <div><input id="owRate" type="number" placeholder="₦ per 1 unit"/></div>
-            <div><button id="addOW" class="btn-ghost">Add / Update</button></div>
-          </div>
-        </div>
-
         <div style="margin-top:10px;">
-          <button id="saveWallets" class="btn-primary">Save wallets</button>
+          <button id="saveWallets" class="btn-primary">Save crypto wallets</button>
           <span id="walletsMsg" class="muted"></span>
-        </div>
-      </div>
-
-      <!-- Giftcards Catalog -->
-      <div class="card">
-        <div class="header">
-          <h2>Gift Cards Catalog (brand + per-country rates)</h2>
-          <span class="muted">Firestore: <code>giftcards/{brandId}</code></span>
-        </div>
-
-        <div class="row row-3" style="margin-top:10px;">
-          <div><input id="gcId" placeholder="ID (amazon, itunes, steam...)"/></div>
-          <div><input id="gcName" placeholder="Display name (Amazon)" /></div>
-          <div><input id="gcLogo" type="file" accept="image/*"/></div>
-        </div>
-
-        <div class="card" style="background:#fafafa;margin-top:12px;">
-          <h3>Countries & Rates for this brand</h3>
-          <div class="muted">Rate = ₦ per $1 (or per face value unit for that country).</div>
-          <div id="gcCountries" class="list" style="margin-top:8px;"></div>
-          <div class="row row-4" style="margin-top:8px;">
-            <div>
-              <select id="newCtry">
-                <option value="US">United States (US)</option>
-                <option value="UK">United Kingdom (UK)</option>
-                <option value="EU">Eurozone (EU)</option>
-                <option value="CA">Canada (CA)</option>
-                <option value="AU">Australia (AU)</option>
-                <option value="CH">Switzerland (CH)</option>
-                <option value="NG">Nigeria (NG)</option>
-              </select>
-            </div>
-            <div><input id="newRate" type="number" placeholder="₦/unit"/></div>
-            <div><input id="newMin" type="number" placeholder="Min face value"/></div>
-            <div><button id="addCtry" class="btn-ghost">Add/Update Country</button></div>
-          </div>
-        </div>
-
-        <div class="flex" style="margin-top:10px;">
-          <button id="saveGiftcard" class="btn-primary">Save brand</button>
-          <button id="loadGiftcard" class="btn-ghost">Load brand</button>
-          <button id="deleteGiftcard" class="btn-ghost" style="background:#fee2e2;">Delete brand</button>
-          <span id="gcMsg" class="muted"></span>
-        </div>
-
-        <div class="muted" style="margin-top:8px;">
-          Preloaded suggestions: amazon, itunes, steam, googleplay, razergold, walmart, visa, amex, xbox.
         </div>
       </div>
 
       <!-- Announcements -->
       <div class="card">
-        <div class="header">
+        <div class="section-title">
           <h2>Announcements</h2>
-          <span class="muted">Firestore: <code>announcements/default</code></span>
+          <span class="muted">Doc: <code>announcements/default</code></span>
         </div>
         <div style="margin-top:10px;">
           <label>One per line</label>
-          <textarea id="annTextarea" rows="5" placeholder="Welcome to Toolspay&#10;Trade only inside this site"></textarea>
+          <textarea id="annTextarea" rows="5" placeholder="Welcome to Toolspay&#10;Trade safely via this site only"></textarea>
         </div>
         <div style="margin-top:10px;">
           <button id="saveAnn" class="btn-primary">Save announcements</button>
@@ -213,33 +267,43 @@
         </div>
       </div>
 
-      <!-- (Optional) Upload proof to an order -->
+      <!-- Proof uploads -->
       <div class="card">
-        <div class="header">
-          <h2>Upload proof to a Trade (optional)</h2>
-          <span class="muted">Attach screenshot to <code>requests/{requestId}</code></span>
+        <div class="section-title">
+          <h2>Proof Uploads (admin only)</h2>
+          <span class="muted">Collection: <code>proofs</code> + Storage: <code>proofs/</code></span>
         </div>
-        <div class="row row-3" style="margin-top:10px;">
-          <div><input id="proofReqId" placeholder="requestId"/></div>
-          <div><input id="proofFile" type="file" accept="image/*"/></div>
-          <div><button id="uploadProof" class="btn-ghost">Upload</button></div>
+        <div class="row row-2">
+          <div>
+            <label>Screenshot image</label>
+            <input id="proofFile" type="file" accept="image/*"/>
+          </div>
+          <div>
+            <label>Note (optional)</label>
+            <input id="proofNote" placeholder="e.g., Card already used — evidence"/>
+          </div>
         </div>
-        <div id="proofMsg" class="muted" style="margin-top:8px;"></div>
+        <div style="margin-top:10px;">
+          <button id="uploadProofBtn" class="btn-ghost">Upload proof</button>
+          <span id="proofMsg" class="muted"></span>
+        </div>
       </div>
 
     </section>
   </main>
 
+  <!-- Admin logic -->
   <script type="module">
     import {
       auth, db, storage,
+      // auth
       signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged,
-      saveGiftcard, getGiftcard, listGiftcards, uploadChatImage,
-      // raw SDK helpers exported from firebase-auth.js
-      doc, getDoc, setDoc, updateDoc, deleteDoc
+      // firestore helpers from our module
+      doc, getDoc, setDoc, getDocs, collection, updateDoc, addDoc, serverTimestamp
     } from './firebase-auth.js';
-    import { collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+    // storage
+    import { ref as storageRef, uploadBytes, getDownloadURL }
+      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
     // UI refs
     const authBlock  = document.getElementById('authBlock');
@@ -253,19 +317,45 @@
     const logoutBtn = document.getElementById('logoutBtn');
     const authMsg = document.getElementById('authMsg');
 
-    // Rates
+    const grantBtn = document.getElementById('grantBtn');
+    const grantMsg = document.getElementById('grantMsg');
+
+    // Global rates
     const usdToNgn = document.getElementById('usdToNgn');
     const giftcardBase = document.getElementById('giftcardBase');
     const saveRates = document.getElementById('saveRates');
     const ratesMsg = document.getElementById('ratesMsg');
 
-    // Wallets
-    const btcAddress = document.getElementById('btcAddress');
-    const tagChime = document.getElementById('tagChime');
-    const tagZelle = document.getElementById('tagZelle');
-    const tagVenmo = document.getElementById('tagVenmo');
-    const tagPaypal = document.getElementById('tagPaypal');
+    // Gift cards
+    const brandsWrap = document.getElementById('brandsWrap');
+    const newBrandId = document.getElementById('newBrandId');
+    const newBrandName = document.getElementById('newBrandName');
+    const addBrandBtn = document.getElementById('addBrandBtn');
+    const saveAllBrands = document.getElementById('saveAllBrands');
+    const brandsMsg = document.getElementById('brandsMsg');
 
+    // Online wallet rates
+    const chimeEnable = document.getElementById('chimeEnable');
+    const chimeRate   = document.getElementById('chimeRate');
+    const chimeTag    = document.getElementById('chimeTag');
+
+    const zelleEnable = document.getElementById('zelleEnable');
+    const zelleRate   = document.getElementById('zelleRate');
+    const zelleTag    = document.getElementById('zelleTag');
+
+    const venmoEnable = document.getElementById('venmoEnable');
+    const venmoRate   = document.getElementById('venmoRate');
+    const venmoTag    = document.getElementById('venmoTag');
+
+    const paypalEnable = document.getElementById('paypalEnable');
+    const paypalRate   = document.getElementById('paypalRate');
+    const paypalTag    = document.getElementById('paypalTag');
+
+    const walletRatesMsg = document.getElementById('walletRatesMsg');
+
+    // Crypto wallets
+    const btcAddress = document.getElementById('btcAddress');
+    const displayUsdToNgn = document.getElementById('displayUsdToNgn');
     const networksList = document.getElementById('networksList');
     const newNetName = document.getElementById('newNetName');
     const newNetAddr = document.getElementById('newNetAddr');
@@ -273,268 +363,417 @@
     const saveWallets = document.getElementById('saveWallets');
     const walletsMsg = document.getElementById('walletsMsg');
 
-    // Online wallets rates
-    const owList = document.getElementById('owList');
-    const owName = document.getElementById('owName');
-    const owCurrency = document.getElementById('owCurrency');
-    const owRate = document.getElementById('owRate');
-    const addOW = document.getElementById('addOW');
-
-    let usdtNetworks = []; // {network,address}
-    let onlineWallets = []; // {name, currency, rate, enabled}
-
-    // Giftcards
-    const gcId = document.getElementById('gcId');
-    const gcName = document.getElementById('gcName');
-    const gcLogo = document.getElementById('gcLogo');
-    const gcCountries = document.getElementById('gcCountries');
-    const newCtry = document.getElementById('newCtry');
-    const newRate = document.getElementById('newRate');
-    const newMin  = document.getElementById('newMin');
-    const addCtry = document.getElementById('addCtry');
-    const saveGiftcardBtn = document.getElementById('saveGiftcard');
-    const loadGiftcardBtn = document.getElementById('loadGiftcard');
-    const deleteGiftcardBtn = document.getElementById('deleteGiftcard');
-    const gcMsg = document.getElementById('gcMsg');
-    let gcCountryRates = []; // [{code,name,rate,min}]
-
     // Announcements
     const annTextarea = document.getElementById('annTextarea');
     const saveAnn = document.getElementById('saveAnn');
     const annMsg = document.getElementById('annMsg');
 
-    // Proof upload
-    const proofReqId = document.getElementById('proofReqId');
+    // Proof uploads
     const proofFile = document.getElementById('proofFile');
-    const uploadProof = document.getElementById('uploadProof');
+    const proofNote = document.getElementById('proofNote');
+    const uploadProofBtn = document.getElementById('uploadProofBtn');
     const proofMsg = document.getElementById('proofMsg');
 
-    // ----- helpers -----
-    const countryName = (code)=>{
-      const map = {US:'United States',UK:'United Kingdom',EU:'Eurozone',CA:'Canada',AU:'Australia',CH:'Switzerland',NG:'Nigeria'};
-      return map[code] || code;
+    // ---------------- AUTH
+    loginBtn.onclick = async () => {
+      authMsg.textContent = 'Signing in...';
+      try {
+        await signInWithEmailAndPassword(emailEl.value.trim(), passEl.value);
+        authMsg.textContent = '';
+      } catch (e) {
+        authMsg.textContent = 'Sign in failed: ' + (e.message || e.code);
+      }
     };
 
+    resetBtn.onclick = async () => {
+      const em = (emailEl.value || '').trim();
+      if (!em) { authMsg.textContent = 'Enter email first.'; return; }
+      try {
+        await sendPasswordResetEmail(em);
+        authMsg.textContent = 'Reset link sent to ' + em;
+      } catch (e) {
+        authMsg.textContent = 'Reset failed: ' + (e.message || e.code);
+      }
+    };
+
+    logoutBtn.onclick = async () => {
+      await signOut();
+      location.reload();
+    };
+
+    grantBtn.onclick = async () => {
+      if (!auth.currentUser?.email) { grantMsg.textContent = 'Sign in first.'; return; }
+      try {
+        await setDoc(doc(db, 'admins', auth.currentUser.email), { createdAt: Date.now() }, { merge:true });
+        grantMsg.textContent = 'Admin granted ✓ Reloading...';
+        setTimeout(()=>location.reload(), 800);
+      } catch (e) {
+        grantMsg.textContent = 'Failed: ' + (e.message || e.code);
+      }
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        authBlock.classList.remove('hidden');
+        adminPanel.classList.add('hidden');
+        notAdmin.classList.add('hidden');
+        return;
+      }
+      const a = await getDoc(doc(db, 'admins', user.email));
+      if (!a.exists()) {
+        authBlock.classList.add('hidden');
+        notAdmin.classList.remove('hidden');
+        adminPanel.classList.add('hidden');
+        return;
+      }
+      // authorized
+      authBlock.classList.add('hidden');
+      notAdmin.classList.add('hidden');
+      adminPanel.classList.remove('hidden');
+
+      await loadGlobalRates();
+      await loadWalletsDoc();   // crypto + online wallet rates
+      await loadAnnouncements();
+      await loadGiftcards();    // brands/countries
+    });
+
+    // ---------------- GLOBAL RATES
+    async function loadGlobalRates() {
+      try {
+        const r = await getDoc(doc(db, 'rates', 'default'));
+        if (r.exists()) {
+          const d = r.data();
+          usdToNgn.value = d.usdToNgn ?? '';
+          giftcardBase.value = d.giftcardBase ?? '';
+        }
+      } catch (e) { console.warn(e); }
+    }
+
+    saveRates.onclick = async () => {
+      ratesMsg.textContent = 'Saving...';
+      try {
+        const payload = {
+          usdToNgn: Number(usdToNgn.value || 0),
+          giftcardBase: Number(giftcardBase.value || 0)
+        };
+        await setDoc(doc(db, 'rates', 'default'), payload, { merge:true });
+        ratesMsg.textContent = 'Saved ✓';
+        setTimeout(()=> ratesMsg.textContent = '', 1200);
+      } catch (e) {
+        ratesMsg.textContent = 'Error: ' + (e.message || e.code);
+      }
+    };
+
+    // ---------------- GIFT CARDS
+    let brands = {}; // { brandId: { displayName, enabled, countries: {US:{rate}, ...} } }
+
+    const PRELOAD = {
+      apple:   {displayName:'Apple / iTunes', enabled:true,
+        countries:{ US:{rate:1450}, UK:{rate:1600}, EU:{rate:1500}, CA:{rate:1400}, AU:{rate:1350}, CH:{rate:1500} } },
+      amazon:  {displayName:'Amazon', enabled:true,
+        countries:{ US:{rate:1400}, UK:{rate:1580}, EU:{rate:1480}, CA:{rate:1380} } },
+      google:  {displayName:'Google Play', enabled:true,
+        countries:{ US:{rate:1420}, UK:{rate:1560}, EU:{rate:1460} } },
+      steam:   {displayName:'Steam', enabled:true,
+        countries:{ US:{rate:1380}, UK:{rate:1500}, EU:{rate:1420} } },
+      visavanilla:{displayName:'Visa Vanilla', enabled:true,
+        countries:{ US:{rate:1320} } },
+      razergold:{displayName:'Razer Gold', enabled:true,
+        countries:{ US:{rate:1360}, EU:{rate:1400} } },
+      xbox:    {displayName:'Xbox', enabled:true,
+        countries:{ US:{rate:1400}, UK:{rate:1540} } },
+      walmart: {displayName:'Walmart', enabled:true,
+        countries:{ US:{rate:1340} } },
+      amex:    {displayName:'American Express', enabled:true,
+        countries:{ US:{rate:1300} } },
+    };
+
+    function countryRow(brandId, code, item){
+      const wrap = document.createElement('div');
+      wrap.className = 'country-row';
+      wrap.innerHTML = `
+        <input value="${code}" placeholder="Country code (US/UK/EU/CA/AU/CH/NG)"/>
+        <input type="number" value="${item?.rate ?? ''}" placeholder="Rate ₦ per $1"/>
+        <button class="btn-ghost remove">Remove</button>
+      `;
+      const [codeEl, rateEl, rmBtn] = wrap.querySelectorAll('input,button');
+      rmBtn.onclick = () => {
+        delete brands[brandId].countries[codeEl.value.trim() || code];
+        renderBrands();
+      };
+      codeEl.oninput = () => {
+        const old = code;
+        const neo = codeEl.value.trim().toUpperCase();
+        if (!neo) return;
+        if (neo!==old) {
+          brands[brandId].countries[neo] = { rate: Number(rateEl.value || 0) };
+          delete brands[brandId].countries[old];
+        } else {
+          brands[brandId].countries[old].rate = Number(rateEl.value || 0);
+        }
+      };
+      rateEl.oninput = () => {
+        const cc = (codeEl.value || code).trim().toUpperCase();
+        if (!cc) return;
+        brands[brandId].countries[cc] = { rate: Number(rateEl.value || 0) };
+      };
+      return wrap;
+    }
+
+    function brandBlock(brandId, b){
+      const blk = document.createElement('div');
+      blk.className = 'brand-row';
+      blk.innerHTML = `
+        <div class="flex" style="justify-content:space-between;">
+          <div class="flex">
+            <strong>${b.displayName || brandId}</strong>
+            <label class="flex" style="margin-left:8px;"><input data-id="${brandId}" class="brand-enabled" type="checkbox" ${b.enabled?'checked':''}/> Enabled</label>
+          </div>
+          <button class="btn-danger remove-brand" data-id="${brandId}">Delete brand</button>
+        </div>
+        <div class="row row-3" style="margin-top:8px;">
+          <div>
+            <label>Brand ID</label>
+            <input class="brand-id" value="${brandId}" />
+          </div>
+          <div>
+            <label>Display name</label>
+            <input class="brand-name" value="${b.displayName || ''}" placeholder="Apple / iTunes"/>
+          </div>
+          <div>
+            <label>Add country</label>
+            <input class="add-cc" placeholder="US / UK / EU / CA / AU / CH / NG"/>
+          </div>
+        </div>
+        <div class="list cc-wrap" style="margin-top:8px;"></div>
+      `;
+      const ccWrap = blk.querySelector('.cc-wrap');
+      // render countries
+      ccWrap.innerHTML = '';
+      Object.entries(b.countries || {}).forEach(([cc, obj])=>{
+        ccWrap.appendChild(countryRow(brandId, cc, obj));
+      });
+
+      // hook inputs
+      const idEl = blk.querySelector('.brand-id');
+      const nameEl = blk.querySelector('.brand-name');
+      const addCcEl = blk.querySelector('.add-cc');
+      const enChk = blk.querySelector('.brand-enabled');
+      const delBtn = blk.querySelector('.remove-brand');
+
+      idEl.oninput = () => {
+        const newId = idEl.value.trim().toLowerCase();
+        if (!newId || newId===brandId) return;
+        brands[newId] = { ...brands[brandId] };
+        delete brands[brandId];
+        renderBrands();
+      };
+      nameEl.oninput = () => { brands[brandId].displayName = nameEl.value; };
+      enChk.onchange   = () => { brands[brandId].enabled = !!enChk.checked; };
+      addCcEl.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          const cc = (addCcEl.value||'').trim().toUpperCase();
+          if (!cc) return;
+          brands[brandId].countries[cc] = { rate: 0 };
+          addCcEl.value = '';
+          renderBrands();
+        }
+      };
+      delBtn.onclick = () => {
+        delete brands[brandId];
+        renderBrands();
+      };
+
+      return blk;
+    }
+
+    function renderBrands(){
+      brandsWrap.innerHTML = '';
+      Object.entries(brands).forEach(([id,b])=>{
+        brandsWrap.appendChild(brandBlock(id,b));
+      });
+    }
+
+    addBrandBtn.onclick = () => {
+      const id = (newBrandId.value||'').trim().toLowerCase();
+      const nm = (newBrandName.value||'').trim();
+      if (!id || !nm) return;
+      if (!brands[id]) brands[id] = { displayName:nm, enabled:true, countries:{} };
+      newBrandId.value = '';
+      newBrandName.value = '';
+      renderBrands();
+    };
+
+    async function loadGiftcards(){
+      brands = {};
+      const snap = await getDocs(collection(db, 'giftcards'));
+      if (snap.size === 0){
+        // Preload once if collection empty
+        brands = JSON.parse(JSON.stringify(PRELOAD));
+        renderBrands();
+        return;
+      }
+      snap.forEach(d=>{
+        brands[d.id] = d.data();
+        if (!brands[d.id].countries) brands[d.id].countries = {};
+        if (brands[d.id].enabled === undefined) brands[d.id].enabled = true;
+      });
+      renderBrands();
+    }
+
+    saveAllBrands.onclick = async () => {
+      brandsMsg.textContent = 'Saving...';
+      try {
+        // save each brand doc
+        const entries = Object.entries(brands);
+        for (const [id, payload] of entries){
+          await setDoc(doc(db, 'giftcards', id), payload, { merge:true });
+        }
+        brandsMsg.textContent = 'Saved ✓';
+        setTimeout(()=> brandsMsg.textContent='', 1200);
+      } catch(e){
+        brandsMsg.textContent = 'Error: ' + (e.message || e.code);
+      }
+    };
+
+    // ---------------- ONLINE WALLET RATES + CRYPTO
+    let usdtNetworks = []; // {network,address}
+
     function renderNetworks(){
-      networksList.innerHTML='';
-      if(!usdtNetworks.length){networksList.innerHTML='<div class="muted">No USDT networks yet.</div>';return;}
-      usdtNetworks.forEach((n,i)=>{
-        const row=document.createElement('div');
-        row.className='flex';
-        row.style.justifyContent='space-between'; row.style.padding='6px 0';
-        row.innerHTML=`<div class="flex"><span class="pill">${n.network}</span><span class="muted" style="margin-left:6px">${n.address}</span></div><button data-i="${i}" class="btn-ghost">Remove</button>`;
-        row.querySelector('button').onclick=()=>{usdtNetworks.splice(i,1);renderNetworks();};
+      networksList.innerHTML = '';
+      if (!usdtNetworks.length){
+        networksList.innerHTML = '<div class="muted">No USDT networks yet.</div>';
+        return;
+      }
+      usdtNetworks.forEach((n, idx)=>{
+        const row = document.createElement('div');
+        row.className = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.padding = '6px 0';
+        row.innerHTML = `
+          <div class="flex"><span class="tag">${n.network}</span><span class="muted" style="margin-left:6px;">${n.address}</span></div>
+          <button data-idx="${idx}" class="btn-ghost">Remove</button>
+        `;
+        row.querySelector('button').onclick = (e)=>{
+          const i = Number(e.currentTarget.getAttribute('data-idx'));
+          usdtNetworks.splice(i,1);
+          renderNetworks();
+        };
         networksList.appendChild(row);
       });
     }
 
-    function renderOW(){
-      owList.innerHTML='';
-      if(!onlineWallets.length){owList.innerHTML='<div class="muted">No wallets yet. Add some (Chime, PayPal, Venmo, Zelle, Cash App, Skrill, Wise…)</div>';return;}
-      const tbl=document.createElement('table');
-      tbl.innerHTML=`<thead><tr><th>Wallet</th><th>Currency</th><th>Rate (₦/unit)</th><th>Status</th><th>Actions</th></tr></thead>`;
-      const tb=document.createElement('tbody');
-      onlineWallets.forEach((w,i)=>{
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${w.name}</td><td>${w.currency}</td><td>${w.rate}</td><td>${w.enabled?'Enabled':'Disabled'}</td>
-          <td class="flex">
-            <button data-i="${i}" class="btn-ghost">${w.enabled?'Disable':'Enable'}</button>
-            <button data-del="${i}" class="btn-ghost" style="background:#fee2e2">Remove</button>
-          </td>`;
-        tr.querySelector('[data-i]').onclick=()=>{onlineWallets[i].enabled=!onlineWallets[i].enabled;renderOW();};
-        tr.querySelector('[data-del]').onclick=()=>{onlineWallets.splice(i,1);renderOW();};
-        tb.appendChild(tr);
-      });
-      tbl.appendChild(tb); owList.appendChild(tbl);
+    addNetwork.onclick = () => {
+      const net  = (newNetName.value||'').trim();
+      const addr = (newNetAddr.value||'').trim();
+      if (!net || !addr) return;
+      usdtNetworks.push({ network:net, address:addr });
+      newNetName.value = '';
+      newNetAddr.value = '';
+      renderNetworks();
+    };
+
+    async function loadWalletsDoc(){
+      const w = await getDoc(doc(db,'wallets','default'));
+      if (w.exists()){
+        const d = w.data();
+
+        // crypto
+        btcAddress.value = d?.btc?.address || '';
+        usdtNetworks = (d?.usdt?.networks || []).slice();
+        renderNetworks();
+
+        // display override
+        displayUsdToNgn.value = d?.displayUsdToNgn || '';
+
+        // online wallet rates
+        const wr = d?.walletRates || {};
+        chimeEnable.checked = !!wr?.chime?.enabled; chimeRate.value = wr?.chime?.rate ?? ''; chimeTag.value = wr?.chime?.tag || '';
+        zelleEnable.checked = !!wr?.zelle?.enabled; zelleRate.value = wr?.zelle?.rate ?? ''; zelleTag.value = wr?.zelle?.tag || '';
+        venmoEnable.checked = !!wr?.venmo?.enabled; venmoRate.value = wr?.venmo?.rate ?? ''; venmoTag.value = wr?.venmo?.tag || '';
+        paypalEnable.checked= !!wr?.paypal?.enabled;paypalRate.value= wr?.paypal?.rate ?? '';paypalTag.value= wr?.paypal?.tag || '';
+      } else {
+        usdtNetworks = [];
+        renderNetworks();
+      }
     }
 
-    addOW.onclick=()=>{
-      const name=(owName.value||'').trim(); const cur=owCurrency.value; const rate=Number(owRate.value||0);
-      if(!name || !rate) return;
-      const idx=onlineWallets.findIndex(x=>x.name.toLowerCase()===name.toLowerCase());
-      const row={name,currency:cur,rate,enabled:true};
-      if(idx>=0) onlineWallets[idx]=row; else onlineWallets.push(row);
-      owName.value=''; owRate.value=''; renderOW();
-    };
-
-    addNetwork.onclick=()=>{ const n=(newNetName.value||'').trim(), a=(newNetAddr.value||'').trim(); if(!n||!a) return; usdtNetworks.push({network:n,address:a}); newNetName.value=''; newNetAddr.value=''; renderNetworks(); };
-
-    function renderGcCountries(){
-      gcCountries.innerHTML='';
-      if(!gcCountryRates.length){gcCountries.innerHTML='<div class="muted">No countries yet.</div>';return;}
-      const tbl=document.createElement('table');
-      tbl.innerHTML=`<thead><tr><th>Country</th><th>Rate (₦/unit)</th><th>Min</th><th>Actions</th></tr></thead>`;
-      const tb=document.createElement('tbody');
-      gcCountryRates.forEach((c,i)=>{
-        const tr=document.createElement('tr');
-        tr.innerHTML=`<td>${c.name} (${c.code})</td><td>${c.rate}</td><td>${c.min||'-'}</td>
-        <td><button data-i="${i}" class="btn-ghost" style="background:#fee2e2">Remove</button></td>`;
-        tr.querySelector('button').onclick=()=>{gcCountryRates.splice(i,1);renderGcCountries();};
-        tb.appendChild(tr);
-      });
-      tbl.appendChild(tb); gcCountries.appendChild(tbl);
-    }
-
-    addCtry.onclick=()=>{
-      const code=newCtry.value; const rate=Number(newRate.value||0); const min=Number(newMin.value||0);
-      if(!code || !rate) return;
-      const i=gcCountryRates.findIndex(x=>x.code===code);
-      const row={code,name:countryName(code),rate,min:min||0};
-      if(i>=0) gcCountryRates[i]=row; else gcCountryRates.push(row);
-      newRate.value=''; newMin.value=''; renderGcCountries();
-    };
-
-    // ----- Auth -----
-    loginBtn.onclick = async ()=>{
-      authMsg.textContent='Signing in...';
-      try{ await signInWithEmailAndPassword(emailEl.value.trim(), passEl.value); authMsg.textContent=''; }
-      catch(e){ authMsg.textContent='Sign in failed: '+(e.message||e.code); }
-    };
-    resetBtn.onclick = async ()=>{
-      const em=(emailEl.value||'').trim(); if(!em){authMsg.textContent='Enter email first.';return;}
-      try{ await sendPasswordResetEmail(em); authMsg.textContent='Reset link sent to '+em; }catch(e){ authMsg.textContent='Reset failed: '+(e.message||e.code); }
-    };
-    logoutBtn.onclick = async ()=>{ await signOut(); location.reload(); };
-
-    onAuthStateChanged(auth, async (user)=>{
-      if(!user){ authBlock.classList.remove('hidden'); adminPanel.classList.add('hidden'); notAdmin.classList.add('hidden'); return; }
-      const a=await getDoc(doc(db,'admins',user.email));
-      if(!a.exists()){ authBlock.classList.add('hidden'); notAdmin.classList.remove('hidden'); adminPanel.classList.add('hidden'); return; }
-      authBlock.classList.add('hidden'); notAdmin.classList.add('hidden'); adminPanel.classList.remove('hidden');
-      await loadRates(); await loadWallets(); await preloadIfEmpty(); await loadAnnouncements();
-    });
-
-    // ----- Loads & Saves -----
-    async function loadRates(){
-      try{ const r=await getDoc(doc(db,'rates','default')); if(r.exists()){const d=r.data(); usdToNgn.value=d.usdToNgn??''; giftcardBase.value=d.giftcardBase??'';} }catch(e){console.warn(e);}
-    }
-    saveRates.onclick = async ()=>{
-      ratesMsg.textContent='Saving...';
+    document.getElementById('saveWalletRates').onclick = async ()=>{
+      walletRatesMsg.textContent = 'Saving...';
       try{
-        await setDoc(doc(db,'rates','default'),{usdToNgn:Number(usdToNgn.value||0),giftcardBase:Number(giftcardBase.value||0)},{merge:true});
-        ratesMsg.textContent='Saved ✓'; setTimeout(()=>ratesMsg.textContent='',1200);
-      }catch(e){ratesMsg.textContent='Error: '+(e.message||e.code);}
-    };
-
-    async function loadWallets(){
-      try{
-        const w=await getDoc(doc(db,'wallets','default'));
-        if(w.exists()){
-          const d=w.data();
-          btcAddress.value=d?.btc?.address||'';
-          const tags=d?.tags||{}; tagChime.value=tags.chime||''; tagZelle.value=tags.zelle||''; tagVenmo.value=tags.venmo||''; tagPaypal.value=tags.paypal||'';
-          usdtNetworks=(d?.usdt?.networks||[]).slice(); renderNetworks();
-          onlineWallets=(d?.onlineWallets||[]).slice(); renderOW();
-        }else{ usdtNetworks=[]; renderNetworks(); onlineWallets=[]; renderOW(); }
-      }catch(e){console.warn(e);}
-    }
-    saveWallets.onclick = async ()=>{
-      walletsMsg.textContent='Saving...';
-      try{
-        const payload={
-          btc:{address:(btcAddress.value||'').trim()},
-          usdt:{networks:usdtNetworks},
-          onlineWallets,
-          tags:{ chime:(tagChime.value||'').trim(), zelle:(tagZelle.value||'').trim(), venmo:(tagVenmo.value||'').trim(), paypal:(tagPaypal.value||'').trim() }
+        const payload = {
+          walletRates: {
+            chime:  { enabled: chimeEnable.checked,  rate: Number(chimeRate.value||0),  tag: (chimeTag.value||'').trim() },
+            zelle:  { enabled: zelleEnable.checked,  rate: Number(zelleRate.value||0),  tag: (zelleTag.value||'').trim() },
+            venmo:  { enabled: venmoEnable.checked,  rate: Number(venmoRate.value||0),  tag: (venmoTag.value||'').trim() },
+            paypal: { enabled: paypalEnable.checked, rate: Number(paypalRate.value||0), tag: (paypalTag.value||'').trim() },
+          }
         };
-        await setDoc(doc(db,'wallets','default'),payload,{merge:true});
-        walletsMsg.textContent='Saved ✓'; setTimeout(()=>walletsMsg.textContent='',1200);
-      }catch(e){walletsMsg.textContent='Error: '+(e.message||e.code);}
+        await setDoc(doc(db,'wallets','default'), payload, { merge:true });
+        walletRatesMsg.textContent = 'Saved ✓';
+        setTimeout(()=> walletRatesMsg.textContent='', 1200);
+      }catch(e){
+        walletRatesMsg.textContent = 'Error: ' + (e.message || e.code);
+      }
     };
 
-    // Giftcards
-    saveGiftcardBtn.onclick = async ()=>{
-      gcMsg.textContent='Saving...';
+    saveWallets.onclick = async ()=>{
+      walletsMsg.textContent = 'Saving...';
       try{
-        const id=(gcId.value||'').trim(); if(!id){gcMsg.textContent='Enter ID.';return;}
-        const payload={ name:(gcName.value||'').trim(), countries:gcCountryRates };
-        const file=gcLogo.files?.[0]||null;
-        await saveGiftcard(id,payload,file);
-        gcMsg.textContent='Saved ✓'; setTimeout(()=>gcMsg.textContent='',1200);
-      }catch(e){gcMsg.textContent='Error: '+(e.message||e.code);}
-    };
-    loadGiftcardBtn.onclick = async ()=>{
-      gcMsg.textContent='Loading...';
-      const id=(gcId.value||'').trim(); if(!id){gcMsg.textContent='Enter ID.';return;}
-      try{
-        const d=await getGiftcard(id);
-        if(!d){gcMsg.textContent='Not found';return;}
-        gcName.value=d.name||id;
-        gcCountryRates=(d.countries||[]).slice(); renderGcCountries();
-        gcMsg.textContent='Loaded ✓'; setTimeout(()=>gcMsg.textContent='',1200);
-      }catch(e){gcMsg.textContent='Error: '+(e.message||e.code);}
-    };
-    deleteGiftcardBtn.onclick = async ()=>{
-      const id=(gcId.value||'').trim(); if(!id) return;
-      if(!confirm('Delete gift card brand '+id+'?')) return;
-      await deleteDoc(doc(db,'giftcards',id));
-      gcName.value=''; gcCountryRates=[]; renderGcCountries(); gcMsg.textContent='Deleted ✓'; setTimeout(()=>gcMsg.textContent='',1200);
+        const payload = {
+          btc:{ address:(btcAddress.value||'').trim() },
+          usdt:{ networks: usdtNetworks },
+          displayUsdToNgn: Number(displayUsdToNgn.value || 0) || null
+        };
+        await setDoc(doc(db,'wallets','default'), payload, { merge:true });
+        walletsMsg.textContent = 'Saved ✓';
+        setTimeout(()=> walletsMsg.textContent='', 1200);
+      }catch(e){
+        walletsMsg.textContent = 'Error: ' + (e.message || e.code);
+      }
     };
 
-    // Announcements
+    // ---------------- ANNOUNCEMENTS
     async function loadAnnouncements(){
-      try{ const a=await getDoc(doc(db,'announcements','default')); if(a.exists()){ const d=a.data(); annTextarea.value=(Array.isArray(d.items)?d.items:[]).join('\n'); } }catch(e){console.warn(e);}
+      const a = await getDoc(doc(db,'announcements','default'));
+      if (a.exists()){
+        const d = a.data();
+        annTextarea.value = Array.isArray(d.items) ? d.items.join('\n') : '';
+      }
     }
+
     saveAnn.onclick = async ()=>{
-      annMsg.textContent='Saving...';
+      annMsg.textContent = 'Saving...';
       try{
-        const items=(annTextarea.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
-        await setDoc(doc(db,'announcements','default'),{items},{merge:true});
-        annMsg.textContent='Saved ✓'; setTimeout(()=>annMsg.textContent='',1200);
-      }catch(e){annMsg.textContent='Error: '+(e.message||e.code);}
+        const items = (annTextarea.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+        await setDoc(doc(db,'announcements','default'), { items }, { merge:true });
+        annMsg.textContent = 'Saved ✓';
+        setTimeout(()=> annMsg.textContent='', 1200);
+      }catch(e){
+        annMsg.textContent = 'Error: ' + (e.message || e.code);
+      }
     };
 
-    // Upload proof to a request
-    uploadProof.onclick = async ()=>{
-      proofMsg.textContent='Uploading...';
+    // ---------------- PROOF UPLOADS
+    uploadProofBtn.onclick = async ()=>{
+      proofMsg.textContent = 'Uploading...';
       try{
-        const rid=(proofReqId.value||'').trim(); const file=proofFile.files?.[0]; if(!rid||!file){proofMsg.textContent='Enter requestId and choose an image.';return;}
-        const r=storageRef(storage,`requests/${rid}/admin-proof-${Date.now()}`);
-        await uploadBytes(r,file); const url=await getDownloadURL(r);
-        await setDoc(doc(db,'requests',rid),{adminProofUrl:url},{merge:true});
-        proofMsg.textContent='Uploaded ✓'; setTimeout(()=>proofMsg.textContent='',1400);
-      }catch(e){proofMsg.textContent='Error: '+(e.message||e.code);}
+        const f = proofFile.files?.[0];
+        if (!f){ proofMsg.textContent='Choose an image first.'; return; }
+        const key = `proofs/${Date.now()}-${f.name}`;
+        const ref = storageRef(storage, key);
+        await uploadBytes(ref, f);
+        const url = await getDownloadURL(ref);
+        await addDoc(collection(db,'proofs'), {
+          url, note:(proofNote.value||''), by: auth.currentUser?.email || null, createdAt: serverTimestamp()
+        });
+        proofFile.value = ''; proofNote.value='';
+        proofMsg.textContent = 'Uploaded ✓';
+        setTimeout(()=> proofMsg.textContent='', 1200);
+      }catch(e){
+        proofMsg.textContent = 'Error: ' + (e.message || e.code);
+      }
     };
-
-    // Preload some brands if empty (one-time helper)
-    async function preloadIfEmpty(){
-      const snap=await getDocs(collection(db,'giftcards'));
-      if(!snap.empty) return;
-      const presets=[
-        {id:'amazon', name:'Amazon'},
-        {id:'itunes', name:'Apple / iTunes'},
-        {id:'steam', name:'Steam'},
-        {id:'googleplay', name:'Google Play'},
-        {id:'razergold', name:'Razer Gold'},
-        {id:'walmart', name:'Walmart'},
-        {id:'visa', name:'Visa Vanilla'},
-        {id:'amex', name:'American Express'},
-        {id:'xbox', name:'Xbox'}
-      ];
-      for(const p of presets){
-        await setDoc(doc(db,'giftcards',p.id),{
-          name:p.name,
-          countries:[
-            {code:'US',name:'United States',rate:1500,min:5},
-            {code:'UK',name:'United Kingdom',rate:1900,min:5},
-            {code:'EU',name:'Eurozone',rate:1600,min:5}
-          ]
-        },{merge:true});
-      }
-      // Preload some online wallets list too (if none)
-      const w=await getDoc(doc(db,'wallets','default'));
-      if(!w.exists() || !(w.data().onlineWallets||[]).length){
-        await setDoc(doc(db,'wallets','default'),{
-          onlineWallets:[
-            {name:'Chime', currency:'USD', rate:1500, enabled:true},
-            {name:'PayPal', currency:'USD', rate:1450, enabled:true},
-            {name:'Zelle', currency:'USD', rate:1500, enabled:true},
-            {name:'Venmo', currency:'USD', rate:1480, enabled:true},
-            {name:'Cash App', currency:'USD', rate:1490, enabled:true}
-          ]
-        },{merge:true});
-      }
-    }
   </script>
 </body>
 </html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sell Crypto — Toolspay</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .container{max-width:980px;margin:0 auto;padding:16px;}
+    .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:16px;margin:12px 0;}
+    label{display:block;font-weight:600;margin:6px 0;}
+    select,input{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;}
+    .muted{color:#6b7280;font-size:12px;}
+    .addr{font-family:monospace; word-break: break-all;}
+    img{max-width:220px; border:1px solid #eee; border-radius:12px;}
+  </style>
+</head>
+<body>
+  <header style="padding:16px;border-bottom:1px solid #eee;background:#0b1220;color:#fff;">
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
+      <h2>Sell Crypto (BTC / USDT)</h2>
+      <a href="customer-dashboard.html" class="muted" style="color:#cbd5e1;">← Back</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <label>Choose Asset</label>
+      <select id="assetSel">
+        <option>BTC</option>
+        <option>USDT</option>
+      </select>
+
+      <div id="usdtWrap" class="card" style="margin-top:12px; display:none;">
+        <label>USDT Network</label>
+        <select id="netSel"></select>
+      </div>
+
+      <div class="card" style="background:#fafafa;">
+        <h3>Send to this address</h3>
+        <div id="addr" class="addr">Loading...</div>
+        <div style="margin-top:10px;">
+          <img id="qr" alt="QR will appear here"/>
+        </div>
+        <div class="muted" style="margin-top:8px;">Send your crypto, then come to live chat and send proof (TXID / screenshot). Admin verifies and pays you in NGN.</div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { auth, db, onAuthStateChanged, doc, getDoc } from './firebase-auth.js';
+
+    const assetSel = document.getElementById('assetSel');
+    const netSel = document.getElementById('netSel');
+    const usdtWrap = document.getElementById('usdtWrap');
+    const addrEl = document.getElementById('addr');
+    const qrEl = document.getElementById('qr');
+
+    let wallets = null;
+
+    function setQR(data){
+      const url = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(data)}`;
+      qrEl.src = url;
+    }
+
+    async function render(){
+      if(!wallets){ addrEl.textContent='Wallets not set'; qrEl.removeAttribute('src'); return; }
+      const asset = assetSel.value;
+      if(asset==='BTC'){
+        usdtWrap.style.display='none';
+        const a = wallets?.btc?.address || '';
+        addrEl.textContent = a || 'No BTC address set.';
+        if(a) setQR(a); else qrEl.removeAttribute('src');
+      } else {
+        usdtWrap.style.display='';
+        const nets = (wallets?.usdt?.networks||[]);
+        netSel.innerHTML = nets.map(n=>`<option value="${n.address}">${n.network}</option>`).join('');
+        const a = nets.length? nets[0].address : '';
+        addrEl.textContent = a || 'No USDT networks set.';
+        if(a) setQR(a); else qrEl.removeAttribute('src');
+      }
+    }
+
+    assetSel.onchange = render;
+    netSel.onchange = ()=>{ addrEl.textContent = netSel.value; setQR(netSel.value); };
+
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user){ location.href='index.html'; return; }
+      const w = await getDoc(doc(db,'wallets','default'));
+      wallets = w.exists()? w.data(): null;
+      await render();
+    });
+  </script>
+
+  <!-- Tawk chat is global or add it here if needed -->
+</body>
+</html>

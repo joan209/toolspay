@@ -1,85 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sell Gift Card</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sell Gift Card - Toolspay</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <h1>Sell Your Gift Card</h1>
 
-  <!-- Loader -->
-  <div id="loader" class="loader">Loading...</div>
+  <form id="giftCardForm">
+    <label for="cardName">Gift Card Name:</label>
+    <input type="text" id="cardName" name="cardName" required />
 
-  <div class="container" style="display:none;">
-    <h1>Sell Your Gift Card</h1>
+    <label for="usdAmount">USD Value:</label>
+    <input type="number" id="usdAmount" name="usdAmount" required />
 
-    <!-- Gift card selection -->
-    <div id="giftcard-list" class="giftcard-grid"></div>
+    <label for="uploadFile">Upload Gift Card Image:</label>
+    <input type="file" id="uploadFile" name="uploadFile" accept="image/*" required />
 
-    <!-- Form -->
-    <form id="sellForm">
-      <input type="number" id="amount" placeholder="Enter amount in USD" required>
-      
-      <select id="country" required>
-        <option value="">Select country</option>
-        <option value="US">United States</option>
-        <option value="UK">United Kingdom</option>
-        <option value="NG">Nigeria</option>
-        <!-- Add more if needed -->
-      </select>
+    <button type="submit">Submit</button>
+  </form>
 
-      <input type="file" id="uploadProof" accept="image/*">
-      
-      <button type="submit">Submit Request</button>
-    </form>
-  </div>
-
-  <script type="module" src="sell.js"></script>
   <script type="module">
-import { auth, createTradeRequest, onAuthStateChanged } from './firebase-auth.js';
+    import { auth, onAuthStateChanged, createTradeRequest } from "./firebase-auth.js";
 
-const form = document.getElementById('sellGiftCardForm');
+    const giftCardForm = document.getElementById("giftCardForm");
 
-onAuthStateChanged(user => {
-  if (!user) {
-    window.location.href = 'login.html';
-  }
-});
+    let currentUser = null;
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const service = document.getElementById('service').value;
-  const countryCode = document.getElementById('countryCode').value;
-  const usd = document.getElementById('usd').value;
-  const bankDetails = document.getElementById('bankDetails').value;
-  const uploadFile = document.getElementById('uploadFile').files[0];
-
-  const user = auth.currentUser;
-  if (!user) {
-    alert('You must be logged in to submit a request.');
-    return;
-  }
-
-  try {
-    await createTradeRequest({
-      uid: user.uid,
-      email: user.email,
-      service,
-      countryCode,
-      usd,
-      bankDetails,
-      uploadFile
+    // Check login status
+    onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      } else {
+        currentUser = user;
+      }
     });
 
-    // Redirect to dashboard with success flag
-    window.location.href = 'dashboard.html?success=1';
-  } catch (error) {
-    console.error(error);
-    alert('Error submitting request. Please try again.');
-  }
-});
-</script>
+    // Form submission
+    giftCardForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const cardName = document.getElementById("cardName").value;
+      const usdAmount = document.getElementById("usdAmount").value;
+      const uploadFile = document.getElementById("uploadFile").files[0];
+
+      if (!currentUser) {
+        alert("You must be logged in to sell a gift card.");
+        return;
+      }
+
+      try {
+        await createTradeRequest({
+          uid: currentUser.uid,
+          email: currentUser.email,
+          name: currentUser.displayName || "",
+          service: "giftcard",
+          cardId: cardName,
+          usd: usdAmount,
+          uploadFile: uploadFile
+        });
+
+        // Redirect to dashboard with success message
+        window.location.href = "dashboard.html?success=giftcard";
+      } catch (error) {
+        alert("Error submitting gift card: " + error.message);
+      }
+    });
+  </script>
 </body>
 </html>

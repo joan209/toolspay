@@ -1,53 +1,116 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Dashboard - Toolspay</title>
-  <link rel="stylesheet" href="style.css" />
-  <style>
-    .success-message {
-      background-color: #4CAF50;
-      color: white;
-      padding: 12px;
-      text-align: center;
-      border-radius: 6px;
-      margin-bottom: 15px;
-      display: none;
-    }
-  </style>
 </head>
 <body>
-  <div id="successMsg" class="success-message"></div>
-
   <h1>Welcome to Toolspay</h1>
-  <p>This is your dashboard.</p>
-  <a href="sell-giftcard.html">Sell Gift Card</a>
+  <button id="logoutBtn">Logout</button>
+
+  <h2>Payment Method Setup</h2>
+  <form id="paymentForm">
+    <label>Select Payment Method:</label>
+    <select id="paymentMethod" required>
+      <option value="">--Select--</option>
+      <option value="bank">Bank Transfer</option>
+      <option value="btc">Bitcoin (BTC)</option>
+      <option value="usdt">USDT</option>
+      <option value="wallet">Online Digital Wallet</option>
+    </select>
+
+    <div id="bankFields" style="display:none;">
+      <label>Bank Name:</label>
+      <input type="text" id="bankName">
+      <label>Account Number:</label>
+      <input type="text" id="accountNumber">
+      <label>Account Holder:</label>
+      <input type="text" id="accountHolder">
+    </div>
+
+    <div id="cryptoFields" style="display:none;">
+      <label>Wallet Address:</label>
+      <input type="text" id="walletAddress">
+      <label>Chain Type (e.g., ERC20, TRC20):</label>
+      <input type="text" id="chainType">
+    </div>
+
+    <div id="onlineWalletFields" style="display:none;">
+      <label>Wallet Email or ID:</label>
+      <input type="text" id="walletEmail">
+    </div>
+
+    <button type="submit">Save Payment Method</button>
+  </form>
+
+  <p id="statusMsg"></p>
 
   <script type="module">
-    import { auth, onAuthStateChanged, signOut } from "./firebase-auth.js";
+    import { 
+      auth, signOut, onAuthStateChanged, db, 
+      doc, setDoc, getDoc 
+    } from './firebase-auth.js';
 
-    // Check auth state
-    onAuthStateChanged((user) => {
+    const logoutBtn = document.getElementById('logoutBtn');
+    logoutBtn.addEventListener('click', () => signOut(auth));
+
+    const paymentMethodSelect = document.getElementById('paymentMethod');
+    const bankFields = document.getElementById('bankFields');
+    const cryptoFields = document.getElementById('cryptoFields');
+    const onlineWalletFields = document.getElementById('onlineWalletFields');
+    const paymentForm = document.getElementById('paymentForm');
+    const statusMsg = document.getElementById('statusMsg');
+
+    function showFields(method) {
+      bankFields.style.display = method === 'bank' ? 'block' : 'none';
+      cryptoFields.style.display = (method === 'btc' || method === 'usdt') ? 'block' : 'none';
+      onlineWalletFields.style.display = method === 'wallet' ? 'block' : 'none';
+    }
+
+    paymentMethodSelect.addEventListener('change', (e) => {
+      showFields(e.target.value);
+    });
+
+    onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        window.location.href = "login.html";
+        window.location.href = 'login.html';
+      } else {
+        // Load saved payment details
+        const docRef = doc(db, 'paymentMethods', user.uid);
+        const snap = await getDoc(docRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          paymentMethodSelect.value = data.method || '';
+          showFields(data.method || '');
+          document.getElementById('bankName').value = data.bankName || '';
+          document.getElementById('accountNumber').value = data.accountNumber || '';
+          document.getElementById('accountHolder').value = data.accountHolder || '';
+          document.getElementById('walletAddress').value = data.walletAddress || '';
+          document.getElementById('chainType').value = data.chainType || '';
+          document.getElementById('walletEmail').value = data.walletEmail || '';
+        }
       }
     });
 
-    // Success message from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const success = urlParams.get("success");
-    const successMsg = document.getElementById("successMsg");
+    paymentForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) return;
 
-    if (success === "giftcard") {
-      successMsg.innerText = "Gift card submitted successfully!";
-      successMsg.style.display = "block";
-      setTimeout(() => {
-        successMsg.style.display = "none";
-        // Remove ?success=giftcard from URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }, 4000);
-    }
+      const data = {
+        method: paymentMethodSelect.value,
+        bankName: document.getElementById('bankName').value,
+        accountNumber: document.getElementById('accountNumber').value,
+        accountHolder: document.getElementById('accountHolder').value,
+        walletAddress: document.getElementById('walletAddress').value,
+        chainType: document.getElementById('chainType').value,
+        walletEmail: document.getElementById('walletEmail').value
+      };
+
+      await setDoc(doc(db, 'paymentMethods', user.uid), data, { merge: true });
+      statusMsg.textContent = 'Payment method saved successfully!';
+      statusMsg.style.color = 'green';
+    });
   </script>
 </body>
 </html>

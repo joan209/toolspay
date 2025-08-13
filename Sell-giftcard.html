@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sell Gift Card — Toolspay</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .container{max-width:980px;margin:0 auto;padding:16px;}
+    .card{background:#fff;border:1px solid #eee;border-radius:12px;padding:16px;margin:12px 0;}
+    label{display:block;font-weight:600;margin:6px 0;}
+    input,select,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px;}
+    .btn{padding:12px 14px;border-radius:10px;border:0;background:#0ea5e9;color:#fff;font-weight:700;cursor:pointer;}
+    .muted{color:#6b7280;font-size:12px;}
+  </style>
+</head>
+<body>
+  <header style="padding:16px;border-bottom:1px solid #eee;background:#0b1220;color:#fff;">
+    <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
+      <h2>Sell Gift Card</h2>
+      <a href="customer-dashboard.html" class="muted" style="color:#cbd5e1;">← Back</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <div class="muted" id="rateLine">Loading available cards...</div>
+
+      <label>Card Type</label>
+      <select id="cardSel"></select>
+
+      <label>Country</label>
+      <select id="countrySel"></select>
+
+      <label>Amount (USD)</label>
+      <input id="amountUsd" type="number" placeholder="Enter $ amount"/>
+
+      <div class="muted" id="calcLine" style="margin:6px 0;">Rate: —</div>
+
+      <label>Upload images (card, receipt, etc.) — multiple allowed</label>
+      <input id="files" type="file" accept="image/*" multiple/>
+
+      <label>Notes (optional)</label>
+      <textarea id="notes" rows="3" placeholder="Extra details"></textarea>
+
+      <div style="margin-top:10px;">
+        <button id="submitBtn" class="btn">Submit Gift Card</button>
+        <span id="msg" class="muted" style="margin-left:8px;"></span>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import {
+      auth, db, storage, onAuthStateChanged,
+      collection, getDocs, doc, setDoc, addDoc, updateDoc,
+    } from './firebase-auth.js';
+    import { ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+    const cardSel = document.getElementById('cardSel');
+    const countrySel = document.getElementById('countrySel');
+    const amountUsd = document.getElementById('amountUsd');
+    const calcLine = document.getElementById('calcLine');
+    const rateLine = document.getElementById('rateLine');
+    const filesEl = document.getElementById('files');
+    const notesEl = document.getElementById('notes');
+    const submitBtn = document.getElementById('submitBtn');
+    const msg = document.getElementById('msg');
+
+    let catalog = []; // [{card,country,rate,enabled}]
+    let selectedRate = null;
+
+    function unique(arr, key){
+      return [...new Map(arr.map(x=>[x[key], x])).values()].map(x=>x[key]);
+    }
+
+    function refreshRate(){
+      const card = cardSel.value; const country = countrySel.value;
+      selectedRate = null;
+      const item = catalog.find(x=>x.card===card && x.country===country && x.enabled);
+      if(item){ selectedRate = item.rate||0; }
+      calcLine.textContent = selectedRate ? `Rate: ₦${selectedRate} per $1` : 'Rate: —';
+      if(selectedRate && Number(amountUsd.value||0)>0){
+        const pay = Number(amountUsd.value)*Number(selectedRate);
+        calcLine.textContent += ` | You’ll receive ~ ₦${pay.toLocaleString()}`;
+      }
+    }
+
+    amountUsd.oninput = refreshRate;
+    cardSel.onchange = refreshRate;
+    countrySel.onchange = refreshRate;
+
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user){ location.href='index.html'; return; }
+      // load giftcardCatalog
+      rateLine.textContent = 'Loading available cards...';
+      const snap = await getDocs(collection(db,'giftcardCatalog'));
+      catalog = [];
+      snap.forEach(d=>{ const v=d.data(); if(v.enabled) catalog.push(v); });
+
+      const cards = unique(catalog,'card').sort();
+      const countries = unique(catalog,'country').sort();
+
+      cardSel.innerHTML = cards.map(c=>`<option>${c}</option>`).join('');
+      countrySel.innerHTML = countries.map(c=>`<option>${c}</option>`).join('');
+      if(!cards.length){ rateLine.textContent='No cards configured yet.'; } else { rateLine.textContent=''; }
+      refreshRate();
+    });
+
+    submitBtn.onclick = async ()=>{
+      msg.textContent='Submitting...';
+      const user = auth.currentUser;
+      if(!user){ msg.textContent='Not signed in.'; return; }
+
+      const card=cardSel.value, country=countrySel.value, usd=Number(amountUsd.value||0);
+      if(!card||!country||!usd||!selectedRate){ msg.textContent='Fill card, country, amount. Make sure a rate exists.'; return; }
+
+      try{
+        const reqRef = await addDoc(collection(db,'requests'),{
+          type:'giftcard',
+          uid:user.uid, email:user.email,
+          card, country, usd, rate:selectedRate,
+          status:'pending', notes: (notesEl.value||'').trim(),
+          createdAt: new Date()
+        });
+
+        // upload multiple images
+        const files = Array.from(filesEl.files||[]);
+        let urls=[];
+        for(const f of files){
+          const r = storageRef(storage, `requests/${reqRef.id}/uploads/${Date.now()}-${f.name}`);
+          await uploadBytes(r, f);
+          urls.push(await getDownloadURL(r));
+        }
+        if(urls.length){
+          await updateDoc(doc(db,'requests', reqRef.id), { uploadUrls: urls });
+        }
+
+        msg.textContent='Submitted ✓ Redirecting...';
+        setTimeout(()=>location.href='customer-dashboard.html',900);
+      }catch(e){
+        msg.textContent='Error: '+(e.message||e.code);
+      }
+    };
+  </script>
+</body>
+</html>

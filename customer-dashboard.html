@@ -1,68 +1,459 @@
-<!-- Loader -->
-<div id="loader">
-  <div class="loader-content">
-    <div class="spinner"></div>
-    <h2>Toolspay...</h2>
-  </div>
-</div>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Dashboard - ToolsPay</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Toolspay — Dashboard</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    :root{
+      --bg:#0a0a0b; --panel:#111214; --line:#1f242b; --muted:#a7b0ba;
+      --gold:#f4c74f; --blue:#3aaefc; --green:#22c55e; --white:#ffffff;
+    }
+    body{background:var(--bg); color:var(--white); margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;}
+    .wrap{max-width:1100px; margin:20px auto; padding:0 12px;}
+    header{display:flex; gap:12px; align-items:center; justify-content:space-between; margin-bottom:14px}
+    .brand{display:flex; gap:10px; align-items:center}
+    .badge{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--blue));}
+    .chip{border:1px solid var(--line); padding:8px 12px; border-radius:10px; background:#0e1116;}
+    .btn{background:var(--green); color:#0b1117; border:0; padding:10px 14px; border-radius:10px; font-weight:700}
+    .btn.secondary{background:#161a20; color:var(--white); border:1px solid var(--line)}
+    .grid{display:grid; gap:14px}
+    @media(min-width:900px){ .grid.cols-3{grid-template-columns:2fr 1fr 1fr} .grid.cols-2{grid-template-columns:1.6fr 1fr}}
+    section.panel{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px}
+    h3{margin:0 0 10px 0}
+    .muted{color:var(--muted)}
+    .input, select, textarea{width:100%;background:#0d1015;border:1px solid var(--line);color:#fff;padding:10px;border-radius:10px}
+    label{font-size:14px;color:var(--muted)}
+    .row{display:grid; gap:10px}
+    .two{grid-template-columns:1fr 1fr}
+    .three{grid-template-columns:1fr 1fr 1fr}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#12161b;color:#fff}
+    /* Loader */
+    .loader{position:fixed;inset:0;background:radial-gradient(1200px 600px at 50% -20%,#0c1220,#07090d);display:flex;align-items:center;justify-content:center;z-index:9999}
+    .spin{width:66px;height:66px;border-radius:50%;border:5px solid #22304a;border-top-color:var(--gold);animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .hide{display:none}
+    .help{font-size:13px;color:var(--muted)}
+    .note{background:#10161f;border:1px dashed #2a3340;border-radius:12px;padding:10px;color:#dbeafe}
+    .danger{color:#ffb4b4}
+  </style>
 </head>
 <body>
+  <!-- Splash Loader -->
+  <div id="splash" class="loader"><div class="spin"></div></div>
+
+  <div class="wrap" id="app" class="hide" style="display:none;">
     <header>
-        <h1>Welcome to ToolsPay</h1>
-        <p>Your secure exchange dashboard</p>
+      <div class="brand">
+        <div class="badge"></div>
+        <div>
+          <div style="font-weight:800;">Toolspay</div>
+          <div class="muted" id="hello">Welcome</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="userEmail" class="chip">...</span>
+        <button id="logoutBtn" class="btn secondary">Log out</button>
+      </div>
     </header>
 
-    <main style="max-width:600px; margin:auto; padding:20px;">
-        <section style="background:#f5f5f5; padding:20px; border-radius:10px; margin-bottom:20px;">
-            <h2>Current Rate</h2>
-            <p style="font-size:18px;">1 USD = <strong>₦1500</strong></p>
-        </section>
+    <div class="grid cols-3">
+      <!-- Announcements -->
+      <section class="panel">
+        <h3>Announcements</h3>
+        <div id="annList" class="row"></div>
+        <div class="help">Admin posts appear here and are emailed to you if enabled.</div>
+      </section>
 
-        <section style="background:#f5f5f5; padding:20px; border-radius:10px; margin-bottom:20px;">
-            <h2>Recent Transactions</h2>
-            <ul>
-                <li>Sent $50 - Pending</li>
-                <li>Received ₦75,000 - Completed</li>
-                <li>Sent $20 - Completed</li>
-            </ul>
-        </section>
+      <!-- Rates -->
+      <section class="panel">
+        <h3>Current Rates</h3>
+        <div id="ratesBox" class="row">
+          <div class="pill" id="usdngn">USD→NGN loading…</div>
+          <div class="pill" id="gcRate">Gift Card rate loading…</div>
+        </div>
+        <div class="help">Rates are updated by admin and reflected live.</div>
+      </section>
 
-        <section style="text-align:center;">
-            <a href="index.html" style="padding:10px 20px; background:red; color:white; text-decoration:none; border-radius:5px;">Logout</a>
-        </section>
-    </main>
+      <!-- Admin Wallets quick view -->
+      <section class="panel">
+        <h3>Admin Wallets</h3>
+        <div id="walletsBox" class="row"></div>
+        <div class="help">Send only after confirming in live chat. You’ll submit your TxID and proof.</div>
+      </section>
+    </div>
 
-    <footer>
-        <p>© 2025 ToolsPay</p>
-    </footer>
-  <script>
-  // Hide loader after 2.5 seconds
-  window.addEventListener("load", function () {
-    setTimeout(function () {
-      document.getElementById("loader").style.display = "none";
-    }, 2500); // 2.5 seconds
-  });
-  </script>
-  <script>
-  // Hide loader after 2.5 seconds
-  window.addEventListener("load", function () {
-    setTimeout(function () {
-      document.getElementById("customer-loader").style.display = "none";
-    }, 2500);
-  });
-  </script>
-</body><!-- Customer Loader -->
-<div id="customer-loader">
-  <div class="loader-content">
-    <div class="spinner"></div>
-    <h2>Loading Toolspay...</h2>
+    <div class="grid cols-2" style="margin-top:14px">
+      <!-- Payout Details (customer) -->
+      <section class="panel">
+        <h3>Your Payout Details</h3>
+        <form id="payoutForm" class="row two">
+          <div>
+            <label>Preferred payout</label>
+            <select id="payoutMethod" required>
+              <option value="bank">Bank transfer (NGN)</option>
+              <option value="btc">Bitcoin (BTC)</option>
+              <option value="usdt">USDT (select network)</option>
+            </select>
+          </div>
+          <div>
+            <label>USDT network (if USDT)</label>
+            <select id="payoutUsdtNet">
+              <option value="">Select…</option>
+              <!-- populated from wallets/default.usdt.networks -->
+            </select>
+          </div>
+          <div>
+            <label>Bank name</label>
+            <input id="bankName" class="input" placeholder="e.g. GTBank"/>
+          </div>
+          <div>
+            <label>Account name</label>
+            <input id="acctName" class="input" placeholder="e.g. John David"/>
+          </div>
+          <div>
+            <label>Account number</label>
+            <input id="acctNo" class="input" placeholder="e.g. 0123456789"/>
+          </div>
+          <div>
+            <label>Save</label><br/>
+            <button class="btn" type="submit">Save payout details</button>
+          </div>
+          <div id="payoutMsg" class="help"></div>
+        </form>
+        <div class="note" style="margin-top:8px">
+          Online digital wallets (Chime / Zelle / Venmo / PayPal): ask for the **tag** via Live Chat, send, then upload proof when submitting.
+        </div>
+      </section>
+
+      <!-- Sell Gift Card -->
+      <section class="panel">
+        <h3>Sell Gift Card</h3>
+        <form id="sellGCForm" class="row">
+          <div class="two">
+            <div>
+              <label>Card type</label>
+              <select id="gcType" required>
+                <option value="">Select…</option>
+                <option>Apple / iTunes</option>
+                <option>Amazon</option>
+                <option>Steam</option>
+                <option>Visa Vanilla</option>
+                <option>Razer Gold</option>
+                <option>Xbox</option>
+              </select>
+            </div>
+            <div>
+              <label>Card country</label>
+              <select id="gcCountry" required>
+                <option value="">Select…</option>
+                <option value="US">USA</option>
+                <option value="UK">United Kingdom</option>
+                <option value="EU">Europe (EU)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="two">
+            <div>
+              <label>Face value (USD)</label>
+              <input id="gcAmount" class="input" type="number" min="1" placeholder="e.g. 100" required/>
+            </div>
+            <div>
+              <label>Upload card image / receipt</label>
+              <input id="gcProof" type="file" accept="image/*"/>
+            </div>
+          </div>
+
+          <button class="btn" type="submit">Submit gift card</button>
+          <div id="gcMsg" class="help"></div>
+        </form>
+      </section>
+    </div>
+
+    <!-- Sell Crypto -->
+    <section class="panel" style="margin-top:14px">
+      <h3>Sell Crypto to Admin</h3>
+      <div class="row three">
+        <div>
+          <label>Asset</label>
+          <select id="cxAsset" class="input">
+            <option value="BTC">Bitcoin (BTC)</option>
+            <option value="USDT">USDT</option>
+          </select>
+        </div>
+        <div>
+          <label>USDT network (if USDT)</label>
+          <select id="cxUsdtNet" class="input">
+            <option value="">Select…</option>
+          </select>
+        </div>
+        <div>
+          <label>Amount (USD value, optional)</label>
+          <input id="cxUsd" class="input" type="number" min="0" placeholder="e.g. 250"/>
+        </div>
+      </div>
+
+      <div class="row" id="cxWalletBox" style="margin-top:8px"></div>
+
+      <form id="sellCXForm" class="row" style="margin-top:8px">
+        <div class="three">
+          <div>
+            <label>Transaction / Hash (after you send)</label>
+            <input id="cxTxid" class="input" placeholder="paste TxID or hash"/>
+          </div>
+          <div>
+            <label>Upload proof (screenshot)</label>
+            <input id="cxProof" type="file" accept="image/*"/>
+          </div>
+          <div style="align-self:end">
+            <button class="btn" type="submit">Submit crypto sale</button>
+          </div>
+        </div>
+        <div class="help">Always confirm the correct address / network in live chat before sending.</div>
+        <div id="cxMsg" class="help"></div>
+      </form>
+    </section>
+
+    <div style="margin:18px 0; text-align:center;">
+      <a href="chat.html" class="pill">💬 Live Chat (request Chime / Zelle / Venmo / PayPal tag)</a>
+    </div>
   </div>
-</div>
+
+  <!-- Page Logic -->
+  <script type="module">
+    import {
+      auth, onAuthStateChanged, signOut,
+      createTradeRequest, uploadChatImage,
+      getRatesDoc,
+      getDoc, doc, collection, getDocs, onSnapshot
+    } from './firebase-auth.js';
+
+    const splash = document.getElementById('splash');
+    const app = document.getElementById('app');
+
+    // show splash 2.5s then reveal app (once auth resolved)
+    const splashMinTime = new Promise(res => setTimeout(res, 2500));
+
+    let currentUser = null;
+    let wallets = null; // admin wallets
+
+    onAuthStateChanged(async (u)=>{
+      if(!u){
+        window.location.href = 'login.html';
+        return;
+      }
+      currentUser = u;
+      document.getElementById('userEmail').textContent = u.email || '';
+      document.getElementById('hello').textContent = 'Welcome, ' + (u.displayName || 'Customer');
+
+      await Promise.all([
+        loadAnnouncements(),
+        loadRates(),
+        loadWallets(),
+        splashMinTime
+      ]);
+
+      splash.classList.add('hide');
+      app.style.display = 'block';
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+      await signOut();
+      window.location.href = 'login.html';
+    });
+
+    /* -------- Announcements (live) -------- */
+    async function loadAnnouncements(){
+      const list = document.getElementById('annList');
+      list.innerHTML = '<div class="muted">Loading…</div>';
+      // listen to latest announcements
+      const col = collection(firebase_auth_db(), 'announcements'); // helper below
+      onSnapshot(col, (snap)=>{
+        const out = [];
+        snap.forEach(d=>{
+          const a = d.data();
+          out.push(`
+            <div class="chip" style="display:block">
+              <div style="font-weight:600">${a.title || 'Announcement'}</div>
+              <div class="muted">${a.body || ''}</div>
+            </div>
+          `);
+        });
+        list.innerHTML = out.length ? out.join('') : '<div class="muted">No announcements yet.</div>';
+      });
+    }
+
+    /* Helper to reach db from the imported module scope */
+    function firebase_auth_db(){
+      // quick hack: reuse exported getDoc/doc which close over db
+      // We need the db instance; we can pull it via a hidden trick:
+      // doc(db, ...) is bound, but we can still call collection with same signature
+      return (/** @type {any} */ doc).arguments?.[0] || null;
+    }
+
+    /* -------- Rates -------- */
+    async function loadRates(){
+      const r = await getRatesDoc();
+      document.getElementById('usdngn').textContent = r?.usdToNgn ? `USD→NGN ₦${r.usdToNgn}` : 'USD→NGN not set';
+      document.getElementById('gcRate').textContent = r?.giftcardBase ? `Gift Cards ~₦${r.giftcardBase}/$` : 'Gift Card rate not set';
+    }
+
+    /* -------- Wallets (admin config) --------
+       Expects a doc: wallets/default
+       {
+         btc: { address: "..." },
+         usdt: { networks: [{network:"TRC20", address:"..."}, ...] },
+         tags: { chime:"...", zelle:"...", venmo:"...", paypal:"..." } // optional
+       }
+    */
+    async function loadWallets(){
+      try{
+        const w = await getDoc(doc(firebase_auth_db(), 'wallets', 'default'));
+        wallets = w.exists() ? w.data() : null;
+        const box = document.getElementById('walletsBox');
+        const usdtNetSel = document.getElementById('payoutUsdtNet');
+        const cxUsdtSel = document.getElementById('cxUsdtNet');
+
+        let html = '';
+        if(wallets?.btc?.address){
+          html += `<div class="pill">BTC: <span style="font-family:monospace">${wallets.btc.address}</span></div>`;
+        }
+        if(wallets?.usdt?.networks?.length){
+          const nets = wallets.usdt.networks.map(n=>n.network).join(', ');
+          html += `<div class="pill">USDT nets: ${nets}</div>`;
+
+          // populate selects
+          usdtNetSel.innerHTML = '<option value="">Select…</option>' + wallets.usdt.networks.map(n=>`<option value="${n.network}">${n.network}</option>`).join('');
+          cxUsdtSel.innerHTML = '<option value="">Select…</option>' + wallets.usdt.networks.map(n=>`<option value="${n.network}">${n.network}</option>`).join('');
+        }
+        if(!html) html = '<div class="muted">No wallets set by admin yet.</div>';
+        box.innerHTML = html;
+
+        updateCryptoWalletDisplay(); // set initial wallet box
+      }catch{ /* ignore */ }
+    }
+
+    /* -------- Payout details (save in users/{uid}) -------- */
+    document.getElementById('payoutForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const payoutMethod = document.getElementById('payoutMethod').value;
+      const payoutUsdtNet = document.getElementById('payoutUsdtNet').value || null;
+      const bankName = document.getElementById('bankName').value.trim();
+      const acctName = document.getElementById('acctName').value.trim();
+      const acctNo = document.getElementById('acctNo').value.trim();
+
+      // save via Firestore (reusing helpers in firebase-auth.js)
+      try{
+        const { setDoc, doc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+        await setDoc(doc(firebase_auth_db(), 'users', currentUser.uid), {
+          payoutMethod, payoutUsdtNet, bankName, acctName, acctNo, updatedAt: serverTimestamp()
+        }, { merge:true });
+
+        document.getElementById('payoutMsg').textContent = 'Saved.';
+        setTimeout(()=>document.getElementById('payoutMsg').textContent='', 2500);
+      }catch(err){
+        document.getElementById('payoutMsg').textContent = err?.message || 'Could not save';
+      }
+    });
+
+    /* -------- Sell Gift Card -------- */
+    document.getElementById('sellGCForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const service = 'giftcard';
+      const cardId = document.getElementById('gcType').value;
+      const countryCode = document.getElementById('gcCountry').value;
+      const usd = Number(document.getElementById('gcAmount').value || 0);
+      const upload = document.getElementById('gcProof').files?.[0] || null;
+
+      // get user payout for embedding into request snapshot (for admin convenience)
+      const uDoc = await getDoc(doc(firebase_auth_db(), 'users', currentUser.uid));
+      const bankDetails = uDoc.exists() ? {
+        payoutMethod: uDoc.data().payoutMethod || 'bank',
+        payoutUsdtNet: uDoc.data().payoutUsdtNet || null,
+        bankName: uDoc.data().bankName || null,
+        acctName: uDoc.data().acctName || null,
+        acctNo: uDoc.data().acctNo || null
+      } : null;
+
+      try{
+        const id = await createTradeRequest({
+          uid: currentUser.uid,
+          email: currentUser.email,
+          name: currentUser.displayName || null,
+          service, cardId, countryCode, usd,
+          bankDetails,
+          uploadFile: upload
+        });
+        document.getElementById('gcMsg').textContent = 'Submitted! Your request ID: '+id+'. Status: pending.';
+        (e.target).reset();
+        setTimeout(()=>{ document.getElementById('gcMsg').textContent=''; }, 3000);
+      }catch(err){
+        document.getElementById('gcMsg').textContent = err?.message || 'Submit failed';
+      }
+    });
+
+    /* -------- Sell Crypto -------- */
+    const cxAsset = document.getElementById('cxAsset');
+    const cxUsdtNet = document.getElementById('cxUsdtNet');
+    const cxWalletBox = document.getElementById('cxWalletBox');
+
+    function updateCryptoWalletDisplay(){
+      const asset = cxAsset.value;
+      let html = '';
+      if(asset==='BTC'){
+        const addr = wallets?.btc?.address || 'Not set by admin';
+        html = `<div class="note">BTC address: <strong style="font-family:monospace">${addr}</strong></div>`;
+      }else{
+        // USDT
+        const net = cxUsdtNet.value;
+        const found = wallets?.usdt?.networks?.find(n=>n.network===net);
+        const addr = found?.address || 'Select network or not set by admin';
+        html = `<div class="note">USDT ${net || ''} address: <strong style="font-family:monospace">${addr}</strong></div>`;
+      }
+      cxWalletBox.innerHTML = html;
+    }
+    cxAsset.addEventListener('change', updateCryptoWalletDisplay);
+    cxUsdtNet.addEventListener('change', updateCryptoWalletDisplay);
+
+    document.getElementById('sellCXForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const asset = cxAsset.value; // BTC or USDT
+      const net = asset==='USDT' ? (cxUsdtNet.value || null) : null;
+      const usd = Number(document.getElementById('cxUsd').value || 0);
+      const txid = document.getElementById('cxTxid').value.trim() || null;
+      const proof = document.getElementById('cxProof').files?.[0] || null;
+
+      const uDoc = await getDoc(doc(firebase_auth_db(), 'users', currentUser.uid));
+      const bankDetails = uDoc.exists() ? {
+        payoutMethod: uDoc.data().payoutMethod || 'bank',
+        payoutUsdtNet: uDoc.data().payoutUsdtNet || null,
+        bankName: uDoc.data().bankName || null,
+        acctName: uDoc.data().acctName || null,
+        acctNo: uDoc.data().acctNo || null
+      } : null;
+
+      try{
+        const id = await createTradeRequest({
+          uid: currentUser.uid,
+          email: currentUser.email,
+          name: currentUser.displayName || null,
+          service: 'crypto',
+          cardId: asset, // store asset here
+          countryCode: net, // store network here if USDT
+          usd,
+          bankDetails,
+          cryptoTxId: txid,
+          uploadFile: proof
+        });
+        document.getElementById('cxMsg').textContent = 'Submitted! Request ID: '+id+'. Status: pending.';
+        (e.target).reset();
+        setTimeout(()=>document.getElementById('cxMsg').textContent='', 3000);
+      }catch(err){
+        document.getElementById('cxMsg').textContent = err?.message || 'Submit failed';
+      }
+    });
+  </script>
+</body>
 </html>

@@ -6,6 +6,25 @@
 </head>
 <body>
   <h1>Welcome to Toolspay</h1>
+  <section class="payment-methods">
+  <h2>Set Your Payment Method</h2>
+  <form id="paymentForm">
+    <label for="method">Payment Method:</label>
+    <select id="method" name="method" required>
+      <option value="">-- Select Payment Method --</option>
+      <option value="Bank">Bank Transfer</option>
+      <option value="BTC">Bitcoin (BTC)</option>
+      <option value="USDT">Tether (USDT)</option>
+      <option value="OnlineWallet">Online Digital Wallet</option>
+    </select>
+
+    <div id="extraFields"></div>
+
+    <button type="submit">Save Payment Method</button>
+  </form>
+
+  <p id="paymentStatus"></p>
+  </section>
   <button id="logoutBtn">Logout</button>
 
   <h2>Payment Method Setup</h2>

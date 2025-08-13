@@ -121,6 +121,23 @@
         alert('Trade submitted successfully! (Backend connection needed)');
     }
 </script>
+<script type="module">
+import { onAuthStateChanged, auth } from './firebase-auth.js';
 
+// Check if user is logged in
+onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = 'login.html';
+  } else {
+    console.log('User logged in:', user.email);
+  }
+});
+
+// Show success message if redirected from sell page
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('success') === '1') {
+  alert('✅ Your gift card request was submitted successfully!');
+}
+    </script>
 </body>
 </html>

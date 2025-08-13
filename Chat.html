@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Live Chat • ToolsPay</title>
+  <style>
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#f7f7f8}
+    header{background:#111;color:#fff;padding:14px 16px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+    .wrap{max-width:900px;margin:16px auto;padding:0 12px}
+    .card{background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:hidden}
+    .chat-head{padding:12px 14px;border-bottom:1px solid #eee;font-weight:600}
+    .chat-body{height:60vh;overflow:auto;padding:12px;background:#fafafa}
+    .msg{margin:8px 0;max-width:80%;padding:10px 12px;border-radius:12px;line-height:1.3;word-break:break-word}
+    .me{background:#1e1e1e;color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+    .them{background:#e9edf3;color:#111;border-bottom-left-radius:4px}
+    .msg img{max-width:100%;border-radius:10px;margin-top:6px}
+    .chat-send{display:flex;gap:8px;padding:10px;border-top:1px solid #eee;background:#fff}
+    .chat-send input[type="text"]{flex:1;padding:10px;border:1px solid #ddd;border-radius:10px}
+    .btn{background:#111;color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:600}
+    .pill{font-size:12px;background:#ffd54d;color:#111;padding:4px 8px;border-radius:999px}
+    .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .top-actions a{color:#fff;text-decoration:none}
+  </style>
+</head>
+<body>
+  <header>
+    <div>ToolsPay • Live Chat</div>
+    <div class="top-actions">
+      <a href="customer-dashboard.html" class="pill">← Back to Dashboard</a>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="chat-head">
+        Message Admin • Send proof or ask for **Chime / Zelle / Venmo / PayPal** tag
+      </div>
+      <div id="chatBody" class="chat-body">Loading chat…</div>
+      <div class="chat-send">
+        <input id="chatText" type="text" placeholder="Type a message…" />
+        <input id="chatImage" type="file" accept="image/*" />
+        <button id="sendBtn" class="btn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // --- Firebase SDK (modular) ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { 
+      getAuth, onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+    import {
+      getFirestore, doc, setDoc, getDoc, collection, addDoc,
+      onSnapshot, serverTimestamp, updateDoc, query, orderBy
+    } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+    import {
+      getStorage, ref, uploadBytes, getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-storage.js";
+
+    // TODO: replace these with your real config (same project you used everywhere)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    const chatBody = document.getElementById("chatBody");
+    const chatText = document.getElementById("chatText");
+    const chatImage = document.getElementById("chatImage");
+    const sendBtn = document.getElementById("sendBtn");
+
+    let me = null;
+    let chatId = null; // we'll use the user's UID as the chat id
+
+    function renderMessage(m, isMe) {
+      const div = document.createElement("div");
+      div.className = "msg " + (isMe ? "me" : "them");
+      if (m.text) div.innerHTML = m.text.replace(/\n/g, "<br/>");
+      if (m.imageUrl) {
+        const img = document.createElement("img");
+        img.src = m.imageUrl;
+        div.appendChild(document.createElement("br"));
+        div.appendChild(img);
+      }
+      chatBody.appendChild(div);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    async function ensureChat(uid, email) {
+      // chat doc located at chats/{uid}
+      const cref = doc(db, "chats", uid);
+      const snap = await getDoc(cref);
+      if (!snap.exists()) {
+        await setDoc(cref, {
+          requestId: null,
+          participants: [uid, "admin"],
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          userEmail: email || null
+        });
+      }
+      return uid;
+    }
+
+    async function sendMessage() {
+      const text = chatText.value.trim();
+      const file = chatImage.files[0];
+
+      if (!text && !file) return;
+
+      const mref = collection(db, "chats", chatId, "messages");
+      let imageUrl = null;
+
+      if (file) {
+        const key = `chats/${chatId}/${Date.now()}-${file.name}`;
+        const r = ref(storage, key);
+        await uploadBytes(r, file);
+        imageUrl = await getDownloadURL(r);
+        chatImage.value = ""; // reset file input
+      }
+
+      await addDoc(mref, {
+        text: text || null,
+        imageUrl: imageUrl || null,
+        senderUid: me.uid,
+        senderEmail: me.email || null,
+        createdAt: serverTimestamp()
+      });
+
+      await updateDoc(doc(db, "chats", chatId), { updatedAt: serverTimestamp() });
+
+      chatText.value = "";
+      chatText.focus();
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    chatText.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "customer-login.html";
+        return;
+      }
+      me = user;
+      chatId = await ensureChat(user.uid, user.email);
+
+      const mref = collection(db, "chats", chatId, "messages");
+      const q = query(mref, orderBy("createdAt"));
+      onSnapshot(q, (snap) => {
+        chatBody.innerHTML = "";
+        snap.forEach((doc) => {
+          const m = doc.data();
+          renderMessage(m, m.senderUid === me.uid);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

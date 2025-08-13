@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Toolspay — Reset password</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="auth-wrap">
+    <h1>Reset password</h1>
+    <div class="card">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="you@example.com"/>
+      <button id="resetBtn" class="btn-primary">Send reset link</button>
+      <div id="msg" class="muted"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, sendPasswordResetEmail } from './firebase-auth.js';
+    const email = document.getElementById('email');
+    const msg = document.getElementById('msg');
+    document.getElementById('resetBtn').onclick = async () => {
+      if (!email.value.trim()) { msg.textContent = 'Enter your email.'; return; }
+      try { 
+        await sendPasswordResetEmail(auth, email.value.trim());
+        msg.textContent = 'Reset email sent. Check your inbox.';
+      } catch (e) { msg.textContent = e.message || e.code; }
+    };
+  </script>
+</body>
+</html>

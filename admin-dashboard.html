@@ -1,416 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Toolspay — Admin Dashboard</title>
-  <link rel="stylesheet" href="style.css"/>
-
-  <style>
-    /* minimal admin-specific polish */
-    .container { max-width: 980px; margin: 0 auto; padding: 16px; }
-    .card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 16px; margin: 12px 0; }
-    .row { display: grid; gap: 12px; }
-    @media (min-width: 700px) { .row-2 { grid-template-columns: 1fr 1fr; } .row-3 { grid-template-columns: 1fr 1fr 1fr; } }
-    label { font-weight: 600; font-size: 14px; margin-bottom: 6px; display: block; }
-    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 10px; }
-    button { padding: 10px 14px; border-radius: 10px; border: 0; cursor: pointer; }
-    .btn-primary { background: black; color: gold; border: 2px solid gold; }
-    .btn-ghost { background: #f4f4f4; }
-    .tag { padding: 6px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 12px; }
-    .muted { color: #6b7280; font-size: 12px; }
-    .danger { color: #b91c1c; }
-    .ok { color: #059669; }
-    .header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    .flex { display:flex; gap:8px; align-items:center; flex-wrap: wrap; }
-    .hidden { display:none; }
-    .list { border:1px dashed #ddd; border-radius: 10px; padding: 10px; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - ToolsPay</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
 </head>
+<body class="bg-light">
 
-<body>
-  <header style="padding:16px; border-bottom:1px solid #eee; background:#0b1220;">
-    <div class="container header" style="color:#fff;">
-      <div class="flex">
-        <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#111,#ffd700);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;">TP</div>
-        <div>
-          <div style="font-weight:800;">Toolspay — Admin</div>
-          <div class="muted" style="color:#cbd5e1;">Manage rates, wallets, and announcements</div>
-        </div>
-      </div>
-      <div>
-        <button id="logoutBtn" class="btn-ghost">Sign out</button>
-      </div>
-    </div>
-  </header>
+  <div class="container py-4">
+    <h1 class="text-center mb-4">Admin Dashboard</h1>
 
-  <main class="container">
-
-    <!-- AUTH GATE -->
-    <div id="authBlock" class="card">
-      <h2>Admin sign in</h2>
-      <p class="muted">Only approved emails can access.</p>
-      <div class="row row-2" style="margin-top:10px;">
-        <div>
-          <label>Email</label>
-          <input id="email" type="email" placeholder="you@example.com"/>
-        </div>
-        <div>
-          <label>Password</label>
-          <input id="password" type="password" placeholder="••••••••"/>
-        </div>
-      </div>
-      <div class="flex" style="margin-top:10px;">
-        <button id="loginBtn" class="btn-primary">Sign in</button>
-        <button id="resetBtn" class="btn-ghost">Send reset link</button>
-      </div>
-      <div id="authMsg" class="muted" style="margin-top:8px;"></div>
+    <div id="login-section" class="card p-4">
+      <h4>Admin Login</h4>
+      <input type="email" id="email" placeholder="Email" class="form-control mb-2" />
+      <input type="password" id="password" placeholder="Password" class="form-control mb-2" />
+      <button id="loginBtn" class="btn btn-primary w-100">Sign In</button>
     </div>
 
-    <!-- NOT AUTHORIZED -->
-    <div id="notAdmin" class="card hidden">
-      <h3 class="danger">Not authorized</h3>
-      <p class="muted">
-        This account is not in <code>admins</code> collection.  
-        If this is your first setup, you can add your current email now.
-      </p>
-      <button id="grantBtn" class="btn-primary">Grant admin to my email</button>
-      <div id="grantMsg" class="muted" style="margin-top:8px;"></div>
+    <div id="dashboard-section" class="d-none">
+      <button id="logoutBtn" class="btn btn-danger mb-3">Logout</button>
+
+      <h4>Rates</h4>
+      <div class="card p-3 mb-3">
+        <input type="number" id="usdToNgn" placeholder="USD to NGN" class="form-control mb-2" />
+        <input type="number" id="giftcardBase" placeholder="Gift Card Base Rate" class="form-control mb-2" />
+        <button id="saveRates" class="btn btn-success">Save Rates</button>
+      </div>
+
+      <h4>Wallets</h4>
+      <div class="card p-3 mb-3">
+        <input type="text" id="btcAddress" placeholder="BTC Address" class="form-control mb-2" />
+        <input type="text" id="usdtTRC20" placeholder="USDT (TRC20) Address" class="form-control mb-2" />
+        <input type="text" id="usdtBEP20" placeholder="USDT (BEP20) Address" class="form-control mb-2" />
+        <button id="saveWallets" class="btn btn-success">Save Wallets</button>
+      </div>
+
+      <h4>Tags</h4>
+      <div class="card p-3 mb-3">
+        <input type="text" id="tagChime" placeholder="Chime Tag" class="form-control mb-2" />
+        <input type="text" id="tagZelle" placeholder="Zelle Tag" class="form-control mb-2" />
+        <input type="text" id="tagVenmo" placeholder="Venmo Tag" class="form-control mb-2" />
+        <input type="text" id="tagPaypal" placeholder="Paypal Tag" class="form-control mb-2" />
+        <button id="saveTags" class="btn btn-success">Save Tags</button>
+      </div>
+
+      <h4>Announcements</h4>
+      <div class="card p-3 mb-3">
+        <textarea id="announcement" placeholder="Write announcement..." class="form-control mb-2"></textarea>
+        <button id="saveAnnouncement" class="btn btn-success">Save Announcement</button>
+      </div>
     </div>
+  </div>
 
-    <!-- ADMIN PANEL -->
-    <section id="adminPanel" class="hidden">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-      <div class="card">
-        <div class="header">
-          <h2>Rates</h2>
-          <span class="muted">Document: <code>rates/default</code></span>
-        </div>
-        <div class="row row-2" style="margin-top:10px;">
-          <div>
-            <label>USD → NGN</label>
-            <input id="usdToNgn" type="number" placeholder="1500"/>
-            <div class="muted">Shown on customer dashboard, used for gift cards/BTC/USDT display.</div>
-          </div>
-          <div>
-            <label>Gift card base (₦ / $1)</label>
-            <input id="giftcardBase" type="number" placeholder="1450"/>
-            <div class="muted">Default per-$ rate for gift cards (each brand can override later).</div>
-          </div>
-        </div>
-        <div style="margin-top:10px;">
-          <button id="saveRates" class="btn-primary">Save rates</button>
-          <span id="ratesMsg" class="muted"></span>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="header">
-          <h2>Wallets</h2>
-          <span class="muted">Document: <code>wallets/default</code></span>
-        </div>
-
-        <div class="row row-2" style="margin-top:10px;">
-          <div>
-            <label>BTC Address</label>
-            <input id="btcAddress" placeholder="bc1... or 1..."/>
-          </div>
-          <div>
-            <label>Online wallet tags (optional)</label>
-            <div class="row">
-              <input id="tagChime" placeholder="Chime tag (optional)"/>
-              <input id="tagZelle" placeholder="Zelle tag/email (optional)"/>
-              <input id="tagVenmo" placeholder="@venmo (optional)"/>
-              <input id="tagPaypal" placeholder="PayPal email (optional)"/>
-            </div>
-            <div class="muted">Customers will request your tag in live chat; these help you paste fast.</div>
-          </div>
-        </div>
-
-        <div class="card" style="background:#fafafa;">
-          <h3>USDT Networks</h3>
-          <div id="networksList" class="list" style="margin-top:8px;"></div>
-          <div class="row row-3" style="margin-top:8px;">
-            <div><input id="newNetName" placeholder="TRC20 / ERC20 / BEP20"/></div>
-            <div><input id="newNetAddr" placeholder="USDT address for this network"/></div>
-            <div><button id="addNetwork" class="btn-ghost">Add network</button></div>
-          </div>
-        </div>
-
-        <div style="margin-top:10px;">
-          <button id="saveWallets" class="btn-primary">Save wallets</button>
-          <span id="walletsMsg" class="muted"></span>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="header">
-          <h2>Announcements</h2>
-          <span class="muted">Document: <code>announcements/default</code></span>
-        </div>
-        <div style="margin-top:10px;">
-          <label>One per line</label>
-          <textarea id="annTextarea" rows="5" placeholder="Welcome to Toolspay&#10;Trade only inside this site"></textarea>
-        </div>
-        <div style="margin-top:10px;">
-          <button id="saveAnn" class="btn-primary">Save announcements</button>
-          <span id="annMsg" class="muted"></span>
-        </div>
-      </div>
-
-    </section>
-  </main>
-
-  <!-- Admin script -->
-  <script type="module">
-    import {
-      auth, db,
-      signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged,
-      addAdminByEmail,
-      // Firestore helpers we’ll use from the SDK via our module exports:
-      doc, getDoc, updateDoc
-    } from './firebase-auth.js';
-
-    // We also import setDoc from Firebase SDK (not exported by our helper), safe to mix:
-    import { setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    // UI refs
-    const authBlock  = document.getElementById('authBlock');
-    const adminPanel = document.getElementById('adminPanel');
-    const notAdmin   = document.getElementById('notAdmin');
-
-    const emailEl = document.getElementById('email');
-    const passEl  = document.getElementById('password');
-    const loginBtn = document.getElementById('loginBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const authMsg = document.getElementById('authMsg');
-
-    const usdToNgn = document.getElementById('usdToNgn');
-    const giftcardBase = document.getElementById('giftcardBase');
-    const saveRates = document.getElementById('saveRates');
-    const ratesMsg = document.getElementById('ratesMsg');
-
-    const btcAddress = document.getElementById('btcAddress');
-    const tagChime = document.getElementById('tagChime');
-    const tagZelle = document.getElementById('tagZelle');
-    const tagVenmo = document.getElementById('tagVenmo');
-    const tagPaypal = document.getElementById('tagPaypal');
-
-    const networksList = document.getElementById('networksList');
-    const newNetName = document.getElementById('newNetName');
-    const newNetAddr = document.getElementById('newNetAddr');
-    const addNetwork = document.getElementById('addNetwork');
-    const saveWallets = document.getElementById('saveWallets');
-    const walletsMsg = document.getElementById('walletsMsg');
-
-    const annTextarea = document.getElementById('annTextarea');
-    const saveAnn = document.getElementById('saveAnn');
-    const annMsg = document.getElementById('annMsg');
-
-    const grantBtn = document.getElementById('grantBtn');
-    const grantMsg = document.getElementById('grantMsg');
-
-    let usdtNetworks = []; // {network, address}
-
-    // Render helpers
-    function renderNetworks() {
-      networksList.innerHTML = '';
-      if (!usdtNetworks || usdtNetworks.length === 0) {
-        networksList.innerHTML = '<div class="muted">No USDT networks yet.</div>';
-        return;
-      }
-      usdtNetworks.forEach((n, idx) => {
-        const row = document.createElement('div');
-        row.className = 'flex';
-        row.style.justifyContent = 'space-between';
-        row.style.padding = '6px 0';
-
-        row.innerHTML = `
-          <div class="flex">
-            <span class="tag">${n.network}</span>
-            <span class="muted" style="margin-left:6px;">${n.address}</span>
-          </div>
-          <button data-idx="${idx}" class="btn-ghost">Remove</button>
-        `;
-        row.querySelector('button').onclick = (e) => {
-          const i = Number(e.currentTarget.getAttribute('data-idx'));
-          usdtNetworks.splice(i, 1);
-          renderNetworks();
-        };
-        networksList.appendChild(row);
-      });
-    }
-
-    addNetwork.onclick = () => {
-      const net = (newNetName.value || '').trim();
-      const addr = (newNetAddr.value || '').trim();
-      if (!net || !addr) return;
-      usdtNetworks.push({ network: net, address: addr });
-      newNetName.value = '';
-      newNetAddr.value = '';
-      renderNetworks();
+  <script>
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
+      authDomain: "toolspay-54167.firebaseapp.com",
+      projectId: "toolspay-54167",
+      storageBucket: "toolspay-54167.firebasestorage.app",
+      messagingSenderId: "71318117342",
+      appId: "1:71318117342:web:1952711453e19e19281b4f"
     };
 
-    // Auth flow
-    loginBtn.onclick = async () => {
-      authMsg.textContent = 'Signing in...';
-      try {
-        await signInWithEmailAndPassword(emailEl.value.trim(), passEl.value);
-        authMsg.textContent = '';
-      } catch (e) {
-        authMsg.textContent = 'Sign in failed: ' + (e.message || e.code);
-      }
-    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    resetBtn.onclick = async () => {
-      const em = (emailEl.value || '').trim();
-      if (!em) { authMsg.textContent = 'Enter email first.'; return; }
-      try {
-        await sendPasswordResetEmail(em);
-        authMsg.textContent = 'Reset link sent to ' + em;
-      } catch (e) {
-        authMsg.textContent = 'Reset failed: ' + (e.message || e.code);
-      }
-    };
+    const loginSection = document.getElementById("login-section");
+    const dashboardSection = document.getElementById("dashboard-section");
 
-    logoutBtn.onclick = async () => {
-      await signOut();
-      location.reload();
-    };
-
-    grantBtn.onclick = async () => {
-      if (!auth.currentUser?.email) { grantMsg.textContent = 'Sign in first.'; return; }
-      try {
-        await setDoc(doc(db, 'admins', auth.currentUser.email), { createdAt: Date.now() });
-        grantMsg.textContent = 'This email is now an admin. Reloading...';
-        setTimeout(()=>location.reload(), 800);
-      } catch (e) {
-        grantMsg.textContent = 'Failed: ' + (e.message || e.code);
-      }
-    };
-
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        // not signed in
-        authBlock.classList.remove('hidden');
-        adminPanel.classList.add('hidden');
-        notAdmin.classList.add('hidden');
-        return;
-      }
-      // check admin allowlist
-      const a = await getDoc(doc(db, 'admins', user.email));
-      if (!a.exists()) {
-        authBlock.classList.add('hidden');
-        notAdmin.classList.remove('hidden');
-        adminPanel.classList.add('hidden');
-        return;
-      }
-      // authorized
-      authBlock.classList.add('hidden');
-      notAdmin.classList.add('hidden');
-      adminPanel.classList.remove('hidden');
-
-      // Load current docs
-      await loadRates();
-      await loadWallets();
-      await loadAnnouncements();
+    // Login
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          loginSection.classList.add("d-none");
+          dashboardSection.classList.remove("d-none");
+        })
+        .catch(err => alert(err.message));
     });
 
-    // Loaders
-    async function loadRates() {
-      try {
-        const r = await getDoc(doc(db, 'rates', 'default'));
-        if (r.exists()) {
-          const d = r.data();
-          usdToNgn.value = d.usdToNgn ?? '';
-          giftcardBase.value = d.giftcardBase ?? '';
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      auth.signOut().then(() => {
+        loginSection.classList.remove("d-none");
+        dashboardSection.classList.add("d-none");
+      });
+    });
+
+    // Save Rates
+    document.getElementById("saveRates").addEventListener("click", () => {
+      db.collection("rates").doc("default").set({
+        usdToNgn: parseFloat(document.getElementById("usdToNgn").value),
+        giftcardBase: parseFloat(document.getElementById("giftcardBase").value)
+      }).then(() => alert("Rates updated!"));
+    });
+
+    // Save Wallets
+    document.getElementById("saveWallets").addEventListener("click", () => {
+      db.collection("wallets").doc("default").set({
+        btc: { address: document.getElementById("btcAddress").value },
+        usdt: { 
+          networks: [
+            { network: "TRC20", address: document.getElementById("usdtTRC20").value },
+            { network: "BEP20", address: document.getElementById("usdtBEP20").value }
+          ]
         }
-      } catch (e) { console.warn(e); }
-    }
+      }).then(() => alert("Wallets updated!"));
+    });
 
-    async function loadWallets() {
-      try {
-        const w = await getDoc(doc(db, 'wallets', 'default'));
-        if (w.exists()) {
-          const d = w.data();
-          btcAddress.value = d?.btc?.address || '';
-          const tags = d?.tags || {};
-          tagChime.value  = tags.chime  || '';
-          tagZelle.value  = tags.zelle  || '';
-          tagVenmo.value  = tags.venmo  || '';
-          tagPaypal.value = tags.paypal || '';
-          usdtNetworks = (d?.usdt?.networks || []).slice();
-          renderNetworks();
-        } else {
-          usdtNetworks = [];
-          renderNetworks();
-        }
-      } catch (e) { console.warn(e); }
-    }
+    // Save Tags
+    document.getElementById("saveTags").addEventListener("click", () => {
+      db.collection("tags").doc("default").set({
+        chime: document.getElementById("tagChime").value,
+        zelle: document.getElementById("tagZelle").value,
+        venmo: document.getElementById("tagVenmo").value,
+        paypal: document.getElementById("tagPaypal").value
+      }).then(() => alert("Tags updated!"));
+    });
 
-    async function loadAnnouncements() {
-      try {
-        const a = await getDoc(doc(db, 'announcements', 'default'));
-        if (a.exists()) {
-          const d = a.data();
-          const arr = Array.isArray(d.items) ? d.items : [];
-          annTextarea.value = arr.join('\n');
-        }
-      } catch (e) { console.warn(e); }
-    }
-
-    // Savers
-    saveRates.onclick = async () => {
-      ratesMsg.textContent = 'Saving...';
-      try {
-        const payload = {
-          usdToNgn: Number(usdToNgn.value || 0),
-          giftcardBase: Number(giftcardBase.value || 0)
-        };
-        await setDoc(doc(db, 'rates', 'default'), payload, { merge: true });
-        ratesMsg.textContent = 'Saved ✓';
-        setTimeout(()=> ratesMsg.textContent = '', 1200);
-      } catch (e) {
-        ratesMsg.textContent = 'Error: ' + (e.message || e.code);
-      }
-    };
-
-    saveWallets.onclick = async () => {
-      walletsMsg.textContent = 'Saving...';
-      try {
-        const payload = {
-          btc: { address: (btcAddress.value || '').trim() },
-          usdt: { networks: usdtNetworks },
-          tags: {
-            chime: (tagChime.value||'').trim(),
-            zelle: (tagZelle.value||'').trim(),
-            venmo: (tagVenmo.value||'').trim(),
-            paypal: (tagPaypal.value||'').trim()
-          }
-        };
-        await setDoc(doc(db, 'wallets', 'default'), payload, { merge: true });
-        walletsMsg.textContent = 'Saved ✓';
-        setTimeout(()=> walletsMsg.textContent = '', 1200);
-      } catch (e) {
-        walletsMsg.textContent = 'Error: ' + (e.message || e.code);
-      }
-    };
-
-    saveAnn.onclick = async () => {
-      annMsg.textContent = 'Saving...';
-      try {
-        const items = (annTextarea.value || '')
-          .split('\n')
-          .map(s => s.trim())
-          .filter(Boolean);
-        await setDoc(doc(db, 'announcements', 'default'), { items }, { merge: true });
-        annMsg.textContent = 'Saved ✓';
-        setTimeout(()=> annMsg.textContent = '', 1200);
-      } catch (e) {
-        annMsg.textContent = 'Error: ' + (e.message || e.code);
-      }
-    };
+    // Save Announcement
+    document.getElementById("saveAnnouncement").addEventListener("click", () => {
+      db.collection("announcements").doc("default").set({
+        text: document.getElementById("announcement").value
+      }).then(() => alert("Announcement updated!"));
+    });
   </script>
 </body>
 </html>

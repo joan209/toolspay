@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Toolspay — Login</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    body{background:#0a0a0b;color:#fff}
+    .card{max-width:420px;margin:40px auto;background:#111;border:1px solid #222;border-radius:16px;padding:24px}
+    .brand{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:12px}
+    .brand-badge{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#22c55e,#60a5fa);}
+    .muted{color:#9aa3ae}
+    .input{width:100%;padding:12px;border-radius:10px;border:1px solid #2b2f36;background:#0f1114;color:#fff}
+    .btn{width:100%;padding:12px;border-radius:10px;border:0;background:#22c55e;font-weight:700;color:#0b1117}
+    .btn:disabled{opacity:.6}
+    .row{display:grid;gap:10px}
+    a{color:#60a5fa}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <div class="brand-badge"></div>
+      <div>
+        <h2 style="margin:0;">Toolspay</h2>
+        <div class="muted">Welcome back</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <input id="email" class="input" placeholder="Email" type="email" autocomplete="email"/>
+      <input id="password" class="input" placeholder="Password" type="password" autocomplete="current-password"/>
+      <button id="loginBtn" class="btn">Log in</button>
+      <div id="msg" class="muted" style="min-height:18px;"></div>
+      <div class="muted" style="text-align:center">
+        <a id="forgot" href="#">Forgot password?</a> &nbsp;|&nbsp; <a href="signup.html">Create account</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { signInWithEmailAndPassword, sendPasswordResetEmail, signOut } from './firebase-auth.js';
+    import { sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const $ = id => document.getElementById(id);
+    const msg = $('msg');
+
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      msg.textContent = '';
+      try {
+        const cred = await signInWithEmailAndPassword($('email').value.trim(), $('password').value);
+
+        if(!cred.user.emailVerified){
+          // resend + signout to enforce verify-first
+          await sendEmailVerification(cred.user);
+          await signOut();
+          msg.innerHTML = 'Email not verified. We sent a new verification link. Please check your inbox, verify, then log in again.';
+          return;
+        }
+
+        // go to dashboard after verified login
+        window.location.href = 'customer-dashboard.html';
+      } catch (e) {
+        msg.textContent = e.message || 'Login failed';
+      }
+    });
+
+    document.getElementById('forgot').addEventListener('click', async (e) => {
+      e.preventDefault();
+      const email = prompt('Enter your account email to receive a reset link:');
+      if(!email) return;
+      try {
+        await sendPasswordResetEmail(email);
+        alert('Password reset email sent. Check your inbox.');
+      } catch (e) {
+        alert(e.message || 'Could not send reset email');
+      }
+    });
+  </script>
+</body>
+</html>

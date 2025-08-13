@@ -36,5 +36,50 @@
   </div>
 
   <script type="module" src="sell.js"></script>
+  <script type="module">
+import { auth, createTradeRequest, onAuthStateChanged } from './firebase-auth.js';
+
+const form = document.getElementById('sellGiftCardForm');
+
+onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = 'login.html';
+  }
+});
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const service = document.getElementById('service').value;
+  const countryCode = document.getElementById('countryCode').value;
+  const usd = document.getElementById('usd').value;
+  const bankDetails = document.getElementById('bankDetails').value;
+  const uploadFile = document.getElementById('uploadFile').files[0];
+
+  const user = auth.currentUser;
+  if (!user) {
+    alert('You must be logged in to submit a request.');
+    return;
+  }
+
+  try {
+    await createTradeRequest({
+      uid: user.uid,
+      email: user.email,
+      service,
+      countryCode,
+      usd,
+      bankDetails,
+      uploadFile
+    });
+
+    // Redirect to dashboard with success flag
+    window.location.href = 'dashboard.html?success=1';
+  } catch (error) {
+    console.error(error);
+    alert('Error submitting request. Please try again.');
+  }
+});
+</script>
 </body>
 </html>

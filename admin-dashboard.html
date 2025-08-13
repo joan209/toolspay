@@ -7,19 +7,19 @@
   <link rel="stylesheet" href="style.css"/>
 
   <style>
-    /* minimal admin-specific polish */
-    body { background:#f7f7fb; }
-    .container { max-width: 1060px; margin: 0 auto; padding: 16px; }
+    :root { --bg:#0b1220; --gold:#ffd700; }
+    body { background:#f7f7f8; color:#0f172a; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
     .card { background: #fff; border: 1px solid #eee; border-radius: 14px; padding: 16px; margin: 12px 0; }
     .row { display: grid; gap: 12px; }
-    @media (min-width: 720px) { .row-2 { grid-template-columns: 1fr 1fr; } .row-3 { grid-template-columns: 1fr 1fr 1fr; } .row-4 { grid-template-columns: 1fr 1fr 1fr 1fr; } }
+    @media (min-width: 720px) { .row-2 { grid-template-columns: 1fr 1fr; } .row-3 { grid-template-columns: 1fr 1fr 1fr; } }
     label { font-weight: 600; font-size: 14px; margin-bottom: 6px; display: block; }
     input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 10px; background:#fff; }
+    input[type="file"] { padding: 8px; }
     button { padding: 10px 14px; border-radius: 10px; border: 0; cursor: pointer; }
-    .btn-primary { background: #111827; color: #ffd700; border: 2px solid #ffd700; }
-    .btn-ghost { background: #f1f5f9; }
+    .btn-primary { background: #000; color: var(--gold); border: 2px solid var(--gold); }
+    .btn-ghost { background: #f4f4f4; }
     .btn-danger { background:#fee2e2; color:#b91c1c; }
-    .btn-small { padding: 6px 10px; border-radius: 8px; }
     .tag { padding: 6px 10px; border: 1px solid #ddd; border-radius: 999px; font-size: 12px; background:#fafafa; }
     .muted { color: #6b7280; font-size: 12px; }
     .danger { color: #b91c1c; }
@@ -27,11 +27,13 @@
     .header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .flex { display:flex; gap:8px; align-items:center; flex-wrap: wrap; }
     .hidden { display:none; }
-    .list { border:1px dashed #ddd; border-radius: 10px; padding: 10px; background:#fff; }
-    table { width:100%; border-collapse:collapse; }
-    th, td { text-align:left; padding:10px; border-bottom:1px solid #eee; }
-    th { background:#fafafa; }
-    .pill { font-size:12px; padding:4px 8px; border-radius:999px; background:#eef2ff; }
+    .list { border:1px dashed #ddd; border-radius: 10px; padding: 10px; }
+    .thumb { width:40px; height:40px; border-radius:8px; object-fit:cover; border:1px solid #eee; }
+    .table { width:100%; border-collapse: collapse; }
+    .table th, .table td { padding:8px; border-bottom:1px solid #eee; text-align:left; }
+    .pill { padding:2px 8px; border-radius:999px; font-size:12px; }
+    .pill-yes { background:#ecfdf5; color:#047857; }
+    .pill-no { background:#fef2f2; color:#b91c1c; }
   </style>
 </head>
 
@@ -46,14 +48,12 @@
         </div>
       </div>
       <div class="flex">
-        <span id="whoami" class="muted"></span>
         <button id="logoutBtn" class="btn-ghost">Sign out</button>
       </div>
     </div>
   </header>
 
   <main class="container">
-
     <!-- AUTH GATE -->
     <div id="authBlock" class="card">
       <h2>Admin sign in</h2>
@@ -89,7 +89,7 @@
     <!-- ADMIN PANEL -->
     <section id="adminPanel" class="hidden">
 
-      <!-- Rates -->
+      <!-- RATES -->
       <div class="card">
         <div class="header">
           <h2>Rates</h2>
@@ -99,12 +99,12 @@
           <div>
             <label>USD → NGN</label>
             <input id="usdToNgn" type="number" placeholder="1500"/>
-            <div class="muted">Shown to customers and used in displays.</div>
+            <div class="muted">Displayed to customers and used in estimated payouts.</div>
           </div>
           <div>
             <label>Default Gift Card Base (₦ per $1)</label>
             <input id="giftcardBase" type="number" placeholder="1450"/>
-            <div class="muted">Each brand/country can override below.</div>
+            <div class="muted">Each brand can override with its own per-country rate below.</div>
           </div>
         </div>
         <div style="margin-top:10px;">
@@ -113,87 +113,109 @@
         </div>
       </div>
 
-      <!-- Gift Cards Manager -->
+      <!-- GIFT CARDS -->
       <div class="card">
         <div class="header">
-          <h2>Gift Cards</h2>
+          <h2>Gift Cards (per-country rates & logo)</h2>
           <span class="muted">Collection: <code>giftcards</code></span>
         </div>
 
-        <div class="row row-4" style="margin-top:10px;">
-          <div>
-            <label>Brand</label>
-            <select id="gcBrand">
-              <option>Amazon</option><option>Apple / iTunes</option><option>Steam</option>
-              <option>Google Play</option><option>Visa Vanilla</option><option>Razer Gold</option>
-              <option>Xbox</option><option>Walmart</option><option>Amex</option>
-              <option>PlayStation</option>
-            </select>
+        <!-- Add/Edit form -->
+        <div id="gcForm" class="row" style="margin-top:10px;">
+          <div class="row row-3">
+            <div>
+              <label>Card name</label>
+              <input id="gcName" placeholder="Amazon / iTunes / Steam / Google Play / Visa / Razer Gold / Xbox / Walmart / Amex"/>
+            </div>
+            <div>
+              <label>Card code (ID)</label>
+              <input id="gcCode" placeholder="amazon / itunes / steam"/>
+            </div>
+            <div class="flex" style="align-items:flex-end;">
+              <label style="width:100%;">
+                <input id="gcActive" type="checkbox" checked> Active
+              </label>
+            </div>
           </div>
-          <div>
-            <label>Country</label>
-            <select id="gcCountry">
-              <option value="US">USA</option><option value="UK">UK</option><option value="EU">EU</option>
-              <option value="CA">Canada</option><option value="AU">Australia</option><option value="CH">Switzerland</option>
-            </select>
+
+          <div class="row row-3">
+            <div>
+              <label>Min amount (USD)</label>
+              <input id="gcMin" type="number" placeholder="10"/>
+            </div>
+            <div>
+              <label>Max amount (USD)</label>
+              <input id="gcMax" type="number" placeholder="500"/>
+            </div>
+            <div>
+              <label>Logo image</label>
+              <input id="gcLogo" type="file" accept="image/*"/>
+              <div class="muted">Upload square logo (PNG/JPG). Optional.</div>
+            </div>
           </div>
-          <div>
-            <label>Rate (₦ per $1)</label>
-            <input id="gcRate" type="number" placeholder="e.g. 1500"/>
+
+          <!-- Per-country rate editor -->
+          <div class="card" style="background:#fafafa;">
+            <h3 style="margin-top:0;">Per-country rate (₦ per $1)</h3>
+            <div class="row row-3">
+              <div>
+                <label>Country</label>
+                <select id="rateCountry">
+                  <option value="USA">USA</option>
+                  <option value="UK">UK</option>
+                  <option value="EU">Eurozone</option>
+                  <option value="Canada">Canada</option>
+                  <option value="Australia">Australia</option>
+                  <option value="Switzerland">Switzerland</option>
+                </select>
+              </div>
+              <div>
+                <label>Rate (₦ / $1)</label>
+                <input id="rateValue" type="number" placeholder="e.g. 1500"/>
+              </div>
+              <div class="flex" style="align-items:flex-end;">
+                <button id="addRate" class="btn-ghost">Add/Update</button>
+              </div>
+            </div>
+            <div id="rateList" class="list" style="margin-top:8px;"></div>
           </div>
-          <div>
-            <label>Status</label>
-            <select id="gcActive">
-              <option value="true">Active</option>
-              <option value="false">Inactive</option>
-            </select>
+
+          <div class="flex" style="margin-top:6px;">
+            <button id="saveGiftcard" class="btn-primary">Save card</button>
+            <button id="resetGiftcard" class="btn-ghost">Reset form</button>
+            <span id="gcMsg" class="muted"></span>
           </div>
         </div>
 
-        <div class="row row-3" style="margin-top:10px;">
-          <div>
-            <label>Min $</label>
-            <input id="gcMin" type="number" placeholder="e.g. 10"/>
-          </div>
-          <div>
-            <label>Max $</label>
-            <input id="gcMax" type="number" placeholder="e.g. 1000"/>
-          </div>
-          <div>
-            <label>Logo URL (optional)</label>
-            <input id="gcLogo" type="url" placeholder="https://..."/>
-          </div>
-        </div>
-
-        <div class="flex" style="margin-top:10px;">
-          <button id="addGiftcard" class="btn-primary">Add / Update</button>
-          <span id="gcMsg" class="muted"></span>
-        </div>
-
-        <div class="list" style="margin-top:14px;">
-          <div class="flex" style="justify-content:space-between;">
-            <div class="muted">Existing gift card entries</div>
-            <button id="refreshGc" class="btn-ghost btn-small">Refresh</button>
+        <!-- Existing cards -->
+        <div class="card" style="background:#fafafa; margin-top:14px;">
+          <div class="header">
+            <h3 style="margin:0;">Existing gift cards</h3>
+            <button id="refreshCards" class="btn-ghost">Refresh</button>
           </div>
           <div style="overflow:auto;">
-            <table id="gcTable" style="margin-top:8px;">
+            <table class="table" id="cardsTable">
               <thead>
                 <tr>
-                  <th>Brand</th><th>Country</th><th>Rate (₦/$)</th><th>Min</th><th>Max</th><th>Status</th><th>Actions</th>
+                  <th>Logo</th>
+                  <th>Name</th>
+                  <th>Code (ID)</th>
+                  <th>Active</th>
+                  <th>Min–Max</th>
+                  <th>Rates</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
-              <tbody id="gcTbody">
-                <tr><td colspan="7" class="muted">No items yet.</td></tr>
-              </tbody>
+              <tbody id="cardsBody"></tbody>
             </table>
           </div>
         </div>
       </div>
 
-      <!-- Wallets -->
+      <!-- WALLETS & TAGS -->
       <div class="card">
         <div class="header">
-          <h2>Crypto Wallets</h2>
+          <h2>Wallets & Online Tags</h2>
           <span class="muted">Document: <code>wallets/default</code></span>
         </div>
 
@@ -202,72 +224,48 @@
             <label>BTC Address</label>
             <input id="btcAddress" placeholder="bc1... or 1..."/>
           </div>
-          <div>
-            <label class="muted">Tips</label>
-            <div class="muted">Add your USDT networks below (TRC20, ERC20, BEP20, etc.).</div>
+          <div class="card" style="background:#fafafa;">
+            <h3 style="margin-top:0;">USDT Networks</h3>
+            <div id="networksList" class="list" style="margin-top:8px;"></div>
+            <div class="row row-3" style="margin-top:8px;">
+              <div><input id="newNetName" placeholder="TRC20 / ERC20 / BEP20"/></div>
+              <div><input id="newNetAddr" placeholder="USDT address for this network"/></div>
+              <div><button id="addNetwork" class="btn-ghost">Add network</button></div>
+            </div>
           </div>
         </div>
 
-        <div class="card" style="background:#fafafa;">
-          <h3>USDT Networks</h3>
-          <div id="networksList" class="list" style="margin-top:8px;"></div>
+        <div class="card" style="background:#fafafa; margin-top:10px;">
+          <h3 style="margin-top:0;">Online wallet tags by country (used in live chat)</h3>
+          <div id="tagsList" class="list"></div>
           <div class="row row-3" style="margin-top:8px;">
-            <div><input id="newNetName" placeholder="TRC20 / ERC20 / BEP20"/></div>
-            <div><input id="newNetAddr" placeholder="USDT address for this network"/></div>
-            <div><button id="addNetwork" class="btn-ghost">Add network</button></div>
+            <div>
+              <select id="tagCountry">
+                <option value="USA">USA</option>
+                <option value="UK">UK</option>
+                <option value="EU">Eurozone</option>
+                <option value="Canada">Canada</option>
+                <option value="Australia">Australia</option>
+                <option value="Switzerland">Switzerland</option>
+              </select>
+            </div>
+            <div><input id="tagChime"  placeholder="Chime tag (optional)"/></div>
+            <div><input id="tagZelle"  placeholder="Zelle tag/email (optional)"/></div>
+            <div><input id="tagVenmo"  placeholder="@venmo (optional)"/></div>
+            <div><input id="tagPaypal" placeholder="PayPal email (optional)"/></div>
+            <div class="flex" style="align-items:flex-end;">
+              <button id="addTagRow" class="btn-ghost">Add/Update country tags</button>
+            </div>
           </div>
         </div>
 
         <div style="margin-top:10px;">
-          <button id="saveWallets" class="btn-primary">Save wallets</button>
+          <button id="saveWallets" class="btn-primary">Save wallets & tags</button>
           <span id="walletsMsg" class="muted"></span>
         </div>
       </div>
 
-      <!-- Online Wallet Tags per Country -->
-      <div class="card">
-        <div class="header">
-          <h2>Online Wallet Tags (per country)</h2>
-          <span class="muted">Collection: <code>walletTags</code> (doc id = country code)</span>
-        </div>
-
-        <div class="row row-4" style="margin-top:10px;">
-          <div>
-            <label>Country</label>
-            <select id="tagCountry">
-              <option value="US">USA</option><option value="UK">UK</option><option value="EU">EU</option>
-              <option value="CA">Canada</option><option value="AU">Australia</option><option value="CH">Switzerland</option>
-            </select>
-          </div>
-          <div>
-            <label>Chime tag (optional)</label>
-            <input id="tagChime" placeholder="Chime tag"/>
-          </div>
-          <div>
-            <label>Zelle tag/email (optional)</label>
-            <input id="tagZelle" placeholder="Zelle"/>
-          </div>
-          <div>
-            <label>PayPal email (optional)</label>
-            <input id="tagPaypal" placeholder="PayPal email"/>
-          </div>
-        </div>
-        <div class="row row-4" style="margin-top:10px;">
-          <div>
-            <label>Venmo @ (optional)</label>
-            <input id="tagVenmo" placeholder="@venmo"/>
-          </div>
-          <div class="muted" style="display:flex;align-items:flex-end;">Customers will see these after they choose the country.</div>
-        </div>
-
-        <div class="flex" style="margin-top:10px;">
-          <button id="loadTags" class="btn-ghost">Load for country</button>
-          <button id="saveTags" class="btn-primary">Save tags</button>
-          <span id="tagsMsg" class="muted"></span>
-        </div>
-      </div>
-
-      <!-- Announcements -->
+      <!-- ANNOUNCEMENTS -->
       <div class="card">
         <div class="header">
           <h2>Announcements</h2>
@@ -286,19 +284,22 @@
     </section>
   </main>
 
-  <!-- Admin script -->
+  <!-- Admin script (self-contained Firebase init) -->
   <script type="module">
-    /* ========= Firebase (standalone in this file) ========= */
+    /* ===== Firebase SDK (modular) ===== */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import {
       getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import {
-      getFirestore, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
-      collection, query, where
+      getFirestore, doc, getDoc, setDoc, updateDoc, addDoc,
+      collection, getDocs, deleteDoc, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import {
+      getStorage, ref as storageRef, uploadBytes, getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-    // --- YOUR CONFIG (as you sent) ---
+    /* ===== YOUR CONFIG ===== */
     const firebaseConfig = {
       apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
       authDomain: "toolspay-54167.firebaseapp.com",
@@ -311,11 +312,9 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+    const storage = getStorage(app);
 
-    /* ========= UI refs ========= */
-    const whoami = document.getElementById('whoami');
-    const logoutBtn = document.getElementById('logoutBtn');
-
+    /* ===== UI refs ===== */
     const authBlock  = document.getElementById('authBlock');
     const adminPanel = document.getElementById('adminPanel');
     const notAdmin   = document.getElementById('notAdmin');
@@ -324,6 +323,7 @@
     const passEl  = document.getElementById('password');
     const loginBtn = document.getElementById('loginBtn');
     const resetBtn = document.getElementById('resetBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
     const authMsg = document.getElementById('authMsg');
 
     const grantBtn = document.getElementById('grantBtn');
@@ -335,20 +335,27 @@
     const saveRates = document.getElementById('saveRates');
     const ratesMsg = document.getElementById('ratesMsg');
 
-    // Gift cards
-    const gcBrand = document.getElementById('gcBrand');
-    const gcCountry = document.getElementById('gcCountry');
-    const gcRate = document.getElementById('gcRate');
-    const gcActive = document.getElementById('gcActive');
-    const gcMin = document.getElementById('gcMin');
-    const gcMax = document.getElementById('gcMax');
-    const gcLogo = document.getElementById('gcLogo');
-    const addGiftcard = document.getElementById('addGiftcard');
-    const gcMsg = document.getElementById('gcMsg');
-    const gcTbody = document.getElementById('gcTbody');
-    const refreshGc = document.getElementById('refreshGc');
+    // Giftcards form/list
+    const gcName  = document.getElementById('gcName');
+    const gcCode  = document.getElementById('gcCode');
+    const gcActive= document.getElementById('gcActive');
+    const gcMin   = document.getElementById('gcMin');
+    const gcMax   = document.getElementById('gcMax');
+    const gcLogo  = document.getElementById('gcLogo');
 
-    // Wallets
+    const rateCountry = document.getElementById('rateCountry');
+    const rateValue   = document.getElementById('rateValue');
+    const addRate     = document.getElementById('addRate');
+    const rateList    = document.getElementById('rateList');
+
+    const saveGiftcard = document.getElementById('saveGiftcard');
+    const resetGiftcard= document.getElementById('resetGiftcard');
+    const gcMsg        = document.getElementById('gcMsg');
+
+    const refreshCards = document.getElementById('refreshCards');
+    const cardsBody    = document.getElementById('cardsBody');
+
+    // Wallets & tags
     const btcAddress = document.getElementById('btcAddress');
     const networksList = document.getElementById('networksList');
     const newNetName = document.getElementById('newNetName');
@@ -356,32 +363,33 @@
     const addNetwork = document.getElementById('addNetwork');
     const saveWallets = document.getElementById('saveWallets');
     const walletsMsg = document.getElementById('walletsMsg');
-    let usdtNetworks = [];
 
-    // Online wallet tags per country
+    const tagsList = document.getElementById('tagsList');
     const tagCountry = document.getElementById('tagCountry');
-    const tagChime = document.getElementById('tagChime');
-    const tagZelle = document.getElementById('tagZelle');
-    const tagPaypal = document.getElementById('tagPaypal');
-    const tagVenmo = document.getElementById('tagVenmo');
-    const loadTags = document.getElementById('loadTags');
-    const saveTags = document.getElementById('saveTags');
-    const tagsMsg = document.getElementById('tagsMsg');
+    const tagChime   = document.getElementById('tagChime');
+    const tagZelle   = document.getElementById('tagZelle');
+    const tagVenmo   = document.getElementById('tagVenmo');
+    const tagPaypal  = document.getElementById('tagPaypal');
+    const addTagRow  = document.getElementById('addTagRow');
 
     // Announcements
     const annTextarea = document.getElementById('annTextarea');
-    const saveAnn = document.getElementById('saveAnn');
-    const annMsg = document.getElementById('annMsg');
+    const saveAnn     = document.getElementById('saveAnn');
+    const annMsg      = document.getElementById('annMsg');
 
-    /* ========= Helpers ========= */
-    function keyForGC(brand, country){
-      // make a stable id like "Amazon_US"
-      return `${brand.replace(/[^a-z0-9]+/gi,'').toLowerCase()}_${country}`;
-    }
+    /* ===== State ===== */
+    let usdtNetworks = [];       // [{network, address}]
+    let tagsByCountry = [];      // [{country, chime, zelle, venmo, paypal}]
+    let editingCardId = null;    // doc id we are editing
+    let currentRatesMap = {};    // { country: rateNumber }
+
+    /* ===== Helpers ===== */
+    function show(el) { el.classList.remove('hidden'); }
+    function hide(el) { el.classList.add('hidden'); }
 
     function renderNetworks() {
       networksList.innerHTML = '';
-      if (!usdtNetworks || usdtNetworks.length === 0) {
+      if (!usdtNetworks.length) {
         networksList.innerHTML = '<div class="muted">No USDT networks yet.</div>';
         return;
       }
@@ -390,13 +398,12 @@
         row.className = 'flex';
         row.style.justifyContent = 'space-between';
         row.style.padding = '6px 0';
-
         row.innerHTML = `
-          <div class="flex" style="min-width:0">
+          <div class="flex">
             <span class="tag">${n.network}</span>
-            <span class="muted" style="margin-left:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${n.address}</span>
+            <span class="muted" style="margin-left:6px;">${n.address}</span>
           </div>
-          <button data-idx="${idx}" class="btn-ghost btn-small">Remove</button>
+          <button data-idx="${idx}" class="btn-ghost">Remove</button>
         `;
         row.querySelector('button').onclick = (e) => {
           const i = Number(e.currentTarget.getAttribute('data-idx'));
@@ -407,66 +414,91 @@
       });
     }
 
-    function rowHtmlForGiftcard(id, d) {
-      const active = d.active ? '<span class="pill">Active</span>' : '<span class="pill" style="background:#ffe4e6;">Inactive</span>';
-      return `
-        <tr data-id="${id}">
-          <td>${d.brand || ''}</td>
-          <td>${d.country || ''}</td>
-          <td>₦${Number(d.rateNgnPerUsd||0)}</td>
-          <td>${d.minUsd || '-'}</td>
-          <td>${d.maxUsd || '-'}</td>
-          <td>${active}</td>
-          <td>
-            <button class="btn-ghost btn-small js-edit">Edit</button>
-            <button class="btn-danger btn-small js-del">Delete</button>
-          </td>
-        </tr>
-      `;
-    }
-
-    async function refreshGiftcardsTable() {
-      gcTbody.innerHTML = '<tr><td colspan="7" class="muted">Loading...</td></tr>';
-      const snap = await getDocs(collection(db, 'giftcards'));
-      const rows = [];
-      snap.forEach(docu => {
-        const d = docu.data();
-        rows.push(rowHtmlForGiftcard(docu.id, d));
-      });
-      gcTbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="7" class="muted">No items yet.</td></tr>';
-
-      // wire actions
-      gcTbody.querySelectorAll('.js-edit').forEach(btn => {
-        btn.onclick = async () => {
-          const tr = btn.closest('tr');
-          const id = tr.getAttribute('data-id');
-          const s = await getDoc(doc(db, 'giftcards', id));
-          if (!s.exists()) return;
-          const d = s.data();
-          gcBrand.value = d.brand || 'Amazon';
-          gcCountry.value = d.country || 'US';
-          gcRate.value = d.rateNgnPerUsd || '';
-          gcActive.value = d.active ? 'true' : 'false';
-          gcMin.value = d.minUsd || '';
-          gcMax.value = d.maxUsd || '';
-          gcLogo.value = d.logoUrl || '';
-          window._editingGiftcardId = id; // flag edit mode
-          gcMsg.textContent = 'Loaded for editing.';
+    function renderTags() {
+      tagsList.innerHTML = '';
+      if (!tagsByCountry.length) {
+        tagsList.innerHTML = '<div class="muted">No country tags yet.</div>';
+        return;
+      }
+      tagsByCountry.forEach((t, idx) => {
+        const row = document.createElement('div');
+        row.className = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.padding = '6px 0';
+        row.innerHTML = `
+          <div class="flex">
+            <span class="tag">${t.country}</span>
+            <span class="muted" style="margin-left:6px;">
+              ${t.chime?`Chime:${t.chime} `:''}
+              ${t.zelle?`Zelle:${t.zelle} `:''}
+              ${t.venmo?`Venmo:${t.venmo} `:''}
+              ${t.paypal?`PayPal:${t.paypal} `:''}
+            </span>
+          </div>
+          <div class="flex">
+            <button data-idx="${idx}" class="btn-ghost">Edit</button>
+            <button data-del="${idx}" class="btn-danger">Delete</button>
+          </div>
+        `;
+        row.querySelector('button[data-idx]').onclick = () => {
+          tagCountry.value = t.country;
+          tagChime.value = t.chime || '';
+          tagZelle.value = t.zelle || '';
+          tagVenmo.value = t.venmo || '';
+          tagPaypal.value= t.paypal|| '';
+          // will overwrite on Add/Update
         };
-      });
-
-      gcTbody.querySelectorAll('.js-del').forEach(btn => {
-        btn.onclick = async () => {
-          const tr = btn.closest('tr');
-          const id = tr.getAttribute('data-id');
-          if (!confirm('Delete this gift card entry?')) return;
-          await deleteDoc(doc(db, 'giftcards', id));
-          refreshGiftcardsTable();
+        row.querySelector('button[data-del]').onclick = (e) => {
+          const i = Number(e.currentTarget.getAttribute('data-del'));
+          tagsByCountry.splice(i,1);
+          renderTags();
         };
+        tagsList.appendChild(row);
       });
     }
 
-    /* ========= Auth ========= */
+    function renderRates() {
+      rateList.innerHTML = '';
+      const keys = Object.keys(currentRatesMap);
+      if (!keys.length) {
+        rateList.innerHTML = '<div class="muted">No per-country rates yet.</div>';
+        return;
+      }
+      keys.forEach((c) => {
+        const row = document.createElement('div');
+        row.className = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.padding = '6px 0';
+        row.innerHTML = `
+          <div class="flex">
+            <span class="tag">${c}</span>
+            <span class="muted" style="margin-left:6px;">₦ ${currentRatesMap[c]} per $1</span>
+          </div>
+          <button data-c="${c}" class="btn-ghost">Remove</button>
+        `;
+        row.querySelector('button').onclick = (e) => {
+          const cc = e.currentTarget.getAttribute('data-c');
+          delete currentRatesMap[cc];
+          renderRates();
+        };
+        rateList.appendChild(row);
+      });
+    }
+
+    function clearCardForm() {
+      editingCardId = null;
+      gcName.value = '';
+      gcCode.value = '';
+      gcActive.checked = true;
+      gcMin.value = '';
+      gcMax.value = '';
+      gcLogo.value = '';
+      currentRatesMap = {};
+      renderRates();
+      gcMsg.textContent = '';
+    }
+
+    /* ===== AUTH ===== */
     loginBtn.onclick = async () => {
       authMsg.textContent = 'Signing in...';
       try {
@@ -496,7 +528,7 @@
     grantBtn.onclick = async () => {
       if (!auth.currentUser?.email) { grantMsg.textContent = 'Sign in first.'; return; }
       try {
-        await setDoc(doc(db, 'admins', auth.currentUser.email), { createdAt: Date.now() });
+        await setDoc(doc(db, 'admins', auth.currentUser.email), { createdAt: serverTimestamp() }, { merge: true });
         grantMsg.textContent = 'This email is now an admin. Reloading...';
         setTimeout(()=>location.reload(), 800);
       } catch (e) {
@@ -505,36 +537,21 @@
     };
 
     onAuthStateChanged(auth, async (user) => {
-      whoami.textContent = user?.email ? user.email : '';
       if (!user) {
-        // not signed in
-        authBlock.classList.remove('hidden');
-        adminPanel.classList.add('hidden');
-        notAdmin.classList.add('hidden');
-        return;
+        show(authBlock); hide(adminPanel); hide(notAdmin); return;
       }
-      // check admin allowlist
       const a = await getDoc(doc(db, 'admins', user.email));
       if (!a.exists()) {
-        authBlock.classList.add('hidden');
-        notAdmin.classList.remove('hidden');
-        adminPanel.classList.add('hidden');
-        return;
+        hide(authBlock); hide(adminPanel); show(notAdmin); return;
       }
-      // authorized
-      authBlock.classList.add('hidden');
-      notAdmin.classList.add('hidden');
-      adminPanel.classList.remove('hidden');
-
-      // Load current docs
+      hide(authBlock); hide(notAdmin); show(adminPanel);
       await loadRates();
       await loadWallets();
-      await refreshGiftcardsTable();
       await loadAnnouncements();
-      await loadCountryTags(); // load defaults for current selection
+      await loadCards();
     });
 
-    /* ========= Loaders ========= */
+    /* ===== LOAD/SAVE: Rates ===== */
     async function loadRates() {
       try {
         const r = await getDoc(doc(db, 'rates', 'default'));
@@ -545,50 +562,6 @@
         }
       } catch (e) { console.warn(e); }
     }
-
-    async function loadWallets() {
-      try {
-        const w = await getDoc(doc(db, 'wallets', 'default'));
-        if (w.exists()) {
-          const d = w.data();
-          btcAddress.value = d?.btc?.address || '';
-          usdtNetworks = (d?.usdt?.networks || []).slice();
-          renderNetworks();
-        } else {
-          usdtNetworks = [];
-          renderNetworks();
-        }
-      } catch (e) { console.warn(e); }
-    }
-
-    async function loadAnnouncements() {
-      try {
-        const a = await getDoc(doc(db, 'announcements', 'default'));
-        if (a.exists()) {
-          const d = a.data();
-          const arr = Array.isArray(d.items) ? d.items : [];
-          annTextarea.value = arr.join('\n');
-        }
-      } catch (e) { console.warn(e); }
-    }
-
-    async function loadCountryTags() {
-      tagsMsg.textContent = 'Loading...';
-      try {
-        const id = tagCountry.value;
-        const s = await getDoc(doc(db, 'walletTags', id));
-        const d = s.exists() ? s.data() : {};
-        tagChime.value  = d.chime  || '';
-        tagZelle.value  = d.zelle  || '';
-        tagPaypal.value = d.paypal || '';
-        tagVenmo.value  = d.venmo  || '';
-        tagsMsg.textContent = '';
-      } catch (e) {
-        tagsMsg.textContent = 'Error: ' + (e.message || e.code);
-      }
-    }
-
-    /* ========= Savers / Actions ========= */
     saveRates.onclick = async () => {
       ratesMsg.textContent = 'Saving...';
       try {
@@ -604,22 +577,52 @@
       }
     };
 
+    /* ===== LOAD/SAVE: Wallets & Tags ===== */
     addNetwork.onclick = () => {
       const net = (newNetName.value || '').trim();
       const addr = (newNetAddr.value || '').trim();
       if (!net || !addr) return;
       usdtNetworks.push({ network: net, address: addr });
-      newNetName.value = '';
-      newNetAddr.value = '';
+      newNetName.value = ''; newNetAddr.value = '';
       renderNetworks();
     };
+
+    addTagRow.onclick = () => {
+      const c = tagCountry.value;
+      const row = {
+        country: c,
+        chime: (tagChime.value||'').trim(),
+        zelle: (tagZelle.value||'').trim(),
+        venmo: (tagVenmo.value||'').trim(),
+        paypal:(tagPaypal.value||'').trim()
+      };
+      const idx = tagsByCountry.findIndex(t => t.country === c);
+      if (idx >= 0) tagsByCountry[idx] = row; else tagsByCountry.push(row);
+      tagChime.value = tagZelle.value = tagVenmo.value = tagPaypal.value = '';
+      renderTags();
+    };
+
+    async function loadWallets() {
+      try {
+        const w = await getDoc(doc(db, 'wallets', 'default'));
+        if (w.exists()) {
+          const d = w.data();
+          btcAddress.value = d?.btc?.address || '';
+          usdtNetworks = (d?.usdt?.networks || []).slice();
+          tagsByCountry = (d?.tagsByCountry || []).slice();
+        } else { usdtNetworks = []; tagsByCountry = []; }
+        renderNetworks();
+        renderTags();
+      } catch (e) { console.warn(e); }
+    }
 
     saveWallets.onclick = async () => {
       walletsMsg.textContent = 'Saving...';
       try {
         const payload = {
           btc: { address: (btcAddress.value || '').trim() },
-          usdt: { networks: usdtNetworks }
+          usdt: { networks: usdtNetworks },
+          tagsByCountry
         };
         await setDoc(doc(db, 'wallets', 'default'), payload, { merge: true });
         walletsMsg.textContent = 'Saved ✓';
@@ -629,60 +632,21 @@
       }
     };
 
-    addGiftcard.onclick = async () => {
-      gcMsg.textContent = 'Saving...';
+    /* ===== LOAD/SAVE: Announcements ===== */
+    async function loadAnnouncements() {
       try {
-        const brand = gcBrand.value;
-        const country = gcCountry.value;
-        const id = window._editingGiftcardId || keyForGC(brand, country); // edit uses stored id
-        const payload = {
-          brand,
-          country,
-          rateNgnPerUsd: Number(gcRate.value || 0),
-          active: gcActive.value === 'true',
-          minUsd: Number(gcMin.value || 0),
-          maxUsd: Number(gcMax.value || 0),
-          logoUrl: (gcLogo.value || '').trim()
-        };
-        await setDoc(doc(db, 'giftcards', id), payload, { merge: true });
-        window._editingGiftcardId = null;
-        gcMsg.textContent = 'Saved ✓';
-        setTimeout(()=> gcMsg.textContent = '', 1200);
-        await refreshGiftcardsTable();
-      } catch (e) {
-        gcMsg.textContent = 'Error: ' + (e.message || e.code);
-      }
-    };
-
-    refreshGc.onclick = refreshGiftcardsTable;
-
-    tagCountry.onchange = loadCountryTags;
-    loadTags.onclick = loadCountryTags;
-
-    saveTags.onclick = async () => {
-      tagsMsg.textContent = 'Saving...';
-      try {
-        const id = tagCountry.value;
-        await setDoc(doc(db, 'walletTags', id), {
-          chime: (tagChime.value||'').trim(),
-          zelle: (tagZelle.value||'').trim(),
-          paypal: (tagPaypal.value||'').trim(),
-          venmo: (tagVenmo.value||'').trim()
-        }, { merge: true });
-        tagsMsg.textContent = 'Saved ✓';
-        setTimeout(()=> tagsMsg.textContent = '', 1200);
-      } catch (e) {
-        tagsMsg.textContent = 'Error: ' + (e.message || e.code);
-      }
-    };
-
+        const a = await getDoc(doc(db, 'announcements', 'default'));
+        if (a.exists()) {
+          const d = a.data();
+          annTextarea.value = (Array.isArray(d.items) ? d.items : []).join('\n');
+        }
+      } catch (e) { console.warn(e); }
+    }
     saveAnn.onclick = async () => {
       annMsg.textContent = 'Saving...';
       try {
         const items = (annTextarea.value || '')
-          .split('\n')
-          .map(s => s.trim())
-          .filter(Boolean);
+          .split('\n').map(s => s.trim()).filter(Boolean);
         await setDoc(doc(db, 'announcements', 'default'), { items }, { merge: true });
         annMsg.textContent = 'Saved ✓';
         setTimeout(()=> annMsg.textContent = '', 1200);
@@ -690,6 +654,105 @@
         annMsg.textContent = 'Error: ' + (e.message || e.code);
       }
     };
+
+    /* ===== GIFT CARDS (CRUD) ===== */
+    addRate.onclick = () => {
+      const c = rateCountry.value;
+      const v = Number(rateValue.value || 0);
+      if (!v) return;
+      currentRatesMap[c] = v;
+      rateValue.value = '';
+      renderRates();
+    };
+
+    async function loadCards() {
+      cardsBody.innerHTML = '<tr><td colspan="7" class="muted">Loading...</td></tr>';
+      const snap = await getDocs(collection(db, 'giftcards'));
+      const rows = [];
+      snap.forEach((docu) => {
+        const d = docu.data();
+        const rates = d.rates || {};
+        const rateStr = Object.keys(rates).map(k => `${k}: ₦${rates[k]}`).join(', ');
+        rows.push(`
+          <tr>
+            <td>${d.logoUrl ? `<img class="thumb" src="${d.logoUrl}">` : '-'}</td>
+            <td>${d.name || '-'}</td>
+            <td><code>${docu.id}</code></td>
+            <td>${d.active ? '<span class="pill pill-yes">Yes</span>' : '<span class="pill pill-no">No</span>'}</td>
+            <td>${d.minAmount||'-'} – ${d.maxAmount||'-'}</td>
+            <td>${rateStr || '-'}</td>
+            <td class="flex">
+              <button data-edit="${docu.id}" class="btn-ghost">Edit</button>
+              <button data-del="${docu.id}"  class="btn-danger">Delete</button>
+            </td>
+          </tr>
+        `);
+      });
+      cardsBody.innerHTML = rows.join('') || '<tr><td colspan="7" class="muted">No gift cards yet.</td></tr>';
+
+      // wire buttons
+      cardsBody.querySelectorAll('button[data-edit]').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.getAttribute('data-edit');
+          const s = await getDoc(doc(db, 'giftcards', id));
+          if (!s.exists()) return;
+          const d = s.data();
+          editingCardId = id;
+          gcName.value = d.name || '';
+          gcCode.value = id;
+          gcActive.checked = !!d.active;
+          gcMin.value = d.minAmount || '';
+          gcMax.value = d.maxAmount || '';
+          currentRatesMap = { ...(d.rates || {}) };
+          renderRates();
+          window.scrollTo({ top: gcForm.offsetTop - 20, behavior: 'smooth' });
+        };
+      });
+      cardsBody.querySelectorAll('button[data-del]').forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.getAttribute('data-del');
+          if (!confirm('Delete this card?')) return;
+          await deleteDoc(doc(db, 'giftcards', id));
+          await loadCards();
+        };
+      });
+    }
+    refreshCards.onclick = loadCards;
+    resetGiftcard.onclick = clearCardForm;
+
+    saveGiftcard.onclick = async () => {
+      gcMsg.textContent = 'Saving...';
+      try {
+        const id = (gcCode.value || '').trim();
+        if (!id) { gcMsg.textContent = 'Enter card code (ID).'; return; }
+        const payload = {
+          name: (gcName.value||'').trim(),
+          active: !!gcActive.checked,
+          minAmount: Number(gcMin.value || 0),
+          maxAmount: Number(gcMax.value || 0),
+          rates: currentRatesMap,
+          updatedAt: serverTimestamp()
+        };
+
+        // create/update doc
+        await setDoc(doc(db, 'giftcards', id), payload, { merge: true });
+
+        // optional logo upload
+        if (gcLogo.files && gcLogo.files[0]) {
+          const f = gcLogo.files[0];
+          const ref = storageRef(storage, `giftcard-logos/${id}-${Date.now()}`);
+          await uploadBytes(ref, f);
+          const url = await getDownloadURL(ref);
+          await updateDoc(doc(db, 'giftcards', id), { logoUrl: url });
+        }
+
+        gcMsg.textContent = 'Saved ✓';
+        setTimeout(()=> gcMsg.textContent = '', 1200);
+        await loadCards();
+      } catch (e) {
+        gcMsg.textContent = 'Error: ' + (e.message || e.code);
+      }
+    };
   </script>
 </body>
-</html>
+  </html>

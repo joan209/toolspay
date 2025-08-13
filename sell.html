@@ -26,6 +26,81 @@
   </form>
 
   <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, doc, getDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  const sellForm = document.getElementById("sellForm");
+
+  let currentUser = null;
+  let savedPaymentDetails = null;
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+
+      // Get saved payment details from Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        savedPaymentDetails = userDoc.data().paymentMethod || {};
+      } else {
+        alert("Please set your payment method in the dashboard before selling a gift card.");
+        window.location.href = "dashboard.html";
+      }
+    } else {
+      window.location.href = "login.html";
+    }
+  });
+
+  sellForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const cardType = document.getElementById("cardType").value;
+    const amount = document.getElementById("amount").value;
+    const file = document.getElementById("proof").files[0];
+
+    if (!file) {
+      alert("Please upload proof of the gift card.");
+      return;
+    }
+
+    // Upload proof image
+    const proofRef = ref(storage, `proofs/${Date.now()}_${file.name}`);
+    await uploadBytes(proofRef, file);
+    const proofURL = await getDownloadURL(proofRef);
+
+    // Save trade to Firestore with payment details
+    await addDoc(collection(db, "trades"), {
+      userId: currentUser.uid,
+      email: currentUser.email,
+      cardType: cardType,
+      amount: amount,
+      proofURL: proofURL,
+      paymentDetails: savedPaymentDetails,
+      status: "Pending",
+      createdAt: serverTimestamp()
+    });
+
+    alert("Gift card submitted successfully! We will process your payment soon.");
+    window.location.href = "dashboard.html";
+  });
+  </script>
     import { auth, onAuthStateChanged, createTradeRequest, saveGiftcard } from "./firebase-auth.js";
 
     const giftCardForm = document.getElementById("giftCardForm");

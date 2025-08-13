@@ -16,17 +16,19 @@
     <label for="usdAmount">USD Value:</label>
     <input type="number" id="usdAmount" name="usdAmount" required />
 
-    <label for="uploadFile">Upload Gift Card Image:</label>
+    <label for="logoFile">Gift Card Logo:</label>
+    <input type="file" id="logoFile" name="logoFile" accept="image/*" required />
+
+    <label for="uploadFile">Gift Card Proof Image:</label>
     <input type="file" id="uploadFile" name="uploadFile" accept="image/*" required />
 
     <button type="submit">Submit</button>
   </form>
 
   <script type="module">
-    import { auth, onAuthStateChanged, createTradeRequest } from "./firebase-auth.js";
+    import { auth, onAuthStateChanged, createTradeRequest, saveGiftcard } from "./firebase-auth.js";
 
     const giftCardForm = document.getElementById("giftCardForm");
-
     let currentUser = null;
 
     // Check login status
@@ -38,12 +40,12 @@
       }
     });
 
-    // Form submission
     giftCardForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const cardName = document.getElementById("cardName").value;
       const usdAmount = document.getElementById("usdAmount").value;
+      const logoFile = document.getElementById("logoFile").files[0];
       const uploadFile = document.getElementById("uploadFile").files[0];
 
       if (!currentUser) {
@@ -52,6 +54,13 @@
       }
 
       try {
+        // Save the gift card brand/logo in Firestore
+        await saveGiftcard(cardName.toLowerCase().replace(/\s+/g, "-"), {
+          name: cardName,
+          logoUrl: ""
+        }, logoFile);
+
+        // Create the trade request for selling the card
         await createTradeRequest({
           uid: currentUser.uid,
           email: currentUser.email,

@@ -1,42 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - Toolspay</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Toolspay — Create Account</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    body{background:#0a0a0b;color:#fff}
+    .card{max-width:420px;margin:40px auto;background:#111;border:1px solid #222;border-radius:16px;padding:24px}
+    .brand{display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:12px}
+    .brand-badge{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#0ea5e9,#22c55e);}
+    .muted{color:#9aa3ae}
+    .input{width:100%;padding:12px;border-radius:10px;border:1px solid #2b2f36;background:#0f1114;color:#fff}
+    .btn{width:100%;padding:12px;border-radius:10px;border:0;background:#22c55e;font-weight:700;color:#0b1117}
+    .btn:disabled{opacity:.6}
+    .row{display:grid;gap:10px}
+    .alt{margin-top:10px;text-align:center}
+    a{color:#60a5fa}
+  </style>
 </head>
 <body>
-
-    <!-- Loader -->
-    <div id="signupLoader" style="display:none; text-align:center; color:blue;">
-        Creating your account, please wait...
+  <div class="card">
+    <div class="brand">
+      <div class="brand-badge"></div>
+      <div>
+        <h2 style="margin:0;">Toolspay</h2>
+        <div class="muted">Create your account</div>
+      </div>
     </div>
 
-    <!-- Signup Form -->
-    <div class="signup-container">
-        <h2>Create Your Account</h2>
-        <form id="signupForm">
-            <label for="fullName">Full Name</label>
-            <input type="text" id="fullName" placeholder="Enter your full name" required>
-
-            <label for="email">Email</label>
-            <input type="email" id="email" placeholder="Enter your email" required>
-
-            <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Enter password" required>
-
-            <label for="confirmPassword">Confirm Password</label>
-            <input type="password" id="confirmPassword" placeholder="Confirm password" required>
-
-            <button type="submit">Sign Up</button>
-        </form>
-
-        <p id="signupError" style="color:red; margin-top:10px;"></p>
-
-        <p>Already have an account? <a href="login.html">Login here</a></p>
+    <div class="row">
+      <input id="fullName" class="input" placeholder="Full name" autocomplete="name"/>
+      <input id="email" class="input" placeholder="Email" type="email" autocomplete="email"/>
+      <input id="password" class="input" placeholder="Password" type="password" autocomplete="new-password"/>
+      <input id="confirm" class="input" placeholder="Confirm password" type="password" autocomplete="new-password"/>
+      <button id="signupBtn" class="btn">Create account</button>
+      <div id="msg" class="muted" style="min-height:18px;"></div>
+      <div class="alt">Already have an account? <a href="login.html">Log in</a></div>
     </div>
+  </div>
 
-    <script type="module" src="signup.js"></script>
+  <script type="module">
+    import { createUserWithEmailAndPassword, signOut } from './firebase-auth.js';
+    import { sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const $ = id => document.getElementById(id);
+    const btn = $('signupBtn');
+    const msg = $('msg');
+
+    btn.addEventListener('click', async () => {
+      msg.textContent = '';
+      const name = $('fullName').value.trim();
+      const email = $('email').value.trim();
+      const pass = $('password').value;
+      const conf = $('confirm').value;
+
+      if(!name || !email || !pass || !conf){ msg.textContent = 'Please fill all fields.'; return; }
+      if(pass !== conf){ msg.textContent = 'Passwords do not match.'; return; }
+      btn.disabled = true;
+
+      try{
+        const cred = await createUserWithEmailAndPassword(email, pass);
+        // set display name client-side (optional)
+        try { cred.user.displayName = name; } catch(_) {}
+        await sendEmailVerification(cred.user);
+        await signOut(); // force verify-before-login
+        msg.innerHTML = 'Verification link sent to <strong>'+email+'</strong>. Open it, then <a href="login.html">log in</a>.';
+      }catch(e){
+        msg.textContent = e.message || 'Sign up failed';
+      }finally{
+        btn.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>

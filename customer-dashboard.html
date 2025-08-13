@@ -1,114 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Customer Dashboard</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Toolspay — Dashboard</title>
+  <link rel="stylesheet" href="style.css"/>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
-    header { background: #333; color: white; padding: 10px; text-align: center; }
-    .container { max-width: 800px; margin: auto; padding: 20px; background: white; }
-    .wallet-section, .rates-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
-    h2 { margin-top: 0; }
-    button { background: #28a745; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; }
-    button:hover { background: #218838; }
+    .container { max-width: 980px; margin: 0 auto; padding: 16px; }
+    .card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 16px; margin: 12px 0; }
+    .grid { display:grid; gap:12px; }
+    @media (min-width:700px){ .grid-3{ grid-template-columns: 1fr 1fr 1fr; } }
+    .btn { padding: 14px; border-radius:12px; border:2px solid #111; cursor:pointer; text-align:center; font-weight:700; }
+    .btn:hover{ opacity:.9; }
+    .btn-blue{ background:#0ea5e9; color:#fff; border-color:#0ea5e9; }
+    .btn-green{ background:#10b981; color:#fff; border-color:#10b981; }
+    .btn-purple{ background:#8b5cf6; color:#fff; border-color:#8b5cf6; }
+    .muted{ color:#6b7280; font-size:12px; }
   </style>
 </head>
 <body>
-
-  <header>
-    <h1>Welcome to Your Dashboard</h1>
+  <header style="padding:16px; border-bottom:1px solid #eee; background:#0b1220;">
+    <div class="container" style="color:#fff; display:flex; align-items:center; justify-content:space-between;">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#111,#ffd700);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;">TP</div>
+        <div>
+          <div style="font-weight:800;">Toolspay — Customer</div>
+          <div class="muted" style="color:#cbd5e1;">Sell Gift Cards • Crypto • Online Wallet</div>
+        </div>
+      </div>
+      <button id="logoutBtn" class="btn">Sign out</button>
+    </div>
   </header>
 
-  <div class="container">
-
-    <div class="rates-section">
-      <h2>Current Rates</h2>
-      <p>USD to NGN: <span id="usdToNgn">Loading...</span></p>
-      <p>Gift Card Base Rate: <span id="giftcardBase">Loading...</span></p>
+  <main class="container">
+    <div class="card" id="annCard">
+      <h3>Announcements</h3>
+      <ul id="annList" class="muted"></ul>
     </div>
 
-    <div class="wallet-section">
-      <h2>Wallet Addresses</h2>
-      <h3>Bitcoin (BTC):</h3>
-      <p id="btcAddress">Loading...</p>
-
-      <h3>USDT Wallets:</h3>
-      <ul id="usdtNetworks">Loading...</ul>
+    <div class="card">
+      <h3>Rates Snapshot</h3>
+      <div id="ratesLine" class="muted">Loading rates...</div>
     </div>
 
-    <div class="wallet-section">
-      <h2>Sell from Online Digital Wallet</h2>
-      <p>You can sell from Chime, Zelle, Venmo, PayPal — click the button below to contact admin for payment tag.</p>
-      <button onclick="openLiveChat()">Contact Admin to Sell</button>
+    <div class="grid grid-3">
+      <a class="btn btn-blue" href="sell-giftcard.html">Sell Gift Card</a>
+      <a class="btn btn-green" href="sell-crypto.html">Sell Crypto (BTC/USDT)</a>
+      <a class="btn btn-purple" href="sell-wallet.html">Sell Online Wallet Funds</a>
     </div>
+  </main>
 
-  </div>
+  <!-- Tawk live chat (already working for you) -->
+  <!-- PASTE your Tawk script here if not already globally included -->
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-  
-  <script>
-    // Firebase Config
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-    };
+  <script type="module">
+    import { auth, db, signOut, onAuthStateChanged, doc, getDoc } from './firebase-auth.js';
 
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const logoutBtn = document.getElementById('logoutBtn');
+    logoutBtn.onclick = async ()=>{ await signOut(); location.href='index.html'; };
 
-    async function loadRatesAndWallets() {
-      const ratesDoc = await db.collection("rates").doc("default").get();
-      if (ratesDoc.exists) {
-        const data = ratesDoc.data();
-        document.getElementById("usdToNgn").innerText = data.usdToNgn;
-        document.getElementById("giftcardBase").innerText = data.giftcardBase;
-      }
-
-      const walletsDoc = await db.collection("wallets").doc("default").get();
-      if (walletsDoc.exists) {
-        const data = walletsDoc.data();
-        document.getElementById("btcAddress").innerText = data.btc.address;
-
-        const list = document.getElementById("usdtNetworks");
-        list.innerHTML = "";
-        data.usdt.networks.forEach(net => {
-          const li = document.createElement("li");
-          li.innerText = `${net.network}: ${net.address}`;
-          list.appendChild(li);
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user){ location.href='index.html'; return; }
+      // load announcements
+      const a = await getDoc(doc(db,'announcements','default'));
+      const list = document.getElementById('annList');
+      list.innerHTML='';
+      if(a.exists()){
+        const items = Array.isArray(a.data().items)?a.data().items:[];
+        if(!items.length) list.innerHTML = '<li class="muted">No announcements.</li>';
+        items.forEach(tx=>{
+          const li=document.createElement('li'); li.textContent=tx; list.appendChild(li);
         });
-      }
-    }
-
-    function openLiveChat() {
-      if (typeof Tawk_API !== "undefined") {
-        Tawk_API.maximize();
       } else {
-        alert("Live chat not loaded yet, please wait a moment.");
+        list.innerHTML = '<li class="muted">No announcements.</li>';
       }
-    }
 
-    loadRatesAndWallets();
+      // load rates snapshot
+      const r = await getDoc(doc(db,'rates','default'));
+      const line=document.getElementById('ratesLine');
+      if(r.exists()){
+        const d=r.data();
+        line.textContent = `USD→NGN: ₦${d.usdToNgn || '—'} | Default Gift Card: ₦${d.giftcardBase || '—'} per $1`;
+      }else{
+        line.textContent = 'Rates not set yet.';
+      }
+    });
   </script>
-
-  <!-- Tawk.to Live Chat -->
-  <!--Start of Tawk.to Script-->
-  <script type="text/javascript">
-  var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-  (function(){
-  var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-  s1.async=true;
-  s1.src='https://embed.tawk.to/689c8ac8fcd547192dde2522/1j2hns8ng';
-  s1.charset='UTF-8';
-  s1.setAttribute('crossorigin','*');
-  s0.parentNode.insertBefore(s1,s0);
-  })();
-  </script>
-  <!--End of Tawk.to Script-->
-
 </body>
 </html>

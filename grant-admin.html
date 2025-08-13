@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grant Admin Access</title>
+</head>
+<body>
+  <h2>Grant Admin Access</h2>
+
+  <div>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button id="loginBtn">Sign In</button>
+  </div>
+
+  <br>
+
+  <button id="grantBtn" disabled>Grant admin to my email</button>
+
+  <p id="status"></p>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+
+  <script>
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
+      authDomain: "toolspay-54167.firebaseapp.com",
+      projectId: "toolspay-54167",
+      storageBucket: "toolspay-54167.firebasestorage.app",
+      messagingSenderId: "71318117342",
+      appId: "1:71318117342:web:1952711453e19e19281b4f"
+    };
+
+    // Init Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+    const grantBtn = document.getElementById("grantBtn");
+    const status = document.getElementById("status");
+
+    // Login
+    loginBtn.addEventListener("click", async () => {
+      try {
+        const userCredential = await auth.signInWithEmailAndPassword(
+          emailInput.value,
+          passwordInput.value
+        );
+        status.textContent = "Signed in as " + userCredential.user.email;
+        grantBtn.disabled = false;
+      } catch (error) {
+        status.textContent = "Error: " + error.message;
+      }
+    });
+
+    // Grant admin role
+    grantBtn.addEventListener("click", async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          status.textContent = "You must sign in first.";
+          return;
+        }
+        await db.collection("admins").doc(user.uid).set({
+          email: user.email,
+          createdAt: new Date()
+        });
+        status.textContent = "✅ Admin access granted to " + user.email;
+      } catch (error) {
+        status.textContent = "Error: " + error.message;
+      }
+    });
+  </script>
+</body>
+</html>

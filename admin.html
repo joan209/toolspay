@@ -1,30 +1,403 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - ToolsPay</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Toolspay — Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .card { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 16px; margin: 12px 0; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    label { font-size: 14px; color: #333; margin-top: 8px; display:block; }
+    input, textarea, select, button { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
+    button.primary { background: #111; color: gold; font-weight: 700; border: 2px solid gold; cursor: pointer; }
+    button.secondary { background: gold; color: #111; font-weight: 700; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; vertical-align: top; }
+    .tag { display:inline-block; padding:4px 8px; border-radius: 999px; font-size:12px; background:#f2f2f2; }
+    .status-pending { background:#fff7e6; }
+    .status-paid { background:#e6ffed; }
+    .status-rejected { background:#ffe6e9; }
+    .muted { color:#666; font-size:12px; }
+    .danger { color:#b00020; font-weight:700; }
+    .flex { display:flex; gap:8px; align-items:center; }
+    .right { text-align:right; }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Admin Login</h1>
-    </header>
+  <header class="flex" style="justify-content: space-between;">
+    <div>
+      <h1>Toolspay — Admin Panel</h1>
+      <div class="muted">Manage rates, wallets, announcements, customers & trades</div>
+    </div>
+    <div class="flex">
+      <span id="adminEmail" class="muted"></span>
+      <button id="logoutBtn" class="secondary" style="width:auto;">Logout</button>
+    </div>
+  </header>
 
-    <main>
-        <form action="admin-dashboard.html" method="POST" class="login-form">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" placeholder="Enter admin username" required>
+  <!-- ACCESS GUARD -->
+  <div id="guard" class="card" style="display:none;">
+    <div class="danger">Access denied</div>
+    <p>This page is for admins only. Please sign in with an admin email.</p>
+    <button id="toLogin" class="primary" style="width:auto;">Go to Login</button>
+  </div>
 
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="Enter password" required>
+  <!-- RATES -->
+  <section class="card">
+    <h2>Rates (₦ per $1)</h2>
+    <div class="muted">These update instantly for customers. Edit and click “Save Rates”.</div>
+    <div class="row-3" style="margin-top:8px;">
+      <div>
+        <label>Global USD rate (used for BTC/USDT calc hints)</label>
+        <input type="number" id="ngnPerUsd" placeholder="e.g. 1500" />
+      </div>
+      <div>
+        <label>BTC note (optional, shown to customers)</label>
+        <input id="btcNote" placeholder="e.g. Send exact BTC amount after request" />
+      </div>
+      <div>
+        <label>USDT note (optional)</label>
+        <input id="usdtNote" placeholder="e.g. TRC20 preferred" />
+      </div>
+    </div>
 
-            <button type="submit">Login</button>
-        </form>
-    </main>
+    <h3 style="margin-top:14px;">Gift card buy rates (₦ per $1, editable)</h3>
+    <div class="row-3" style="margin-top:8px;">
+      <div><label>Apple / iTunes</label><input type="number" id="rate_apple" /></div>
+      <div><label>Amazon</label><input type="number" id="rate_amazon" /></div>
+      <div><label>Steam</label><input type="number" id="rate_steam" /></div>
+      <div><label>Xbox</label><input type="number" id="rate_xbox" /></div>
+      <div><label>Razer Gold</label><input type="number" id="rate_razer" /></div>
+      <div><label>Visa / Vanilla</label><input type="number" id="rate_visa" /></div>
+    </div>
+    <div class="right" style="margin-top:10px;">
+      <button id="saveRatesBtn" class="primary" style="width:auto;">Save Rates</button>
+    </div>
+    <div id="ratesMsg" class="muted"></div>
+  </section>
 
-    <footer>
-        <p>© 2025 ToolsPay - Admin Panel</p>
-    </footer>
+  <!-- WALLETS -->
+  <section class="card">
+    <h2>Wallets</h2>
+    <div class="row">
+      <div>
+        <label>BTC Wallet Address</label>
+        <input id="btcAddress" placeholder="Your BTC address" />
+      </div>
+      <div>
+        <label>USDT (TRC20) Address</label>
+        <input id="usdt_trc20" placeholder="Your USDT TRC20 address" />
+      </div>
+      <div>
+        <label>USDT (ERC20) Address</label>
+        <input id="usdt_erc20" placeholder="Your USDT ERC20 address" />
+      </div>
+      <div>
+        <label>USDT (BEP20) Address</label>
+        <input id="usdt_bep20" placeholder="Your USDT BEP20 address" />
+      </div>
+    </div>
+    <div class="right" style="margin-top:10px;">
+      <button id="saveWalletsBtn" class="primary" style="width:auto;">Save Wallets</button>
+    </div>
+    <div id="walletsMsg" class="muted"></div>
+  </section>
+
+  <!-- ANNOUNCEMENTS -->
+  <section class="card">
+    <h2>Announcements</h2>
+    <div class="muted">Customers will see this in their dashboard. (Email broadcast requires backend—future step.)</div>
+    <textarea id="annText" rows="3" placeholder="e.g. Trade only on this website. Beware of impersonators."></textarea>
+    <div class="right" style="margin-top:10px;">
+      <button id="saveAnnBtn" class="primary" style="width:auto;">Save Announcement</button>
+    </div>
+    <div id="annMsg" class="muted"></div>
+  </section>
+
+  <!-- CUSTOMERS' PAYMENT METHODS -->
+  <section class="card">
+    <h2>Customers — Payment Methods</h2>
+    <div class="muted">Saved by customers from their dashboard.</div>
+    <div id="pmContainer" style="overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Method</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody id="pmRows">
+          <tr><td colspan="3" class="muted">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TRADES QUEUE -->
+  <section class="card">
+    <h2>Trade Requests</h2>
+    <div class="muted">Verify uploads, then mark as Paid or Reject with a reason (e.g., “Already loaded elsewhere”).</div>
+    <div id="tradesContainer" style="overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>User</th>
+            <th>Service</th>
+            <th>USD</th>
+            <th>Country</th>
+            <th>Bank/Wallet</th>
+            <th>Upload</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tradeRows">
+          <tr><td colspan="9" class="muted">Listening for requests…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <script type="module">
+    import {
+      auth, onAuthStateChanged, signOut,
+      db, doc, getDoc, setDoc, updateDoc, collection, getDocs, onSnapshot
+    } from './firebase-auth.js';
+
+    // ---------- SIMPLE ADMIN WHITELIST ----------
+    // EDIT this list to your admin emails. While empty, anyone who can access the page will pass.
+    const ALLOWED_ADMINS = [
+      // 'youremail@example.com'
+    ];
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    const adminEmailEl = document.getElementById('adminEmail');
+    const guard = document.getElementById('guard');
+    const toLogin = document.getElementById('toLogin');
+
+    toLogin?.addEventListener('click', ()=> location.href='admin.html'); // your login page
+    logoutBtn?.addEventListener('click', () => signOut(auth));
+
+    // ---------- RATES ELEMENTS ----------
+    const ngnPerUsd = document.getElementById('ngnPerUsd');
+    const btcNote = document.getElementById('btcNote');
+    const usdtNote = document.getElementById('usdtNote');
+    const rate_apple = document.getElementById('rate_apple');
+    const rate_amazon = document.getElementById('rate_amazon');
+    const rate_steam = document.getElementById('rate_steam');
+    const rate_xbox = document.getElementById('rate_xbox');
+    const rate_razer = document.getElementById('rate_razer');
+    const rate_visa  = document.getElementById('rate_visa');
+    const saveRatesBtn = document.getElementById('saveRatesBtn');
+    const ratesMsg = document.getElementById('ratesMsg');
+
+    // ---------- WALLETS ELEMENTS ----------
+    const btcAddress = document.getElementById('btcAddress');
+    const usdt_trc20 = document.getElementById('usdt_trc20');
+    const usdt_erc20 = document.getElementById('usdt_erc20');
+    const usdt_bep20 = document.getElementById('usdt_bep20');
+    const saveWalletsBtn = document.getElementById('saveWalletsBtn');
+    const walletsMsg = document.getElementById('walletsMsg');
+
+    // ---------- ANNOUNCEMENTS ----------
+    const annText = document.getElementById('annText');
+    const saveAnnBtn = document.getElementById('saveAnnBtn');
+    const annMsg = document.getElementById('annMsg');
+
+    // ---------- TABLE BODIES ----------
+    const pmRows = document.getElementById('pmRows');
+    const tradeRows = document.getElementById('tradeRows');
+
+    // ---------- LOAD ADMIN + GUARD ----------
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        // Not logged in — send to admin login page (your admin.html)
+        location.href = 'admin.html';
+        return;
+      }
+      adminEmailEl.textContent = user.email || '';
+      if (ALLOWED_ADMINS.length && !ALLOWED_ADMINS.includes(user.email)) {
+        guard.style.display = 'block';
+        return;
+      }
+      // Load data
+      await loadRates();
+      await loadWallets();
+      await loadAnnouncement();
+      await loadPaymentMethods();
+      listenTrades();
+    });
+
+    // ---------- RATES SAVE/LOAD ----------
+    async function loadRates() {
+      const ref = doc(db, 'rates', 'default');
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const d = snap.data();
+        ngnPerUsd.value = d.ngnPerUsd || '';
+        btcNote.value   = d.btcNote || '';
+        usdtNote.value  = d.usdtNote || '';
+        const gc = d.giftcards || {};
+        rate_apple.value = gc.apple ?? '';
+        rate_amazon.value= gc.amazon ?? '';
+        rate_steam.value = gc.steam ?? '';
+        rate_xbox.value  = gc.xbox ?? '';
+        rate_razer.value = gc.razer ?? '';
+        rate_visa.value  = gc.visa ?? '';
+      }
+    }
+    saveRatesBtn.addEventListener('click', async ()=>{
+      const payload = {
+        ngnPerUsd: Number(ngnPerUsd.value || 0),
+        btcNote: btcNote.value || '',
+        usdtNote: usdtNote.value || '',
+        giftcards: {
+          apple: Number(rate_apple.value || 0),
+          amazon: Number(rate_amazon.value || 0),
+          steam: Number(rate_steam.value || 0),
+          xbox: Number(rate_xbox.value || 0),
+          razer: Number(rate_razer.value || 0),
+          visa: Number(rate_visa.value || 0)
+        },
+        updatedAt: new Date()
+      };
+      await setDoc(doc(db,'rates','default'), payload, { merge:true });
+      ratesMsg.textContent = 'Rates saved ✔';
+      setTimeout(()=> ratesMsg.textContent='', 2000);
+    });
+
+    // ---------- WALLETS SAVE/LOAD ----------
+    async function loadWallets() {
+      const ref = doc(db, 'wallets', 'default');
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const d = snap.data();
+        btcAddress.value = d?.btc?.address || '';
+        usdt_trc20.value = d?.usdt?.trc20 || '';
+        usdt_erc20.value = d?.usdt?.erc20 || '';
+        usdt_bep20.value = d?.usdt?.bep20 || '';
+      }
+    }
+    saveWalletsBtn.addEventListener('click', async ()=>{
+      const payload = {
+        btc: { address: btcAddress.value || '' },
+        usdt: { trc20: usdt_trc20.value || '', erc20: usdt_erc20.value || '', bep20: usdt_bep20.value || '' },
+        updatedAt: new Date()
+      };
+      await setDoc(doc(db,'wallets','default'), payload, { merge:true });
+      walletsMsg.textContent = 'Wallets saved ✔';
+      setTimeout(()=> walletsMsg.textContent='', 2000);
+    });
+
+    // ---------- ANNOUNCEMENT SAVE/LOAD ----------
+    async function loadAnnouncement() {
+      const ref = doc(db, 'announcements', 'default');
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        annText.value = snap.data()?.text || '';
+      }
+    }
+    saveAnnBtn.addEventListener('click', async ()=>{
+      await setDoc(doc(db,'announcements','default'), { text: annText.value || '', updatedAt: new Date() }, { merge:true });
+      annMsg.textContent = 'Announcement saved ✔';
+      setTimeout(()=> annMsg.textContent='', 2000);
+    });
+
+    // ---------- PAYMENT METHODS TABLE ----------
+    async function loadPaymentMethods() {
+      pmRows.innerHTML = '<tr><td colspan="3" class="muted">Loading…</td></tr>';
+      const snap = await getDocs(collection(db, 'paymentMethods'));
+      const rows = [];
+      snap.forEach(docSnap => {
+        const data = docSnap.data() || {};
+        const userId = docSnap.id;
+        const method = data.method || '-';
+        let details = '';
+        if (method === 'bank') {
+          details = `Bank: ${data.bankName || '-'}<br>Acct No: ${data.accountNumber || '-'}<br>Name: ${data.accountHolder || '-'}`;
+        } else if (method === 'btc' || method === 'usdt') {
+          details = `Address: ${data.walletAddress || '-'}<br>Chain: ${data.chainType || '-'}`;
+        } else if (method === 'wallet') {
+          details = `Wallet ID/Email: ${data.walletEmail || '-'}`;
+        } else {
+          details = '—';
+        }
+        rows.push(`
+          <tr>
+            <td><div class="muted">UID:</div>${userId}</td>
+            <td><span class="tag">${method.toUpperCase?.() || method}</span></td>
+            <td>${details}</td>
+          </tr>
+        `);
+      });
+      pmRows.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="3" class="muted">No payment methods yet</td></tr>';
+    }
+
+    // ---------- TRADES LISTENER ----------
+    function listenTrades() {
+      const reqCol = collection(db, 'requests');
+      onSnapshot(reqCol, (snap)=>{
+        const rows = [];
+        snap.forEach(s=>{
+          const d = s.data();
+          const created = d.createdAt?.toDate ? d.createdAt.toDate().toLocaleString() : '—';
+          const status = d.status || 'pending';
+          const statusClass = status === 'paid' ? 'status-paid' : status === 'rejected' ? 'status-rejected' : 'status-pending';
+          const uploadLink = d.uploadUrl ? `<a href="${d.uploadUrl}" target="_blank">View</a>` : '—';
+
+          let payout = '—';
+          if (d.bankDetails) {
+            payout = `Bank: ${d.bankDetails.bankName || '-'}<br>Acct: ${d.bankDetails.accountNumber || '-'}<br>Name: ${d.bankDetails.accountHolder || '-'}`;
+          } else if (d.chainType || d.walletAddress) {
+            payout = `Addr: ${d.walletAddress || '-'}<br>Chain: ${d.chainType || '-'}`;
+          } else if (d.walletEmail) {
+            payout = `Wallet: ${d.walletEmail}`;
+          }
+
+          rows.push(`
+            <tr>
+              <td>${created}</td>
+              <td>${d.email || d.uid || '—'}</td>
+              <td>${d.service || d.cardId || '—'}</td>
+              <td>$${Number(d.usd || 0).toFixed(2)}</td>
+              <td>${d.countryCode || '—'}</td>
+              <td>${payout}</td>
+              <td>${uploadLink}</td>
+              <td><span class="tag ${statusClass}">${status}</span></td>
+              <td>
+                <div class="flex">
+                  <button data-id="${s.id}" class="secondary btn-paid">Mark Paid</button>
+                  <button data-id="${s.id}" class="primary btn-reject">Reject</button>
+                </div>
+              </td>
+            </tr>
+          `);
+        });
+        tradeRows.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="9" class="muted">No requests yet</td></tr>';
+
+        // bind actions
+        document.querySelectorAll('.btn-paid').forEach(btn=>{
+          btn.addEventListener('click', async ()=>{
+            const id = btn.getAttribute('data-id');
+            await updateDoc(doc(db,'requests', id), { status: 'paid', paidAt: new Date() });
+            alert('Marked as PAID ✔');
+          });
+        });
+        document.querySelectorAll('.btn-reject').forEach(btn=>{
+          btn.addEventListener('click', async ()=>{
+            const id = btn.getAttribute('data-id');
+            const reason = prompt('Reason for rejection (e.g., Already loaded elsewhere)');
+            await updateDoc(doc(db,'requests', id), { status: 'rejected', rejectReason: reason || 'unspecified', updatedAt: new Date() });
+            alert('Marked as REJECTED ✔');
+          });
+        });
+      });
+    }
+  </script>
 </body>
 </html>

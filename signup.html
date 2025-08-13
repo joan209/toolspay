@@ -1,139 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Create Account - ToolsPay</title>
-  <link rel="stylesheet" href="style.css" />
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom, #0d6efd, #20c997);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .signup-box {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      width: 100%;
-      max-width: 400px;
-    }
-    .signup-box h2 {
-      color: #0d6efd;
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    .signup-box input {
-      width: 100%;
-      padding: 10px;
-      margin: 0.5rem 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-    .signup-box button {
-      width: 100%;
-      padding: 10px;
-      background: #20c997;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    .signup-box button:hover {
-      background: #17a589;
-    }
-    .loading {
-      display: none;
-      text-align: center;
-      margin-top: 0.5rem;
-      color: #0d6efd;
-      font-weight: bold;
-    }
-    .link {
-      display: block;
-      text-align: center;
-      margin-top: 1rem;
-      color: #0d6efd;
-      text-decoration: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Toolspay</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="signup-box">
-    <h2>Create Account</h2>
-    <input type="text" id="fullName" placeholder="Full Name" required />
-    <input type="email" id="signupEmail" placeholder="Email" required />
-    <input type="password" id="signupPassword" placeholder="Password" required />
-    <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
-    <button onclick="signup()">Sign Up</button>
-    <div class="loading" id="loading">Creating account...</div>
-    <a href="login.html" class="link">Already have an account? Login</a>
-  </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+    <!-- Loader -->
+    <div id="signupLoader" style="display:none; text-align:center; color:blue;">
+        Creating your account, please wait...
+    </div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAs_YwDtcTLojVFnrs9kUIYN1KT_BWEoEo",
-      authDomain: "toolspay-b2aab.firebaseapp.com",
-      projectId: "toolspay-b2aab",
-      storageBucket: "toolspay-b2aab.firebasestorage.app",
-      messagingSenderId: "812183091284",
-      appId: "1:812183091284:web:f46fb99e912154acb4d5c1"
-    };
+    <!-- Signup Form -->
+    <div class="signup-container">
+        <h2>Create Your Account</h2>
+        <form id="signupForm">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" placeholder="Enter your full name" required>
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Enter your email" required>
 
-    async function signup() {
-      const fullName = document.getElementById("fullName").value;
-      const email = document.getElementById("signupEmail").value;
-      const password = document.getElementById("signupPassword").value;
-      const confirmPassword = document.getElementById("confirmPassword").value;
-      const loadingText = document.getElementById("loading");
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter password" required>
 
-      if (!fullName || !email || !password || !confirmPassword) {
-        alert("Please fill in all fields.");
-        return;
-      }
-      if (password !== confirmPassword) {
-        alert("Passwords do not match!");
-        return;
-      }
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" placeholder="Confirm password" required>
 
-      loadingText.style.display = "block";
+            <button type="submit">Sign Up</button>
+        </form>
 
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+        <p id="signupError" style="color:red; margin-top:10px;"></p>
 
-        await updateProfile(user, { displayName: fullName });
-        await sendEmailVerification(user);
-        await setDoc(doc(db, "users", user.uid), {
-          fullName,
-          email,
-          createdAt: new Date()
-        });
+        <p>Already have an account? <a href="login.html">Login here</a></p>
+    </div>
 
-        alert("Account created! Please check your email for verification link.");
-        window.location.href = "login.html";
-      } catch (error) {
-        alert(error.message);
-      } finally {
-        loadingText.style.display = "none";
-      }
-    }
-  </script>
-  <script type="module" src="signup.js"></script>
+    <script type="module" src="signup.js"></script>
 </body>
 </html>

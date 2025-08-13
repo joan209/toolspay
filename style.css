@@ -177,3 +177,27 @@ h2 {
   0% { opacity: 0.6; }
   100% { opacity: 1; }
 }
+.giftcard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.giftcard-item {
+  border: 2px solid #ccc;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: border 0.3s;
+}
+
+.giftcard-item img {
+  max-width: 80px;
+  height: auto;
+}
+
+.giftcard-item.selected {
+  border-color: #28a745;
+  background-color: #f0fff0;
+}

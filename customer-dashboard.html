@@ -6,142 +6,109 @@
   <title>Customer Dashboard</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: #222;
-      color: white;
-      padding: 15px;
-      text-align: center;
-      font-size: 20px;
-    }
-    .container {
-      max-width: 900px;
-      margin: auto;
-      padding: 15px;
-    }
-    .card {
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
-    .title {
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    .wallet {
-      background: #fafafa;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      margin-bottom: 5px;
-      word-break: break-all;
-    }
-    @media (max-width: 600px) {
-      .card { font-size: 14px; }
-    }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
+    header { background: #333; color: white; padding: 10px; text-align: center; }
+    .container { max-width: 800px; margin: auto; padding: 20px; background: white; }
+    .wallet-section, .rates-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+    h2 { margin-top: 0; }
+    button { background: #28a745; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px; }
+    button:hover { background: #218838; }
   </style>
 </head>
 <body>
-  <header>Customer Dashboard</header>
-  <div style="text-align:center; margin:12px 0;">
-  <a href="chat.html" style="display:inline-block; padding:10px 16px; background:#111; color:#fff; text-decoration:none; border-radius:10px; font-weight:700;">
-    💬 Live Chat with Admin
-  </a>
-</div>
+
+  <header>
+    <h1>Welcome to Your Dashboard</h1>
+  </header>
+
   <div class="container">
-    
-    <div class="card" id="ratesCard">
-      <div class="title">Current Rates</div>
-      <div>USD to NGN: <span id="usdToNgn">Loading...</span></div>
-      <div>Gift Card Base: <span id="giftcardBase">Loading...</span></div>
+
+    <div class="rates-section">
+      <h2>Current Rates</h2>
+      <p>USD to NGN: <span id="usdToNgn">Loading...</span></p>
+      <p>Gift Card Base Rate: <span id="giftcardBase">Loading...</span></p>
     </div>
 
-    <div class="card" id="walletsCard">
-      <div class="title">Wallet Addresses</div>
-      <div><strong>Bitcoin (BTC):</strong></div>
-      <div class="wallet" id="btcWallet">Loading...</div>
-      
-      <div><strong>USDT Wallets:</strong></div>
-      <div id="usdtWallets">Loading...</div>
+    <div class="wallet-section">
+      <h2>Wallet Addresses</h2>
+      <h3>Bitcoin (BTC):</h3>
+      <p id="btcAddress">Loading...</p>
+
+      <h3>USDT Wallets:</h3>
+      <ul id="usdtNetworks">Loading...</ul>
     </div>
 
-    <div class="card" id="onlineWalletCard">
-      <div class="title">Online Digital Wallets</div>
-      <div id="digitalWalletTags">Contact Admin via Live Chat for wallet tag.</div>
+    <div class="wallet-section">
+      <h2>Sell from Online Digital Wallet</h2>
+      <p>You can sell from Chime, Zelle, Venmo, PayPal — click the button below to contact admin for payment tag.</p>
+      <button onclick="openLiveChat()">Contact Admin to Sell</button>
     </div>
 
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
-
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  
+  <script>
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
       projectId: "YOUR_PROJECT_ID",
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    async function loadDashboardData() {
-      try {
-        // Load rates
-        const ratesSnap = await getDoc(doc(db, "rates", "default"));
-        if (ratesSnap.exists()) {
-          const data = ratesSnap.data();
-          document.getElementById("usdToNgn").textContent = data.usdToNgn || "N/A";
-          document.getElementById("giftcardBase").textContent = data.giftcardBase || "N/A";
-        }
+    async function loadRatesAndWallets() {
+      const ratesDoc = await db.collection("rates").doc("default").get();
+      if (ratesDoc.exists) {
+        const data = ratesDoc.data();
+        document.getElementById("usdToNgn").innerText = data.usdToNgn;
+        document.getElementById("giftcardBase").innerText = data.giftcardBase;
+      }
 
-        // Load wallets
-        const walletsSnap = await getDoc(doc(db, "wallets", "default"));
-        if (walletsSnap.exists()) {
-          const wData = walletsSnap.data();
-          document.getElementById("btcWallet").textContent = wData.btc?.address || "N/A";
+      const walletsDoc = await db.collection("wallets").doc("default").get();
+      if (walletsDoc.exists) {
+        const data = walletsDoc.data();
+        document.getElementById("btcAddress").innerText = data.btc.address;
 
-          const usdtList = wData.usdt?.networks?.map(n => 
-            `${n.network}: ${n.address}`
-          ).join("<br>") || "N/A";
-          document.getElementById("usdtWallets").innerHTML = usdtList;
-
-          // Online digital wallet tags placeholder
-          const tags = wData.tags || {};
-          let tagHTML = "";
-          for (let key in tags) {
-            tagHTML += `<div><strong>${key}:</strong> ${tags[key]}</div>`;
-          }
-          if (tagHTML) {
-            document.getElementById("digitalWalletTags").innerHTML = tagHTML;
-          }
-        }
-      } catch (err) {
-        console.error("Error loading dashboard:", err);
+        const list = document.getElementById("usdtNetworks");
+        list.innerHTML = "";
+        data.usdt.networks.forEach(net => {
+          const li = document.createElement("li");
+          li.innerText = `${net.network}: ${net.address}`;
+          list.appendChild(li);
+        });
       }
     }
 
-    loadDashboardData();
+    function openLiveChat() {
+      if (typeof Tawk_API !== "undefined") {
+        Tawk_API.maximize();
+      } else {
+        alert("Live chat not loaded yet, please wait a moment.");
+      }
+    }
+
+    loadRatesAndWallets();
   </script>
+
+  <!-- Tawk.to Live Chat -->
   <!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/689c8ac8fcd547192dde2522/1j2hns8ng';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
+  <script type="text/javascript">
+  var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+  (function(){
+  var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+  s1.async=true;
+  s1.src='https://embed.tawk.to/689c8ac8fcd547192dde2522/1j2hns8ng';
+  s1.charset='UTF-8';
+  s1.setAttribute('crossorigin','*');
+  s0.parentNode.insertBefore(s1,s0);
+  })();
+  </script>
+  <!--End of Tawk.to Script-->
+
 </body>
 </html>

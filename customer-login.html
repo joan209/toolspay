@@ -3,102 +3,85 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Customer Dashboard - ToolsPay</title>
+  <title>Customer Access - TP</title>
   <style>
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-    }
-    .splash {
+      margin: 0;
+      padding: 0;
+      background-color: #f5f6fa;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: #111;
-      color: white;
-      font-size: 2em;
-      font-weight: bold;
     }
-    .hidden {
-      display: none;
+    .splash {
+      font-size: 28px;
+      font-weight: bold;
+      color: #3498db;
+      animation: fade 2.5s ease-in-out forwards;
+    }
+    @keyframes fade {
+      0% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; display: none; }
     }
     .container {
-      max-width: 400px;
-      margin: 30px auto;
+      display: none;
+      flex-direction: column;
       background: white;
       padding: 20px;
       border-radius: 8px;
-      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 400px;
     }
-    h2 {
-      text-align: center;
-    }
-    input, button {
-      width: 100%;
-      padding: 10px;
+    .container input {
       margin: 8px 0;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      width: 100%;
     }
     button {
-      background: #007BFF;
+      background: #3498db;
       color: white;
+      padding: 10px;
       border: none;
+      border-radius: 5px;
       cursor: pointer;
     }
-    button:hover {
-      background: #0056b3;
-    }
-    .link {
-      color: #007BFF;
-      cursor: pointer;
-      text-align: center;
-      display: block;
+    .links {
       margin-top: 10px;
+      font-size: 14px;
+      text-align: center;
+    }
+    .links span {
+      color: #3498db;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+  <div class="splash">TP</div>
 
-  <!-- Splash Screen -->
-  <div id="splash" class="splash">
-    TP
-  </div>
-
-  <!-- Auth Forms -->
-  <div id="authSection" class="hidden">
-    <!-- Login Form -->
-    <div id="loginForm" class="container">
-      <h2>Sign In</h2>
-      <input type="email" id="loginEmail" placeholder="Email" required />
-      <input type="password" id="loginPassword" placeholder="Password" required />
-      <button onclick="login()">Login</button>
-      <span class="link" onclick="showSection('signupForm')">Create Account</span>
-      <span class="link" onclick="showSection('forgotForm')">Forgot Password?</span>
-    </div>
-
-    <!-- Sign Up Form -->
-    <div id="signupForm" class="container hidden">
-      <h2>Create Account</h2>
-      <input type="email" id="signupEmail" placeholder="Email" required />
-      <input type="password" id="signupPassword" placeholder="Password" required />
-      <button onclick="signup()">Sign Up</button>
-      <span class="link" onclick="showSection('loginForm')">Already have an account?</span>
-    </div>
-
-    <!-- Forgot Password Form -->
-    <div id="forgotForm" class="container hidden">
-      <h2>Reset Password</h2>
-      <input type="email" id="forgotEmail" placeholder="Enter your email" required />
-      <button onclick="resetPassword()">Send Reset Link</button>
-      <span class="link" onclick="showSection('loginForm')">Back to Login</span>
+  <div class="container" id="auth-container">
+    <h2 id="form-title">Sign In</h2>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button id="auth-btn">Sign In</button>
+    <div class="links">
+      <span onclick="showSignUp()">Create Account</span> | 
+      <span onclick="showReset()">Forgot Password?</span>
     </div>
   </div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+
   <script>
-    // Your Firebase Config
+    // Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
       authDomain: "toolspay-54167.firebaseapp.com",
@@ -108,51 +91,53 @@
       appId: "1:71318117342:web:1952711453e19e19281b4f"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    const app = firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // Splash Screen Delay
+    // Show container after splash
     setTimeout(() => {
-      document.getElementById('splash').classList.add('hidden');
-      document.getElementById('authSection').classList.remove('hidden');
-    }, 2000);
+      document.querySelector('.splash').style.display = 'none';
+      document.querySelector('.container').style.display = 'flex';
+    }, 2500);
 
-    function showSection(id) {
-      document.getElementById('loginForm').classList.add('hidden');
-      document.getElementById('signupForm').classList.add('hidden');
-      document.getElementById('forgotForm').classList.add('hidden');
-      document.getElementById(id).classList.remove('hidden');
+    function showSignUp() {
+      document.getElementById('form-title').innerText = 'Sign Up';
+      document.getElementById('auth-btn').innerText = 'Register';
+      document.getElementById('auth-btn').onclick = register;
     }
+
+    function showReset() {
+      const email = prompt("Enter your email for password reset:");
+      if(email) {
+        auth.sendPasswordResetEmail(email)
+          .then(() => alert("Reset email sent!"))
+          .catch(err => alert(err.message));
+      }
+    }
+
+    document.getElementById('auth-btn').onclick = login;
 
     function login() {
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
       auth.signInWithEmailAndPassword(email, password)
         .then(() => {
-          alert("Login Successful");
-          window.location.href = "customer-dashboard.html";
+          alert("Login successful!");
+          window.location.href = "customer-dashboard.html"; // redirect
         })
-        .catch(error => alert(error.message));
+        .catch(err => alert(err.message));
     }
 
-    function signup() {
-      const email = document.getElementById('signupEmail').value;
-      const password = document.getElementById('signupPassword').value;
+    function register() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
       auth.createUserWithEmailAndPassword(email, password)
         .then(() => {
-          alert("Account Created");
-          showSection('loginForm');
+          alert("Registration successful!");
+          window.location.href = "customer-dashboard.html";
         })
-        .catch(error => alert(error.message));
-    }
-
-    function resetPassword() {
-      const email = document.getElementById('forgotEmail').value;
-      auth.sendPasswordResetEmail(email)
-        .then(() => alert("Password reset link sent"))
-        .catch(error => alert(error.message));
+        .catch(err => alert(err.message));
     }
   </script>
-
 </body>
 </html>

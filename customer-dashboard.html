@@ -24,17 +24,19 @@
     }
   }
   *{box-sizing:border-box}
+  html,body{height:100%}
   body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+
   .container{max-width:1000px;margin:0 auto;padding:16px}
   .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin:12px 0}
   .row{display:grid;gap:12px}
   @media(min-width:720px){.row-2{grid-template-columns:1fr 1fr}.row-3{grid-template-columns:1fr 1fr 1fr}}
   label{font-size:12px;font-weight:700;opacity:.8}
-  input,select,textarea{width:100%;padding:11px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text)}
-  input[type="file"]{padding:8px}
-  button{padding:10px 14px;border-radius:12px;border:0;cursor:pointer}
-  .btn{background:#111;color:var(--brand);border:2px solid var(--brand);font-weight:800}
-  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text);font-weight:700}
+  input,select,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:15px}
+  input[type="file"]{padding:8px;background:transparent}
+  button{padding:12px 16px;border-radius:12px;border:0;cursor:pointer;font-weight:700}
+  .btn{background:#111;color:var(--brand);border:2px solid var(--brand)}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
   .btn-muted{background:var(--chip);color:var(--text);border:1px solid var(--border)}
   .muted{color:var(--muted);font-size:12px}
   .header{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -44,48 +46,32 @@
   .money{font-weight:800}
   .brand-badge{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#111,#ffd700);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900}
   .center{display:flex;align-items:center;justify-content:center}
+
+  /* Splash */
+  #splash{position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;transition:opacity .25s ease}
+  #splash.fade{opacity:0;pointer-events:none}
+  #splash .tp{font-size:28px;font-weight:900;border:2px solid var(--brand);color:var(--brand);padding:12px 18px;border-radius:16px}
+
+  .qr{background:#fff;border-radius:12px;padding:10px}
   .divider{height:1px;background:var(--border);margin:12px 0}
   .toolbar{position:sticky;top:0;background:var(--bg);z-index:9;border-bottom:1px solid var(--border)}
   .right{margin-left:auto}
 
-  /* Splash */
-  #splash{position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
-  #splash .tp{font-size:28px;font-weight:900;border:2px solid var(--brand);color:var(--brand);padding:12px 18px;border-radius:16px}
-
-  /* Auth screen centering & bold look */
-  #authWrap{
-    min-height:calc(100vh - 64px);
-    display:grid;
-    place-items:center;
-    padding:16px;
-  }
-  #authView.card{
-    max-width:520px;
-    width:100%;
-    margin:0;
-    padding:22px 18px;
-  }
-  #authView h2{
-    font-size:22px;
-    font-weight:900;
-    margin:0 0 6px 0;
-  }
-  #authView input{
-    font-size:16px;
-    font-weight:700;
-  }
-  #authBtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  @media(max-width:420px){
-    #authBtns{grid-template-columns:1fr}
+  /* Auth: centered & bold on mobile */
+  #authView{max-width:520px;margin:12vh auto 6vh}
+  @media (max-width:520px){
+    #authView{margin:14vh 12px 8vh}
+    #authView h2{font-size:24px;margin:0 0 8px}
+    #authView .row-2{grid-template-columns:1fr}
   }
 </style>
 </head>
 <body>
 
-<!-- Splash (auto-hides fast + hard timeout failsafe) -->
+<!-- Splash (auto-hides in ~2.5s even if auth is slow) -->
 <div id="splash">
   <div class="tp">TP</div>
-  <div class="muted">Loading…</div>
+  <div class="muted">Loading dashboard…</div>
 </div>
 
 <!-- Top bar -->
@@ -99,39 +85,40 @@
       </div>
     </div>
     <div class="flex">
-      <button id="modeBtn" class="btn-ghost" title="Dark/Light">🌓</button>
-      <button id="openChatBtn" class="btn-ghost" title="Live chat">💬 Chat</button>
-      <button id="logoutBtn" class="btn-ghost">Sign out</button>
+      <button id="modeBtn" class="btn-ghost" title="Dark/Light" type="button">🌓</button>
+      <button id="openChatBtn" class="btn-ghost" title="Live chat" type="button">💬 Chat</button>
+      <button id="logoutBtn" class="btn-ghost" type="button">Sign out</button>
     </div>
   </div>
 </header>
 
 <main class="container">
-  <!-- AUTH -->
-  <div id="authWrap" class="hidden">
-    <section id="authView" class="card">
-      <h2>Welcome</h2>
-      <p class="muted">Create an account or sign in to trade. We’ll email a verification link.</p>
-      <div class="row row-2" style="margin-top:10px;">
-        <div>
-          <label>Email</label>
-          <input id="authEmail" type="email" placeholder="you@example.com" autocomplete="email"/>
-        </div>
-        <div>
-          <label>Password</label>
-          <input id="authPass" type="password" placeholder="••••••••" autocomplete="current-password"/>
-        </div>
+  <!-- AUTH VIEW -->
+  <section id="authView" class="card hidden">
+    <h2 style="font-weight:900;">Welcome</h2>
+    <p class="muted" style="font-size:13px">Create an account or sign in to trade. A verification link will be sent to your email.</p>
+
+    <div class="row row-2" style="margin-top:10px;">
+      <div>
+        <label>Email</label>
+        <input id="authEmail" type="email" placeholder="you@example.com" autocomplete="email"/>
       </div>
-      <div id="authBtns" style="margin-top:12px;">
-        <button id="signUpBtn" class="btn">Sign up</button>
-        <button id="signInBtn" class="btn-ghost">Sign in</button>
+      <div>
+        <label>Password</label>
+        <input id="authPass" type="password" placeholder="••••••••" autocomplete="current-password"/>
       </div>
-      <div class="flex" style="margin-top:10px;">
-        <button id="forgotBtn" class="btn-muted">Forgot password</button>
-        <span id="authMsg" class="muted"></span>
-      </div>
-    </section>
-  </div>
+    </div>
+
+    <div class="row row-2" style="margin-top:10px;">
+      <button id="signUpBtn" class="btn" type="button">Sign up</button>
+      <button id="signInBtn" class="btn-ghost" type="button">Sign in</button>
+    </div>
+
+    <div class="flex" style="margin-top:8px;">
+      <button id="forgotBtn" class="btn-muted" type="button">Forgot password</button>
+      <span id="authMsg" class="muted" style="font-size:13px"></span>
+    </div>
+  </section>
 
   <!-- DASHBOARD -->
   <section id="dashView" class="hidden">
@@ -152,8 +139,8 @@
         <div class="muted">Referral link</div>
         <div style="word-break:break-all" id="refLink"></div>
         <div class="flex" style="margin-top:8px;">
-          <button id="copyRef" class="btn-ghost">Copy</button>
-          <button id="shareRef" class="btn-ghost">Share</button>
+          <button id="copyRef" class="btn-ghost" type="button">Copy</button>
+          <button id="shareRef" class="btn-ghost" type="button">Share</button>
         </div>
         <div class="muted">Earn ₦1000 when your friend completes their first paid trade.</div>
       </div>
@@ -194,7 +181,7 @@
         <div><label>Account number</label><input id="acctNo" placeholder="0123456789"/></div>
       </div>
       <div class="flex" style="margin-top:10px;">
-        <button id="saveBank" class="btn">Save bank</button>
+        <button id="saveBank" class="btn" type="button">Save bank</button>
         <span id="bankMsg" class="muted"></span>
       </div>
     </div>
@@ -202,9 +189,9 @@
     <!-- Trade tabs -->
     <div class="card">
       <div class="flex">
-        <button class="btn-ghost" data-tab="gift">Sell Gift Cards</button>
-        <button class="btn-ghost" data-tab="crypto">Sell BTC / USDT</button>
-        <button class="btn-ghost" data-tab="wallet">Sell via Online Wallet</button>
+        <button class="btn-ghost" data-tab="gift" type="button">Sell Gift Cards</button>
+        <button class="btn-ghost" data-tab="crypto" type="button">Sell BTC / USDT</button>
+        <button class="btn-ghost" data-tab="wallet" type="button">Sell via Online Wallet</button>
         <div class="right"></div>
       </div>
       <div class="divider"></div>
@@ -238,7 +225,7 @@
           </div>
         </div>
         <div class="flex" style="margin-top:10px;">
-          <button id="submitGift" class="btn">Submit gift card</button>
+          <button id="submitGift" class="btn" type="button">Submit gift card</button>
           <span id="giftMsg" class="muted"></span>
         </div>
       </div>
@@ -270,7 +257,7 @@
             <input id="cryptoAddress" disabled/>
             <div class="muted">This is the admin wallet for your selection.</div>
             <div class="flex" style="margin-top:8px;">
-              <button id="copyAddr" class="btn-ghost">Copy address</button>
+              <button id="copyAddr" class="btn-ghost" type="button">Copy address</button>
             </div>
           </div>
           <div>
@@ -281,7 +268,7 @@
         </div>
 
         <div class="flex" style="margin-top:10px;">
-          <button id="markCryptoSent" class="btn">I’ve sent the crypto</button>
+          <button id="markCryptoSent" class="btn" type="button">I’ve sent the crypto</button>
           <span id="cryptoMsg" class="muted"></span>
         </div>
       </div>
@@ -303,7 +290,7 @@
             <input id="owAmount" type="number" placeholder="100"/>
           </div>
         </div>
-        <div class="row row-2" style="margin-top:10px%;">
+        <div class="row row-2" style="margin-top:10px;">
           <div>
             <label>Estimated payout (₦)</label>
             <input id="owEstimate" disabled placeholder="₦0"/>
@@ -311,13 +298,13 @@
           <div>
             <label>Next step</label>
             <div class="flex">
-              <button id="openChatForTag" class="btn-ghost">💬 Chat admin for tag</button>
+              <button id="openChatForTag" class="btn-ghost" type="button">💬 Chat admin for tag</button>
               <div class="muted">Ask admin for the exact tag to pay.</div>
             </div>
           </div>
         </div>
         <div class="flex" style="margin-top:10px;">
-          <button id="submitOW" class="btn">I’ve sent the money</button>
+          <button id="submitOW" class="btn" type="button">I’ve sent the money</button>
           <span id="owMsg" class="muted"></span>
         </div>
       </div>
@@ -337,7 +324,7 @@
         </div>
         <div>
           <label>&nbsp;</label>
-          <button id="reqWithdraw" class="btn">Request withdraw</button>
+          <button id="reqWithdraw" class="btn" type="button">Request withdraw</button>
         </div>
       </div>
       <div id="wdMsg" class="muted" style="margin-top:8px;"></div>
@@ -360,13 +347,13 @@ import {
   sendEmailVerification, sendPasswordResetEmail, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, runTransaction
+  getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getStorage, ref as sRef, uploadBytes, getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-/* ==== YOUR CONFIG (unchanged) ==== */
+/* ==== YOUR CONFIG (given by you) ==== */
 const firebaseConfig = {
   apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
   authDomain: "toolspay-54167.firebaseapp.com",
@@ -375,7 +362,7 @@ const firebaseConfig = {
   messagingSenderId: "71318117342",
   appId: "1:71318117342:web:1952711453e19e19281b4f"
 };
-/* ================================= */
+/* =================================== */
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -387,42 +374,40 @@ const $ = (id)=>document.getElementById(id);
 const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 const currency = (n)=>'₦' + (Number(n||0)).toLocaleString();
 
-/* Splash control — hide fast + failsafe */
-let splashTimer = setTimeout(()=>document.getElementById('splash')?.classList.add('hidden'), 3000);
-async function showSplash(ms=900){
-  $('splash').classList.remove('hidden');
-  await sleep(ms);
-  $('splash').classList.add('hidden');
-  clearTimeout(splashTimer);
+const splash = $('splash');
+function hideSplashFast(){
+  // smooth fade
+  splash.classList.add('fade');
+  setTimeout(()=>{ splash.classList.add('hidden'); }, 250);
 }
 
-/* Mode toggle */
+/* Top-right buttons */
 $('modeBtn').onclick = ()=>{
   const dark = document.documentElement.style.colorScheme === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches;
   document.documentElement.style.colorScheme = dark ? 'light' : 'dark';
 };
-
-/* Tawk chat triggers (if present) */
 function openTawk(){ try{ window.Tawk_API?.maximize(); }catch(e){} }
 $('openChatBtn').onclick = openTawk;
 
 /* Tabs */
 const tabs = { gift:$('tab-gift'), crypto:$('tab-crypto'), wallet:$('tab-wallet') };
 document.querySelectorAll('[data-tab]').forEach(btn=>{
-  btn.onclick=()=>{ Object.values(tabs).forEach(el=>el.classList.add('hidden')); tabs[btn.dataset.tab].classList.remove('hidden'); };
+  btn.onclick=()=>{
+    Object.values(tabs).forEach(el=>el.classList.add('hidden'));
+    tabs[btn.dataset.tab].classList.remove('hidden');
+  };
 });
 
 /* ----------------- Global state ----------------- */
 let currentUser = null;
 let usdToNgn = 0;
-let giftRates = {}; // { brand: { countries: { US: rate, ... } } }
-let walletRateMap = {}; // { type: { countries: { US: rate } } }
+let giftRates = {};
+let walletRateMap = {};
 let btcAddress = '';
-let usdtNetworks = []; // [{network,address}]
-let procTimeMap = {}; // { gift: "15 min", btc: "...", usdt: "...", wallet: "..." }
+let usdtNetworks = [];
+let procTimeMap = {};
 
 /* ----------------- DOM refs ----------------- */
-const authWrap = $('authWrap');
 const authView = $('authView');
 const dashView = $('dashView');
 const authEmail = $('authEmail');
@@ -482,7 +467,7 @@ const wdMsg = $('wdMsg');
 
 const historyBox = $('history');
 
-/* ----------------- QR (simple) ----------------- */
+/* ----------------- QR via Google Charts (fallback to text) ----------------- */
 function renderQR(target, text){
   target.innerHTML = '';
   if(!text){ target.textContent = '—'; return; }
@@ -510,7 +495,7 @@ signUpBtn.onclick = async ()=>{
       firstTradePaid: false
     }, { merge:true });
     try{ await sendEmailVerification(cred.user); }catch(e){}
-    authMsg.textContent = 'Account created. Verification link sent.';
+    authMsg.textContent = 'Account created. Verification link sent to your email.';
   }catch(e){
     authMsg.textContent = e.message || e.code;
   }
@@ -537,40 +522,52 @@ logoutBtn.onclick = ()=> signOut(auth);
 
 /* ----------------- Load admin data ----------------- */
 async function loadPublicData(){
-  // rates
-  const r = await getDoc(doc(db,'rates','default'));
-  if(r.exists()){
-    const d = r.data();
-    usdToNgn = Number(d.usdToNgn||0);
-    rateUsd.textContent = currency(usdToNgn);
-    rateGiftBase.textContent = currency(Number(d.giftcardBase||0)) + ' / $';
-  }
-  // wallets & tags
-  const w = await getDoc(doc(db,'wallets','default'));
-  if(w.exists()){
-    const d = w.data();
-    btcAddress = d?.btc?.address || '';
-    usdtNetworks = (d?.usdt?.networks || []);
-    usdtNet.innerHTML = '<option value="">—</option>' + usdtNetworks.map(n=>`<option value="${n.network}">${n.network}</option>`).join('');
-  }
-  // announcements
-  const a = await getDoc(doc(db,'announcements','default'));
-  annList.innerHTML = '';
-  if(a.exists()){
-    (a.data().items||[]).forEach(t=>{
-      const span = document.createElement('span'); span.className='chip'; span.textContent=t;
-      annList.appendChild(span);
-    });
-  }
-  // gift card rates
-  const gr = await getDoc(doc(db,'giftcardRates','default'));
-  giftRates = gr.exists() ? (gr.data().brands||{}) : {};
-  // online wallet rates
-  const wr = await getDoc(doc(db,'walletRates','default'));
-  walletRateMap = wr.exists() ? (wr.data().types||{}) : {};
-  // processing times
-  const pt = await getDoc(doc(db,'processingTimes','default'));
-  procTimeMap = pt.exists() ? (pt.data()||{}) : {};
+  try{
+    const ratesDoc = await getDoc(doc(db,'rates','default'));
+    if(ratesDoc.exists()){
+      const d = ratesDoc.data();
+      usdToNgn = Number(d.usdToNgn||0);
+      rateUsd.textContent = currency(usdToNgn);
+      rateGiftBase.textContent = currency(Number(d.giftcardBase||0)) + ' / $';
+    }
+  }catch(e){ /* ignore UI */ }
+
+  try{
+    const w = await getDoc(doc(db,'wallets','default'));
+    if(w.exists()){
+      const d = w.data();
+      btcAddress = d?.btc?.address || '';
+      usdtNetworks = (d?.usdt?.networks || []);
+      usdtNet.innerHTML = '<option value="">—</option>' + usdtNetworks.map(n=>`<option value="${n.network}">${n.network}</option>`).join('');
+    }
+  }catch(e){}
+
+  try{
+    const a = await getDoc(doc(db,'announcements','default'));
+    annList.innerHTML = '';
+    if(a.exists()){
+      (a.data().items||[]).forEach(t=>{
+        const span = document.createElement('span'); span.className='chip'; span.textContent=t;
+        annList.appendChild(span);
+      });
+    }
+  }catch(e){}
+
+  try{
+    const gr = await getDoc(doc(db,'giftcardRates','default'));
+    giftRates = gr.exists() ? (gr.data().brands||{}) : {};
+  }catch(e){ giftRates = {}; }
+
+  try{
+    const wr = await getDoc(doc(db,'walletRates','default'));
+    walletRateMap = wr.exists() ? (wr.data().types||{}) : {};
+  }catch(e){ walletRateMap = {}; }
+
+  try{
+    const pt = await getDoc(doc(db,'processingTimes','default'));
+    procTimeMap = pt.exists() ? (pt.data()||{}) : {};
+  }catch(e){ procTimeMap = {}; }
+
   renderProcTimes();
   renderRateBoxes();
   fillFormSelects();
@@ -594,7 +591,6 @@ function renderProcTimes(){
 
 /* Render rates summary lists */
 function renderRateBoxes(){
-  // Gift cards box
   giftRatesBox.innerHTML='';
   Object.entries(giftRates).forEach(([brand, obj])=>{
     const wrap=document.createElement('div'); wrap.className='chip'; wrap.style.whiteSpace='normal';
@@ -607,7 +603,7 @@ function renderRateBoxes(){
     const span=document.createElement('span'); span.className='muted'; span.textContent='No gift card rates yet.';
     giftRatesBox.appendChild(span);
   }
-  // Online wallets box
+
   walletRatesBox.innerHTML='';
   Object.entries(walletRateMap).forEach(([type,obj])=>{
     const wrap=document.createElement('div'); wrap.className='chip'; wrap.style.whiteSpace='normal';
@@ -624,15 +620,13 @@ function renderRateBoxes(){
 
 /* Fill select options */
 function fillFormSelects(){
-  // gift brand
   const brands = Object.keys(giftRates);
   giftBrand.innerHTML = brands.map(b=>`<option value="${b}">${b}</option>`).join('') || '<option value="">—</option>';
-  // gift country based on brand
+
   const b = giftBrand.value;
   const gc = (giftRates[b]?.countries)||{};
   giftCountry.innerHTML = Object.keys(gc).map(c=>`<option value="${c}">${c}</option>`).join('') || '<option value="">—</option>';
 
-  // online wallets
   const wtypes = Object.keys(walletRateMap);
   owType.innerHTML = wtypes.map(t=>`<option value="${t}">${t}</option>`).join('') || '<option value="">—</option>';
   const t = owType.value;
@@ -669,16 +663,6 @@ owCountry.onchange = updateOwEstimate;
 owAmount.oninput = updateOwEstimate;
 
 /* Crypto UI reactions */
-function renderQR(target, text){
-  target.innerHTML = '';
-  if(!text){ target.textContent = '—'; return; }
-  const img = new Image();
-  img.alt = 'QR';
-  img.style.maxWidth = '160px';
-  img.src = `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(text)}`;
-  img.onerror = ()=>{ target.textContent = text; };
-  target.appendChild(img);
-}
 function refreshCryptoAddress(){
   if(cryptoType.value==='BTC'){
     cryptoAddress.value = btcAddress||'';
@@ -791,7 +775,6 @@ markCryptoSent.onclick = async ()=>{
 
 /* Online wallet flow */
 openChatForTag.onclick = openTawk;
-$('openChatBtn').onclick = openTawk;
 submitOW.onclick = async ()=>{
   if(!owType.value || !owCountry.value || !owAmount.value){ owMsg.textContent='Fill wallet, country, and amount.'; return; }
   owMsg.textContent='Submitting...';
@@ -819,7 +802,7 @@ submitOW.onclick = async ()=>{
 reqWithdraw.onclick = async ()=>{
   wdMsg.textContent='Requesting...';
   const amt = Number(wdAmount.value||0);
-  const avail = Number(wdAvail.value?.replace(/[₦,]/g,'')||0);
+  const avail = Number((wdAvail.value||'').replace(/[₦,]/g,'')||0);
   if(amt<=0){ wdMsg.textContent='Enter a valid amount.'; return; }
   if(amt>avail){ wdMsg.textContent='Amount exceeds available balance.'; return; }
   try{
@@ -840,9 +823,8 @@ reqWithdraw.onclick = async ()=>{
   }catch(e){ wdMsg.textContent = e.message || e.code; }
 };
 
-/* Watch user doc (balance/bank) + history */
+/* Watch user doc & history */
 function watchUserData(uid){
-  // user doc
   onSnapshot(doc(db,'users',uid),(snap)=>{
     const d = snap.data()||{};
     const bal = Number(d.balance||0);
@@ -853,11 +835,10 @@ function watchUserData(uid){
     acctName.value = b.acctName||'';
     acctNo.value   = b.acctNo||'';
   });
-  // history trades
+
   const q1 = query(collection(db,'trades'), where('uid','==',uid), orderBy('createdAt','desc'));
   onSnapshot(q1,(qs)=>{
     historyBox.innerHTML='';
-    let sawPaid = false; // to trigger referral bonus check
     qs.forEach(docu=>{
       const t = docu.data();
       const item = document.createElement('div'); item.className='row';
@@ -872,15 +853,12 @@ function watchUserData(uid){
       });
       item.appendChild(top); item.appendChild(mid);
       historyBox.appendChild(item);
-      if(t.status==='paid') sawPaid = true;
     });
-    if(sawPaid) maybeAwardReferral(uid);
   });
-  // withdrawals
+
   const q2 = query(collection(db,'withdrawals'), where('uid','==',uid), orderBy('createdAt','desc'));
   onSnapshot(q2,(qs)=>{
     if(!qs.empty){
-      const h = document.createElement('div'); h.className='row'; 
       const title = document.createElement('div'); title.innerHTML = '<div class="divider"></div><h4>Your withdrawals</h4>';
       historyBox.appendChild(title);
       qs.forEach(docu=>{
@@ -901,81 +879,55 @@ function watchUserData(uid){
 /* Referral link display */
 function setRefLink(uid){
   const url = new URL(location.href);
-  url.search = ''; // clean params
+  url.search = '';
   const link = url.origin + url.pathname + '?ref=' + uid;
   refLinkEl.textContent = link;
 }
 
-/* -------------- Referral bonus (₦1000) logic ---------------
-   When user’s FIRST trade becomes status='paid', we:
-   - Check their user doc: if firstTradePaid==false and referrerUid present
-   - Transaction:
-       * set firstTradePaid=true on this user
-       * increment referrer’s balance by 1000
-       * write a record in referralBonuses collection
-   NOTE: For production, enforce this on the server (Cloud Functions + Security Rules).
-*/
-async function maybeAwardReferral(uid){
-  try{
-    const youRef = doc(db,'users',uid);
-    const youSnap = await getDoc(youRef);
-    const you = youSnap.data()||{};
-    if(you.firstTradePaid) return; // already awarded
-    const refUid = you.referrerUid;
-    if(!refUid) return;
-    const refRef = doc(db,'users',refUid);
-    await runTransaction(db, async (tx)=>{
-      const youDoc = await tx.get(youRef);
-      const youData = youDoc.data()||{};
-      if(youData.firstTradePaid) return;
-      const refDoc = await tx.get(refRef);
-      const refBal = Number((refDoc.data()?.balance)||0);
-      tx.update(youRef, { firstTradePaid:true });
-      tx.set(refRef, { balance: refBal + 1000 }, { merge:true });
-      const logRef = doc(collection(db,'referralBonuses'));
-      tx.set(logRef, {
-        refereeUid: uid,
-        referrerUid: refUid,
-        amount: 1000,
-        createdAt: serverTimestamp()
-      });
-    });
-  }catch(e){
-    // silently ignore if rules block; server-side function is recommended
-    console.warn('Referral award skipped:', e?.message||e);
-  }
-}
+/* ------------- Auth state + splash hard-cap ------------- */
+let authResolved = false;
 
-/* ---------- Auth state ---------- */
-onAuthStateChanged(auth, async (user)=>{
-  if(!user){
-    // show auth
-    authWrap.classList.remove('hidden');
+// Hard cap: if auth hasn’t fired within 2500ms, show auth view
+setTimeout(()=>{
+  if(!authResolved){
+    authView.classList.remove('hidden');
     dashView.classList.add('hidden');
-    await showSplash(400); // quick flicker off
+    hideSplashFast();
+  }
+}, 2500);
+
+onAuthStateChanged(auth, async (user)=>{
+  authResolved = true; // auth responded
+  if(!user){
+    authView.classList.remove('hidden');
+    dashView.classList.add('hidden');
+    hideSplashFast();
     return;
   }
-  currentUser = user;
-  // ensure user doc exists
-  const uref = doc(db,'users',user.uid);
-  const u = await getDoc(uref);
-  if(!u.exists()){
-    await setDoc(uref,{ email:user.email, createdAt:serverTimestamp(), balance:0, bank:{}, firstTradePaid:false },{merge:true});
-  }
-  setRefLink(user.uid);
-  await loadPublicData();
-  // load bank & history
-  watchUserData(user.uid);
-  // crypto UI
-  refreshCryptoAddress();
+  try{
+    currentUser = user;
+    const uref = doc(db,'users',user.uid);
+    const u = await getDoc(uref);
+    if(!u.exists()){
+      await setDoc(uref,{ email:user.email, createdAt:serverTimestamp(), balance:0, bank:{}, firstTradePaid:false },{merge:true});
+    }
+    setRefLink(user.uid);
+    await loadPublicData();
+    watchUserData(user.uid);
+    refreshCryptoAddress();
 
-  // show dash, hide auth
-  authWrap.classList.add('hidden');
-  dashView.classList.remove('hidden');
-  await showSplash(300);
+    authView.classList.add('hidden');
+    dashView.classList.remove('hidden');
+  }catch(e){
+    // If something fails, still show auth for safety
+    authView.classList.remove('hidden');
+    dashView.classList.add('hidden');
+  }finally{
+    hideSplashFast();
+  }
 });
 
-/* Chat for tag button */
+/* Chat for tag button (secondary binding) */
 openChatForTag.onclick = openTawk;
 </script>
 
@@ -990,4 +942,4 @@ s0.parentNode.insertBefore(s1,s0);})();
 -->
 
 </body>
-</html>
+          </html>

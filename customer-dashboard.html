@@ -7,20 +7,13 @@
 <meta name="color-scheme" content="light dark"/>
 <style>
   :root{
-    --bg: #0b1220;
-    --card: #0f172a;
-    --text: #e2e8f0;
-    --muted:#94a3b8;
-    --brand:#ffd700;
-    --ok:#10b981;
-    --danger:#ef4444;
-    --border:#1f2937;
-    --chip:#111827;
+    --bg: #0b1220; --card:#0f172a; --text:#e2e8f0; --muted:#94a3b8;
+    --brand:#ffd700; --ok:#10b981; --danger:#ef4444; --border:#1f2937; --chip:#111827;
   }
   @media (prefers-color-scheme: light){
     :root{
-      --bg:#f7f7f8; --card:#ffffff; --text:#111827; --muted:#6b7280; --brand:#b58900;
-      --ok:#059669; --danger:#b91c1c; --border:#e5e7eb; --chip:#f3f4f6;
+      --bg:#f7f7f8; --card:#ffffff; --text:#111827; --muted:#6b7280;
+      --brand:#b58900; --ok:#059669; --danger:#b91c1c; --border:#e5e7eb; --chip:#f3f4f6;
     }
   }
   *{box-sizing:border-box}
@@ -44,21 +37,32 @@
   .money{font-weight:800}
   .brand-badge{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#111,#ffd700);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900}
   .center{display:flex;align-items:center;justify-content:center}
+  .toolbar{position:sticky;top:0;background:var(--bg);z-index:9;border-bottom:1px solid var(--border)}
+  .right{margin-left:auto}
+
   /* Splash */
-  #splash{position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+  #splash{position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:24px}
   #splash .tp{font-size:28px;font-weight:900;border:2px solid var(--brand);color:var(--brand);padding:12px 18px;border-radius:16px}
   .qr{background:#fff;border-radius:12px;padding:10px}
   .divider{height:1px;background:var(--border);margin:12px 0}
-  .toolbar{position:sticky;top:0;background:var(--bg);z-index:9;border-bottom:1px solid var(--border)}
-  .right{margin-left:auto}
+
+  /* Mobile polish */
+  @media (max-width: 480px){
+    .header{flex-direction:column;align-items:flex-start}
+    .brand-badge{width:36px;height:36px}
+    button{width:100%}
+    .toolbar .header .flex:last-child{width:100%;justify-content:space-between}
+    .card{padding:14px}
+    input,select,textarea{padding:12px}
+  }
 </style>
 </head>
 <body>
 
-<!-- Splash (shows ~2s on load / on auth swap) -->
+<!-- Splash (auto-hides; also has a fail-safe timeout) -->
 <div id="splash">
   <div class="tp">TP</div>
-  <div class="muted">Loading dashboard…</div>
+  <div class="muted" id="splashMsg">Loading dashboard…</div>
 </div>
 
 <!-- Top bar -->
@@ -87,11 +91,11 @@
     <div class="row row-2" style="margin-top:10px;">
       <div>
         <label>Email</label>
-        <input id="authEmail" type="email" placeholder="you@example.com"/>
+        <input id="authEmail" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email"/>
       </div>
       <div>
         <label>Password</label>
-        <input id="authPass" type="password" placeholder="••••••••"/>
+        <input id="authPass" type="password" placeholder="••••••••" autocomplete="current-password"/>
       </div>
     </div>
     <div class="row row-2" style="margin-top:10px;">
@@ -107,7 +111,7 @@
   <!-- DASHBOARD -->
   <section id="dashView" class="hidden">
     <!-- Announcements -->
-    <div class="card" id="annCard" class="hidden">
+    <div class="card" id="annCard">
       <div class="header"><h3>Announcements</h3></div>
       <div id="annList" class="flex"></div>
     </div>
@@ -162,7 +166,7 @@
       <div class="row row-3">
         <div><label>Bank name</label><input id="bankName" placeholder="e.g., Access Bank"/></div>
         <div><label>Account name</label><input id="acctName" placeholder="Your name"/></div>
-        <div><label>Account number</label><input id="acctNo" placeholder="0123456789"/></div>
+        <div><label>Account number</label><input id="acctNo" placeholder="0123456789" inputmode="numeric"/></div>
       </div>
       <div class="flex" style="margin-top:10px;">
         <button id="saveBank" class="btn">Save bank</button>
@@ -193,7 +197,7 @@
           </div>
           <div>
             <label>Face value ($)</label>
-            <input id="giftAmount" type="number" placeholder="100"/>
+            <input id="giftAmount" type="number" placeholder="100" inputmode="decimal"/>
           </div>
         </div>
         <div class="row row-2" style="margin-top:10px;">
@@ -231,7 +235,7 @@
           </div>
           <div>
             <label>Amount (crypto units)</label>
-            <input id="cryptoAmount" type="number" placeholder="0.100"/>
+            <input id="cryptoAmount" type="number" placeholder="0.100" inputmode="decimal"/>
           </div>
         </div>
 
@@ -271,7 +275,7 @@
           </div>
           <div>
             <label>Amount (USD)</label>
-            <input id="owAmount" type="number" placeholder="100"/>
+            <input id="owAmount" type="number" placeholder="100" inputmode="decimal"/>
           </div>
         </div>
         <div class="row row-2" style="margin-top:10px;">
@@ -304,7 +308,7 @@
         </div>
         <div>
           <label>Amount (₦)</label>
-          <input id="wdAmount" type="number" placeholder="5000"/>
+          <input id="wdAmount" type="number" placeholder="5000" inputmode="numeric"/>
         </div>
         <div>
           <label>&nbsp;</label>
@@ -328,16 +332,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  sendEmailVerification, sendPasswordResetEmail, signOut, updateProfile
+  sendEmailVerification, sendPasswordResetEmail, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp
+  getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getStorage, ref as sRef, uploadBytes, getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-/* ==== YOUR CONFIG ==== */
+/* ==== YOUR CONFIG (unchanged) ==== */
 const firebaseConfig = {
   apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
   authDomain: "toolspay-54167.firebaseapp.com",
@@ -346,7 +350,7 @@ const firebaseConfig = {
   messagingSenderId: "71318117342",
   appId: "1:71318117342:web:1952711453e19e19281b4f"
 };
-/* ===================== */
+/* ================================= */
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -358,8 +362,13 @@ const $ = (id)=>document.getElementById(id);
 const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 const currency = (n)=>'₦' + (Number(n||0)).toLocaleString();
 
-/* Splash show/hide */
-async function showSplash(ms=1400){ $('splash').classList.remove('hidden'); await sleep(ms); $('splash').classList.add('hidden'); }
+/* Splash show/hide + fail-safe */
+const splash = $('splash');
+const splashMsg = $('splashMsg');
+let authEventFired = false;
+async function showSplash(ms=1200){ splash.classList.remove('hidden'); await sleep(ms); hideSplash(); }
+function hideSplash(){ splash.classList.add('hidden'); }
+function showAuth(){ $('authView').classList.remove('hidden'); $('dashView').classList.add('hidden'); }
 
 /* Mode toggle */
 $('modeBtn').onclick = ()=>{
@@ -380,11 +389,11 @@ document.querySelectorAll('[data-tab]').forEach(btn=>{
 /* ----------------- Global state ----------------- */
 let currentUser = null;
 let usdToNgn = 0;
-let giftRates = {}; // { brand: { countries: { US: rate, ... } } }
-let walletRateMap = {}; // { type: { countries: { US: rate } } }
+let giftRates = {};
+let walletRateMap = {};
 let btcAddress = '';
-let usdtNetworks = []; // [{network,address}]
-let procTimeMap = {}; // { gift: "15 min", btc: "...", usdt: "...", wallet: "..." }
+let usdtNetworks = [];
+let procTimeMap = {};
 
 /* ----------------- DOM refs ----------------- */
 const authView = $('authView');
@@ -402,18 +411,15 @@ const refLinkEl = $('refLink');
 const copyRef   = $('copyRef');
 const shareRef  = $('shareRef');
 const procTimes = $('procTimes');
-
 const rateUsd = $('rateUsd');
 const rateGiftBase = $('rateGiftBase');
 const giftRatesBox = $('giftRates');
 const walletRatesBox = $('walletRates');
-
 const bankName = $('bankName');
 const acctName = $('acctName');
 const acctNo   = $('acctNo');
 const bankMsg  = $('bankMsg');
 const saveBank = $('saveBank');
-
 const giftBrand = $('giftBrand');
 const giftCountry = $('giftCountry');
 const giftAmount = $('giftAmount');
@@ -421,7 +427,6 @@ const giftFiles = $('giftFiles');
 const giftEstimate = $('giftEstimate');
 const submitGift = $('submitGift');
 const giftMsg = $('giftMsg');
-
 const cryptoType = $('cryptoType');
 const usdtNet = $('usdtNet');
 const cryptoAmount = $('cryptoAmount');
@@ -430,7 +435,6 @@ const qrBox = $('qrBox');
 const copyAddr = $('copyAddr');
 const markCryptoSent = $('markCryptoSent');
 const cryptoMsg = $('cryptoMsg');
-
 const owType = $('owType');
 const owCountry = $('owCountry');
 const owAmount = $('owAmount');
@@ -438,18 +442,13 @@ const owEstimate = $('owEstimate');
 const openChatForTag = $('openChatForTag');
 const submitOW = $('submitOW');
 const owMsg = $('owMsg');
-
 const wdAvail = $('wdAvail');
 const wdAmount = $('wdAmount');
 const reqWithdraw = $('reqWithdraw');
 const wdMsg = $('wdMsg');
-
 const historyBox = $('history');
 
-/* ----------------- QR generator (tiny, pure JS) -----------------
-   We’ll generate a data URL via Google Chart API fallback (client-side only).
-   If offline, we just show the address text.
-------------------------------------------------------------------*/
+/* ----------------- QR helper ----------------- */
 function renderQR(target, text){
   target.innerHTML = '';
   if(!text){ target.textContent = '—'; return; }
@@ -466,7 +465,6 @@ signUpBtn.onclick = async ()=>{
   authMsg.textContent = 'Creating account...';
   try{
     const cred = await createUserWithEmailAndPassword(auth, authEmail.value.trim(), authPass.value);
-    // attach referrer if url has ?ref=uid
     const url = new URL(location.href);
     const ref = url.searchParams.get('ref');
     await setDoc(doc(db, 'users', cred.user.uid), {
@@ -505,46 +503,43 @@ logoutBtn.onclick = ()=> signOut(auth);
 
 /* ----------------- Load admin data ----------------- */
 async function loadPublicData(){
-  // rates
-  const r = await getDoc(doc(db,'rates','default'));
-  if(r.exists()){
-    const d = r.data();
-    usdToNgn = Number(d.usdToNgn||0);
-    rateUsd.textContent = currency(usdToNgn);
-    rateGiftBase.textContent = currency(Number(d.giftcardBase||0)) + ' / $';
+  try{
+    const r = await getDoc(doc(db,'rates','default'));
+    if(r.exists()){
+      const d = r.data();
+      usdToNgn = Number(d.usdToNgn||0);
+      rateUsd.textContent = currency(usdToNgn);
+      rateGiftBase.textContent = currency(Number(d.giftcardBase||0)) + ' / $';
+    }
+    const w = await getDoc(doc(db,'wallets','default'));
+    if(w.exists()){
+      const d = w.data();
+      btcAddress = d?.btc?.address || '';
+      usdtNetworks = (d?.usdt?.networks || []);
+      usdtNet.innerHTML = '<option value="">—</option>' + usdtNetworks.map(n=>`<option value="${n.network}">${n.network}</option>`).join('');
+    }
+    const a = await getDoc(doc(db,'announcements','default'));
+    annList.innerHTML = '';
+    if(a.exists()){
+      (a.data().items||[]).forEach(t=>{
+        const span = document.createElement('span'); span.className='chip'; span.textContent=t;
+        annList.appendChild(span);
+      });
+    }
+    const gr = await getDoc(doc(db,'giftcardRates','default'));
+    giftRates = gr.exists() ? (gr.data().brands||{}) : {};
+    const wr = await getDoc(doc(db,'walletRates','default'));
+    walletRateMap = wr.exists() ? (wr.data().types||{}) : {};
+    const pt = await getDoc(doc(db,'processingTimes','default'));
+    procTimeMap = pt.exists() ? (pt.data()||{}) : {};
+    renderProcTimes();
+    renderRateBoxes();
+    fillFormSelects();
+    updateGiftEstimate();
+    updateOwEstimate();
+  }catch(err){
+    console.error(err);
   }
-  // wallets & tags
-  const w = await getDoc(doc(db,'wallets','default'));
-  if(w.exists()){
-    const d = w.data();
-    btcAddress = d?.btc?.address || '';
-    usdtNetworks = (d?.usdt?.networks || []);
-    // fill USDT networks select
-    usdtNet.innerHTML = '<option value="">—</option>' + usdtNetworks.map(n=>`<option value="${n.network}">${n.network}</option>`).join('');
-  }
-  // announcements
-  const a = await getDoc(doc(db,'announcements','default'));
-  annList.innerHTML = '';
-  if(a.exists()){
-    (a.data().items||[]).forEach(t=>{
-      const span = document.createElement('span'); span.className='chip'; span.textContent=t;
-      annList.appendChild(span);
-    });
-  }
-  // gift card rates
-  const gr = await getDoc(doc(db,'giftcardRates','default'));
-  giftRates = gr.exists() ? (gr.data().brands||{}) : {};
-  // online wallet rates
-  const wr = await getDoc(doc(db,'walletRates','default'));
-  walletRateMap = wr.exists() ? (wr.data().types||{}) : {};
-  // processing times
-  const pt = await getDoc(doc(db,'processingTimes','default'));
-  procTimeMap = pt.exists() ? (pt.data()||{}) : {};
-  renderProcTimes();
-  renderRateBoxes();
-  fillFormSelects();
-  updateGiftEstimate();
-  updateOwEstimate();
 }
 
 /* Render processing times chips */
@@ -563,7 +558,6 @@ function renderProcTimes(){
 
 /* Render rates summary lists */
 function renderRateBoxes(){
-  // Gift cards box
   giftRatesBox.innerHTML='';
   Object.entries(giftRates).forEach(([brand, obj])=>{
     const wrap=document.createElement('div'); wrap.className='chip'; wrap.style.whiteSpace='normal';
@@ -576,7 +570,6 @@ function renderRateBoxes(){
     const span=document.createElement('span'); span.className='muted'; span.textContent='No gift card rates yet.';
     giftRatesBox.appendChild(span);
   }
-  // Online wallets box
   walletRatesBox.innerHTML='';
   Object.entries(walletRateMap).forEach(([type,obj])=>{
     const wrap=document.createElement('div'); wrap.className='chip'; wrap.style.whiteSpace='normal';
@@ -593,15 +586,11 @@ function renderRateBoxes(){
 
 /* Fill select options */
 function fillFormSelects(){
-  // gift brand
   const brands = Object.keys(giftRates);
   giftBrand.innerHTML = brands.map(b=>`<option value="${b}">${b}</option>`).join('') || '<option value="">—</option>';
-  // gift country based on brand
   const b = giftBrand.value;
   const gc = (giftRates[b]?.countries)||{};
   giftCountry.innerHTML = Object.keys(gc).map(c=>`<option value="${c}">${c}</option>`).join('') || '<option value="">—</option>';
-
-  // online wallets
   const wtypes = Object.keys(walletRateMap);
   owType.innerHTML = wtypes.map(t=>`<option value="${t}">${t}</option>`).join('') || '<option value="">—</option>';
   const t = owType.value;
@@ -627,17 +616,15 @@ function updateOwEstimate(){
   owEstimate.value = currency(est);
 }
 
-/* Gift selects change */
+/* Select change */
 giftBrand.onchange = ()=>{ fillFormSelects(); updateGiftEstimate(); };
 giftCountry.onchange = updateGiftEstimate;
 giftAmount.oninput = updateGiftEstimate;
-
-/* Wallet selects change */
 owType.onchange = ()=>{ fillFormSelects(); updateOwEstimate(); };
 owCountry.onchange = updateOwEstimate;
 owAmount.oninput = updateOwEstimate;
 
-/* Crypto UI reactions */
+/* Crypto UI */
 function refreshCryptoAddress(){
   if(cryptoType.value==='BTC'){
     cryptoAddress.value = btcAddress||'';
@@ -658,10 +645,12 @@ usdtNet.onchange = refreshCryptoAddress;
 /* Copy helpers */
 copyAddr.onclick = async ()=>{
   if(!cryptoAddress.value) return;
-  try{ await navigator.clipboard.writeText(cryptoAddress.value); copyAddr.textContent='Copied ✓'; setTimeout(()=>copyAddr.textContent='Copy address',900);}catch(e){}
+  try{ await navigator.clipboard.writeText(cryptoAddress.value);
+       copyAddr.textContent='Copied ✓'; setTimeout(()=>copyAddr.textContent='Copy address',900);}catch(e){}
 };
 copyRef.onclick = async ()=>{
-  try{ await navigator.clipboard.writeText(refLinkEl.textContent); copyRef.textContent='Copied ✓'; setTimeout(()=>copyRef.textContent='Copy',900);}catch(e){}
+  try{ await navigator.clipboard.writeText(refLinkEl.textContent);
+       copyRef.textContent='Copied ✓'; setTimeout(()=>copyRef.textContent='Copy',900);}catch(e){}
 };
 shareRef.onclick = async ()=>{
   const url = refLinkEl.textContent;
@@ -709,21 +698,13 @@ submitGift.onclick = async ()=>{
     const rate = giftRates[giftBrand.value]?.countries?.[giftCountry.value] || 0;
     const est = Math.max(0, Number(giftAmount.value||0)*rate);
     await addDoc(collection(db,'trades'),{
-      uid: currentUser.uid,
-      type: 'gift',
-      brand: giftBrand.value,
-      country: giftCountry.value,
-      amountUsd: Number(giftAmount.value||0),
-      estimatedNgn: est,
-      images: urls,
-      status: 'pending',
-      createdAt: serverTimestamp()
+      uid: currentUser.uid, type: 'gift', brand: giftBrand.value, country: giftCountry.value,
+      amountUsd: Number(giftAmount.value||0), estimatedNgn: est, images: urls,
+      status: 'pending', createdAt: serverTimestamp()
     });
     giftMsg.textContent='Submitted ✓ We’ll review and pay to your bank.';
     setTimeout(()=>giftMsg.textContent='',2000);
-    giftFiles.value='';
-    giftAmount.value='';
-    updateGiftEstimate();
+    giftFiles.value=''; giftAmount.value=''; updateGiftEstimate();
   }catch(e){ giftMsg.textContent = e.message || e.code; }
 };
 
@@ -734,13 +715,9 @@ markCryptoSent.onclick = async ()=>{
     const isBtc = cryptoType.value==='BTC';
     const addr = isBtc ? (btcAddress||'') : (usdtNetworks.find(n=>n.network===usdtNet.value)?.address||'');
     await addDoc(collection(db,'trades'),{
-      uid: currentUser.uid,
-      type: isBtc ? 'btc' : 'usdt',
-      network: isBtc ? '' : (usdtNet.value||''),
-      address: addr,
-      amountCrypto: Number(cryptoAmount.value||0),
-      status:'pending',
-      createdAt: serverTimestamp()
+      uid: currentUser.uid, type: isBtc ? 'btc' : 'usdt',
+      network: isBtc ? '' : (usdtNet.value||''), address: addr,
+      amountCrypto: Number(cryptoAmount.value||0), status:'pending', createdAt: serverTimestamp()
     });
     cryptoMsg.textContent='Marked ✓ We’ll confirm and pay to your bank.';
     setTimeout(()=>cryptoMsg.textContent='',2000);
@@ -758,19 +735,12 @@ submitOW.onclick = async ()=>{
     const rate = walletRateMap[owType.value]?.countries?.[owCountry.value] || 0;
     const est = Math.max(0, Number(owAmount.value||0)*rate);
     await addDoc(collection(db,'trades'),{
-      uid: currentUser.uid,
-      type:'wallet',
-      walletType: owType.value,
-      country: owCountry.value,
-      amountUsd: Number(owAmount.value||0),
-      estimatedNgn: est,
-      status:'pending',
-      createdAt: serverTimestamp()
+      uid: currentUser.uid, type:'wallet', walletType: owType.value, country: owCountry.value,
+      amountUsd: Number(owAmount.value||0), estimatedNgn: est, status:'pending', createdAt: serverTimestamp()
     });
     owMsg.textContent='Submitted ✓ Please ensure you paid the correct tag (as given in chat).';
     setTimeout(()=>owMsg.textContent='',2000);
-    owAmount.value='';
-    updateOwEstimate();
+    owAmount.value=''; updateOwEstimate();
   }catch(e){ owMsg.textContent = e.message || e.code; }
 };
 
@@ -783,15 +753,9 @@ reqWithdraw.onclick = async ()=>{
   if(amt>avail){ wdMsg.textContent='Amount exceeds available balance.'; return; }
   try{
     await addDoc(collection(db,'withdrawals'),{
-      uid: currentUser.uid,
-      amount: amt,
-      bank: {
-        bankName: bankName.value.trim(),
-        acctName: acctName.value.trim(),
-        acctNo:   acctNo.value.trim()
-      },
-      status:'pending',
-      createdAt: serverTimestamp()
+      uid: currentUser.uid, amount: amt,
+      bank: { bankName: bankName.value.trim(), acctName: acctName.value.trim(), acctNo: acctNo.value.trim() },
+      status:'pending', createdAt: serverTimestamp()
     });
     wdMsg.textContent='Withdraw request sent ✓';
     setTimeout(()=>wdMsg.textContent='',1600);
@@ -799,20 +763,16 @@ reqWithdraw.onclick = async ()=>{
   }catch(e){ wdMsg.textContent = e.message || e.code; }
 };
 
-/* Watch user doc (balance/bank) + history */
+/* Watch user doc + history */
 function watchUserData(uid){
-  // user doc
   onSnapshot(doc(db,'users',uid),(snap)=>{
     const d = snap.data()||{};
     const bal = Number(d.balance||0);
     balNgn.textContent = currency(bal);
     wdAvail.value = currency(bal);
     const b = d.bank||{};
-    bankName.value = b.bankName||'';
-    acctName.value = b.acctName||'';
-    acctNo.value   = b.acctNo||'';
+    bankName.value = b.bankName||''; acctName.value = b.acctName||''; acctNo.value = b.acctNo||'';
   });
-  // history trades
   const q1 = query(collection(db,'trades'), where('uid','==',uid), orderBy('createdAt','desc'));
   onSnapshot(q1,(qs)=>{
     historyBox.innerHTML='';
@@ -832,11 +792,10 @@ function watchUserData(uid){
       historyBox.appendChild(item);
     });
   });
-  // withdrawals
   const q2 = query(collection(db,'withdrawals'), where('uid','==',uid), orderBy('createdAt','desc'));
   onSnapshot(q2,(qs)=>{
     if(!qs.empty){
-      const h = document.createElement('div'); h.className='row'; 
+      const h = document.createElement('div'); h.className='row';
       const title = document.createElement('div'); title.innerHTML = '<div class="divider"></div><h4>Your withdrawals</h4>';
       historyBox.appendChild(title);
       qs.forEach(docu=>{
@@ -857,46 +816,59 @@ function watchUserData(uid){
 /* Referral link display */
 function setRefLink(uid){
   const url = new URL(location.href);
-  url.search = ''; // clean params
+  url.search = '';
   const link = url.origin + url.pathname + '?ref=' + uid;
   refLinkEl.textContent = link;
 }
 
-/* Auth state */
+/* --------- AUTH STATE + Robust splash handling ---------- */
 onAuthStateChanged(auth, async (user)=>{
+  authEventFired = true;
   if(!user){
-    // show auth
     authView.classList.remove('hidden');
     dashView.classList.add('hidden');
-    await showSplash(1200);
+    hideSplash();
     return;
   }
-  currentUser = user;
-  // ensure user doc exists
-  const uref = doc(db,'users',user.uid);
-  const u = await getDoc(uref);
-  if(!u.exists()){
-    await setDoc(uref,{ email:user.email, createdAt:serverTimestamp(), balance:0, bank:{}, firstTradePaid:false },{merge:true});
+  try{
+    currentUser = user;
+    const uref = doc(db,'users',user.uid);
+    const u = await getDoc(uref);
+    if(!u.exists()){
+      await setDoc(uref,{ email:user.email, createdAt:serverTimestamp(), balance:0, bank:{}, firstTradePaid:false },{merge:true});
+    }
+    setRefLink(user.uid);
+    await loadPublicData();
+    watchUserData(user.uid);
+    refreshCryptoAddress();
+    authView.classList.add('hidden');
+    dashView.classList.remove('hidden');
+    hideSplash();
+  }catch(err){
+    console.error(err);
+    splashMsg.textContent = 'Loaded with fallback. If content is empty, refresh.';
+    hideSplash();
+    authView.classList.remove('hidden');
+    dashView.classList.add('hidden');
   }
-  setRefLink(user.uid);
-  await loadPublicData();
-  // load bank & history
-  watchUserData(user.uid);
-  // crypto UI
-  refreshCryptoAddress();
+});
 
-  // show dash
-  authView.classList.add('hidden');
-  dashView.classList.remove('hidden');
-  await showSplash(900);
+/* Fallback: if auth never responds, show auth after 3s */
+window.addEventListener('load', ()=>{
+  setTimeout(()=>{
+    if(!authEventFired){
+      splashMsg.textContent = 'Network slow — showing sign in.';
+      showAuth();
+      hideSplash();
+    }
+  }, 3000);
 });
 
 /* Chat for tag button */
 openChatForTag.onclick = openTawk;
 </script>
 
-<!-- Paste your Tawk widget *below this line* (keep it last so pages stay fast). -->
-<!-- Example:
+<!-- Paste your Tawk widget BELOW (keep last for speed)
 <script type="text/javascript">
 var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
 (function(){var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
@@ -906,4 +878,4 @@ s0.parentNode.insertBefore(s1,s0);})();
 -->
 
 </body>
-</html>
+  </html>

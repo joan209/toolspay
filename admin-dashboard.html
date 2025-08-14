@@ -1,303 +1,691 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Admin Dashboard</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Toolspay — Admin Dashboard</title>
+<link rel="stylesheet" href="style.css"/>
+
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f7f8fa;
-    padding: 20px;
-  }
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #111;
-    color: #fff;
-    padding: 10px 20px;
-  }
-  h1 {
-    font-size: 1.5em;
-  }
-  button {
-    padding: 8px 12px;
-    background: crimson;
-    border: none;
-    color: white;
-    cursor: pointer;
-    border-radius: 4px;
-  }
-  section {
-    margin-top: 20px;
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-  }
-  table, th, td {
-    border: 1px solid #ccc;
-  }
-  th, td {
-    padding: 8px;
-    text-align: left;
-  }
-  input, select {
-    padding: 5px;
-    margin: 5px 0;
-    width: 100%;
-  }
+  :root { --gold:#ffd700; --ink:#0b1220; }
+  body{background:#f7f7fb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial}
+  .container{max-width:1100px;margin:0 auto;padding:16px}
+  .card{background:#fff;border:1px solid #eee;border-radius:14px;padding:16px;margin:12px 0}
+  .row{display:grid;gap:12px}
+  @media(min-width:800px){.row-2{grid-template-columns:1fr 1fr}.row-3{grid-template-columns:1fr 1fr 1fr}}
+  label{font-weight:600;font-size:14px;margin-bottom:6px;display:block}
+  input,select,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px}
+  button{padding:10px 14px;border-radius:10px;border:0;cursor:pointer}
+  .btn-primary{background:#000;color:var(--gold);border:2px solid var(--gold)}
+  .btn-ghost{background:#f4f4f4}
+  .btn-danger{background:#b91c1c;color:#fff}
+  .tag{padding:6px 10px;border:1px solid #ddd;border-radius:999px;font-size:12px}
+  .muted{color:#6b7280;font-size:12px}
+  .header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .hidden{display:none}
+  .list{border:1px dashed #ddd;border-radius:10px;padding:10px}
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{border-bottom:1px solid #eee;padding:8px;text-align:left;font-size:14px}
+  .pill{padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid #ddd;background:#fafafa}
+  .status-Pending{background:#fff7ed;border-color:#fed7aa}
+  .status-Approved{background:#ecfeff;border-color:#a5f3fc}
+  .status-Paid{background:#ecfdf5;border-color:#86efac}
+  .status-Rejected{background:#fef2f2;border-color:#fecaca}
 </style>
 </head>
 <body>
-<header>
-  <h1>Admin Dashboard</h1>
-  <div>
-    <span id="adminEmail"></span>
-    <button id="logoutBtn">Logout</button>
+<header style="padding:16px;border-bottom:1px solid #eee;background:var(--ink);color:#fff">
+  <div class="container header">
+    <div class="flex">
+      <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#111,var(--gold));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;">TP</div>
+      <div>
+        <div style="font-weight:800;">Toolspay — Admin</div>
+        <div class="muted" style="color:#cbd5e1">Rates • Wallets • Trades • Withdrawals</div>
+      </div>
+    </div>
+    <div class="flex">
+      <span id="meEmail" class="muted"></span>
+      <button id="logoutBtn" class="btn-ghost">Sign out</button>
+    </div>
   </div>
 </header>
 
-<section>
-  <h2>Gift Card Rates Management</h2>
-  <form id="giftCardForm">
-    <input type="text" id="giftCardName" placeholder="Gift Card Name" required />
-    <input type="number" id="giftCardRate" placeholder="Rate" required />
-    <input type="text" id="giftCardCountry" placeholder="Country" required />
-    <button type="submit">Add / Update Gift Card</button>
-  </form>
-  <table id="giftCardTable">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Rate</th>
-        <th>Country</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</section>
+<main class="container">
+  <!-- AUTH -->
+  <div id="authBlock" class="card">
+    <h2>Admin sign in</h2>
+    <p class="muted">Only emails in <code>admins</code> can access.</p>
+    <div class="row row-2" style="margin-top:10px;">
+      <div>
+        <label>Email</label>
+        <input id="email" type="email" placeholder="you@example.com"/>
+      </div>
+      <div>
+        <label>Password</label>
+        <input id="password" type="password" placeholder="••••••••"/>
+      </div>
+    </div>
+    <div class="flex" style="margin-top:10px;">
+      <button id="loginBtn" class="btn-primary">Sign in</button>
+      <button id="resetBtn" class="btn-ghost">Send reset link</button>
+    </div>
+    <div id="authMsg" class="muted" style="margin-top:8px;"></div>
+  </div>
 
-<section>
-  <h2>Online Wallet Rates Management</h2>
-  <form id="walletForm">
-    <input type="text" id="walletName" placeholder="Wallet Name" required />
-    <input type="number" id="walletRate" placeholder="Rate" required />
-    <button type="submit">Add / Update Wallet</button>
-  </form>
-  <table id="walletTable">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Rate</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</section>
+  <!-- NOT ADMIN -->
+  <div id="notAdmin" class="card hidden">
+    <h3 class="muted">Not authorized</h3>
+    <p class="muted">Use your <a href="grant-admin.html">Grant Admin</a> page to add your email, then reload.</p>
+  </div>
 
-<section>
-  <h2>Crypto Wallet Management</h2>
-  <form id="cryptoForm">
-    <select id="cryptoType">
-      <option value="BTC">BTC</option>
-      <option value="USDT">USDT</option>
-    </select>
-    <input type="text" id="cryptoAddress" placeholder="Wallet Address" required />
-    <input type="file" id="cryptoQR" />
-    <button type="submit">Save Crypto Wallet</button>
-  </form>
-  <div id="cryptoList"></div>
-</section>
+  <!-- ADMIN PANEL -->
+  <section id="adminPanel" class="hidden">
 
-<section>
-  <h2>Countries List</h2>
-  <form id="countryForm">
-    <input type="text" id="countryName" placeholder="Country Name" required />
-    <button type="submit">Add Country</button>
-  </form>
-  <ul id="countryList"></ul>
-</section>
+    <!-- Rates -->
+    <div class="card">
+      <div class="header">
+        <h2>Rates & Settings</h2>
+        <span class="muted">Doc: <code>rates/default</code></span>
+      </div>
+      <div class="row row-3" style="margin-top:10px;">
+        <div>
+          <label>USD → NGN</label>
+          <input id="usdToNgn" type="number" placeholder="1500"/>
+        </div>
+        <div>
+          <label>Default Giftcard Base (₦/$1)</label>
+          <input id="giftcardBase" type="number" placeholder="1450"/>
+        </div>
+        <div>
+          <label>Processing Time (minutes)</label>
+          <input id="processingTime" type="number" placeholder="30"/>
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <button id="saveRates" class="btn-primary">Save settings</button>
+        <span id="ratesMsg" class="muted"></span>
+      </div>
+    </div>
 
-<section>
-  <h2>Processing Time</h2>
-  <input type="text" id="processingTime" placeholder="e.g., 5-10 minutes" />
-  <button id="saveProcessingTime">Save</button>
-</section>
+    <!-- Crypto wallets -->
+    <div class="card">
+      <div class="header">
+        <h2>Crypto Wallets</h2>
+        <span class="muted">Doc: <code>wallets/default</code></span>
+      </div>
+      <div class="row row-2" style="margin-top:10px;">
+        <div>
+          <label>BTC Address</label>
+          <input id="btcAddress" placeholder="bc1... or 1..."/>
+        </div>
+        <div>
+          <label>Online Wallet Tags (optional quick-paste)</label>
+          <div class="row">
+            <input id="tagChime" placeholder="Chime tag"/>
+            <input id="tagZelle" placeholder="Zelle tag/email"/>
+            <input id="tagVenmo" placeholder="@venmo"/>
+            <input id="tagPaypal" placeholder="PayPal email"/>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="background:#fafafa;">
+        <h3>USDT Networks</h3>
+        <div id="networksList" class="list" style="margin-top:8px;"></div>
+        <div class="row row-3" style="margin-top:8px;">
+          <div><input id="newNetName" placeholder="TRC20 / ERC20 / BEP20"/></div>
+          <div><input id="newNetAddr" placeholder="USDT address for this network"/></div>
+          <div><button id="addNetwork" class="btn-ghost">Add network</button></div>
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <button id="saveWallets" class="btn-primary">Save wallets</button>
+        <span id="walletsMsg" class="muted"></span>
+      </div>
+    </div>
 
-<section>
-  <h2>Customer Balances & History</h2>
-  <div id="customerBalances"></div>
-</section>
+    <!-- Gift card rates (country-specific) -->
+    <div class="card">
+      <div class="header">
+        <h2>Gift Card Rates (per brand & country)</h2>
+        <span class="muted">Coll: <code>giftcards</code></span>
+      </div>
+      <div class="row row-3">
+        <div><input id="gcBrand" placeholder="Brand e.g. Amazon"/></div>
+        <div>
+          <select id="gcCountry">
+            <option>USA</option><option>UK</option><option>Canada</option>
+            <option>Australia</option><option>Euro</option><option>Switzerland</option>
+            <option>Nigeria</option><option>UAE</option><option>Turkey</option>
+            <option>China</option><option>Japan</option><option>Others</option>
+          </select>
+        </div>
+        <div><input id="gcRate" type="number" placeholder="₦ per $1"/></div>
+      </div>
+      <div class="flex" style="margin-top:8px;">
+        <button id="addGc" class="btn-ghost">Add / Update</button>
+      </div>
+      <div id="gcList" class="list" style="margin-top:8px;"></div>
+    </div>
 
-<script type="module" src="./firebase.js"></script>
+    <!-- Online wallet rates (country-specific) -->
+    <div class="card">
+      <div class="header">
+        <h2>Online Wallet Rates (by country)</h2>
+        <span class="muted">Coll: <code>walletRates</code></span>
+      </div>
+      <div class="row row-3">
+        <div>
+          <select id="wrCountry">
+            <option>USA</option><option>UK</option><option>Canada</option>
+            <option>Australia</option><option>Euro</option><option>Switzerland</option>
+            <option>Nigeria</option><option>UAE</option><option>Turkey</option>
+            <option>China</option><option>Japan</option><option>Others</option>
+          </select>
+        </div>
+        <div>
+          <select id="wrType">
+            <option>Chime</option><option>PayPal</option><option>Zelle</option><option>Venmo</option>
+          </select>
+        </div>
+        <div><input id="wrRate" type="number" placeholder="₦ per $1"/></div>
+      </div>
+      <div class="flex" style="margin-top:8px;">
+        <button id="addWr" class="btn-ghost">Add / Update</button>
+      </div>
+      <div id="wrList" class="list" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- Announcements -->
+    <div class="card">
+      <div class="header">
+        <h2>Announcements</h2>
+        <span class="muted">Doc: <code>announcements/default</code></span>
+      </div>
+      <label style="margin-top:8px;">One per line</label>
+      <textarea id="annTextarea" rows="4" placeholder="Welcome to Toolspay&#10;Trade only inside this site"></textarea>
+      <div style="margin-top:10px;">
+        <button id="saveAnn" class="btn-primary">Save announcements</button>
+        <span id="annMsg" class="muted"></span>
+      </div>
+    </div>
+
+    <!-- Trades moderation -->
+    <div class="card">
+      <div class="header">
+        <h2>Trades</h2>
+        <span class="muted">Coll: <code>trades</code></span>
+      </div>
+      <div id="tradesTableWrap" class="list" style="margin-top:8px;overflow:auto"></div>
+    </div>
+
+    <!-- Withdrawals -->
+    <div class="card">
+      <div class="header">
+        <h2>Withdrawals</h2>
+        <span class="muted">Coll: <code>withdrawals</code></span>
+      </div>
+      <div id="wdTableWrap" class="list" style="margin-top:8px;overflow:auto"></div>
+    </div>
+  </section>
+</main>
+
 <script type="module">
+/*** Firebase SDK + YOUR CONFIG ***/
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  auth, db, storage,
-  signOut, onAuthStateChanged,
-  doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs,
-  collection, addDoc, serverTimestamp,
-  uploadFileReturnURL
-} from './firebase.js';
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+  sendPasswordResetEmail, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
+  collection, getDocs, query, orderBy, where, onSnapshot, addDoc, serverTimestamp, increment
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getStorage, ref, uploadBytes, getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-// ===== Check if logged in =====
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = 'admin-login.html';
-  } else {
-    document.getElementById('adminEmail').textContent = user.email;
-    loadGiftCards();
-    loadWallets();
-    loadCrypto();
-    loadCountries();
-    loadProcessingTime();
-    loadCustomerBalances();
-  }
-});
-
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  await signOut(auth);
-});
-
-// ===== Gift Card CRUD =====
-async function loadGiftCards() {
-  const snap = await getDocs(collection(db, "giftCards"));
-  const tbody = document.querySelector('#giftCardTable tbody');
-  tbody.innerHTML = '';
-  snap.forEach(docSnap => {
-    const data = docSnap.data();
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${data.name}</td>
-      <td>${data.rate}</td>
-      <td>${data.country}</td>
-      <td><button onclick="deleteGiftCard('${docSnap.id}')">Delete</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
-}
-window.deleteGiftCard = async (id) => {
-  await deleteDoc(doc(db, "giftCards", id));
-  loadGiftCards();
+const firebaseConfig = {
+  apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
+  authDomain: "toolspay-54167.firebaseapp.com",
+  projectId: "toolspay-54167",
+  storageBucket: "toolspay-54167.firebasestorage.app",
+  messagingSenderId: "71318117342",
+  appId: "1:71318117342:web:1952711453e19e19281b4f"
 };
-document.getElementById('giftCardForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const name = giftCardName.value.trim();
-  const rate = parseFloat(giftCardRate.value);
-  const country = giftCardCountry.value.trim();
-  await setDoc(doc(db, "giftCards", `${name}_${country}`), {
-    name, rate, country, updatedAt: serverTimestamp()
-  });
-  e.target.reset();
-  loadGiftCards();
-});
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-// ===== Wallet CRUD =====
-async function loadWallets() {
-  const snap = await getDocs(collection(db, "wallets"));
-  const tbody = document.querySelector('#walletTable tbody');
-  tbody.innerHTML = '';
-  snap.forEach(docSnap => {
-    const data = docSnap.data();
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${data.name}</td>
-      <td>${data.rate}</td>
-      <td><button onclick="deleteWallet('${docSnap.id}')">Delete</button></td>
-    `;
-    tbody.appendChild(tr);
+/*** UI refs ***/
+const authBlock  = document.getElementById('authBlock');
+const adminPanel = document.getElementById('adminPanel');
+const notAdmin   = document.getElementById('notAdmin');
+const emailEl = document.getElementById('email');
+const passEl  = document.getElementById('password');
+const loginBtn = document.getElementById('loginBtn');
+const resetBtn = document.getElementById('resetBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const authMsg = document.getElementById('authMsg');
+const meEmail = document.getElementById('meEmail');
+
+const usdToNgn = document.getElementById('usdToNgn');
+const giftcardBase = document.getElementById('giftcardBase');
+const processingTime = document.getElementById('processingTime');
+const saveRates = document.getElementById('saveRates');
+const ratesMsg = document.getElementById('ratesMsg');
+
+const btcAddress = document.getElementById('btcAddress');
+const tagChime = document.getElementById('tagChime');
+const tagZelle = document.getElementById('tagZelle');
+const tagVenmo = document.getElementById('tagVenmo');
+const tagPaypal = document.getElementById('tagPaypal');
+const networksList = document.getElementById('networksList');
+const newNetName = document.getElementById('newNetName');
+const newNetAddr = document.getElementById('newNetAddr');
+const addNetwork = document.getElementById('addNetwork');
+const saveWallets = document.getElementById('saveWallets');
+const walletsMsg = document.getElementById('walletsMsg');
+
+const gcBrand = document.getElementById('gcBrand');
+const gcCountry = document.getElementById('gcCountry');
+const gcRate = document.getElementById('gcRate');
+const addGc = document.getElementById('addGc');
+const gcList = document.getElementById('gcList');
+
+const wrCountry = document.getElementById('wrCountry');
+const wrType = document.getElementById('wrType');
+const wrRate = document.getElementById('wrRate');
+const addWr = document.getElementById('addWr');
+const wrList = document.getElementById('wrList');
+
+const annTextarea = document.getElementById('annTextarea');
+const saveAnn = document.getElementById('saveAnn');
+const annMsg = document.getElementById('annMsg');
+
+const tradesTableWrap = document.getElementById('tradesTableWrap');
+const wdTableWrap = document.getElementById('wdTableWrap');
+
+let usdtNetworks = []; // [{network,address}]
+
+/*** Helpers ***/
+function el(tag, attrs={}, children=[]) {
+  const e = document.createElement(tag);
+  Object.entries(attrs).forEach(([k,v])=> e.setAttribute(k,v));
+  (Array.isArray(children)?children:[children]).forEach(c=>{
+    if(typeof c==="string") e.appendChild(document.createTextNode(c));
+    else if(c) e.appendChild(c);
+  });
+  return e;
+}
+function renderNetworks(){
+  networksList.innerHTML='';
+  if(!usdtNetworks.length){ networksList.innerHTML='<div class="muted">No USDT networks yet.</div>'; return; }
+  usdtNetworks.forEach((n,idx)=>{
+    const row=el('div',{class:'flex',style:'justify-content:space-between;padding:6px 0;'},[
+      el('div',{class:'flex'},[
+        el('span',{class:'tag'},[n.network]), el('span',{class:'muted',style:'margin-left:6px;'},[n.address])
+      ]),
+      el('button',{class:'btn-ghost',"data-idx":idx},['Remove'])
+    ]);
+    row.querySelector('button').onclick=()=>{ usdtNetworks.splice(idx,1); renderNetworks(); };
+    networksList.appendChild(row);
   });
 }
-window.deleteWallet = async (id) => {
-  await deleteDoc(doc(db, "wallets", id));
-  loadWallets();
+addNetwork.onclick=()=>{
+  const net=(newNetName.value||'').trim();
+  const addr=(newNetAddr.value||'').trim();
+  if(!net||!addr) return;
+  usdtNetworks.push({network:net,address:addr});
+  newNetName.value=''; newNetAddr.value=''; renderNetworks();
 };
-document.getElementById('walletForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const name = walletName.value.trim();
-  const rate = parseFloat(walletRate.value);
-  await setDoc(doc(db, "wallets", name), { name, rate, updatedAt: serverTimestamp() });
-  e.target.reset();
-  loadWallets();
-});
 
-// ===== Crypto Wallets =====
-async function loadCrypto() {
-  const snap = await getDocs(collection(db, "cryptoWallets"));
-  const list = document.getElementById('cryptoList');
-  list.innerHTML = '';
-  snap.forEach(docSnap => {
-    const data = docSnap.data();
-    list.innerHTML += `<p>${data.type}: ${data.address}<br><img src="${data.qr}" width="100" /></p>`;
-  });
-}
-document.getElementById('cryptoForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const type = cryptoType.value;
-  const address = cryptoAddress.value.trim();
-  let qrUrl = "";
-  if (cryptoQR.files.length) {
-    qrUrl = await uploadFileReturnURL(cryptoQR.files[0], "cryptoQRs");
-  }
-  await setDoc(doc(db, "cryptoWallets", type), { type, address, qr: qrUrl });
-  e.target.reset();
-  loadCrypto();
-});
-
-// ===== Countries =====
-async function loadCountries() {
-  const snap = await getDocs(collection(db, "countries"));
-  const list = document.getElementById('countryList');
-  list.innerHTML = '';
-  snap.forEach(docSnap => {
-    const data = docSnap.data();
-    const li = document.createElement('li');
-    li.innerHTML = `${data.name} <button onclick="deleteCountry('${docSnap.id}')">Remove</button>`;
-    list.appendChild(li);
-  });
-}
-window.deleteCountry = async (id) => {
-  await deleteDoc(doc(db, "countries", id));
-  loadCountries();
+/*** Auth ***/
+loginBtn.onclick = async()=>{
+  authMsg.textContent='Signing in...';
+  try{
+    await signInWithEmailAndPassword(auth,emailEl.value.trim(),passEl.value);
+    authMsg.textContent='';
+  }catch(e){ authMsg.textContent='Sign in failed: '+(e.message||e.code); }
 };
-document.getElementById('countryForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const name = countryName.value.trim();
-  await setDoc(doc(db, "countries", name), { name });
-  e.target.reset();
-  loadCountries();
+resetBtn.onclick = async()=>{
+  const em=(emailEl.value||'').trim();
+  if(!em){ authMsg.textContent='Enter email first.'; return; }
+  try{ await sendPasswordResetEmail(auth,em); authMsg.textContent='Reset link sent to '+em; }
+  catch(e){ authMsg.textContent='Reset failed: '+(e.message||e.code); }
+};
+logoutBtn.onclick = async()=>{ await signOut(auth); location.reload(); };
+
+onAuthStateChanged(auth, async(user)=>{
+  if(!user){
+    authBlock.classList.remove('hidden'); adminPanel.classList.add('hidden'); notAdmin.classList.add('hidden'); meEmail.textContent='';
+    return;
+  }
+  meEmail.textContent=user.email||'';
+  const a=await getDoc(doc(db,'admins',user.email));
+  if(!a.exists()){
+    authBlock.classList.add('hidden'); notAdmin.classList.remove('hidden'); adminPanel.classList.add('hidden'); return;
+  }
+  authBlock.classList.add('hidden'); notAdmin.classList.add('hidden'); adminPanel.classList.remove('hidden');
+  await loadRates(); await loadWallets(); await loadGiftcards(); await loadWalletRates(); await loadAnnouncements();
+  watchTrades(); watchWithdrawals();
 });
 
-// ===== Processing Time =====
-async function loadProcessingTime() {
-  const ref = doc(db, "settings", "processingTime");
-  const snap = await getDoc(ref);
-  if (snap.exists()) {
-    processingTime.value = snap.data().value;
+/*** Loaders / Savers ***/
+async function loadRates(){
+  try{
+    const r=await getDoc(doc(db,'rates','default'));
+    if(r.exists()){
+      const d=r.data();
+      usdToNgn.value=d.usdToNgn??''; giftcardBase.value=d.giftcardBase??''; processingTime.value=d.processingTime??'';
+    }
+  }catch(e){console.warn(e)}
+}
+saveRates.onclick=async()=>{
+  ratesMsg.textContent='Saving...';
+  try{
+    await setDoc(doc(db,'rates','default'),{
+      usdToNgn:Number(usdToNgn.value||0),
+      giftcardBase:Number(giftcardBase.value||0),
+      processingTime:Number(processingTime.value||30)
+    },{merge:true});
+    ratesMsg.textContent='Saved ✓'; setTimeout(()=>ratesMsg.textContent='',1200);
+  }catch(e){ratesMsg.textContent='Error: '+(e.message||e.code)}
+};
+
+async function loadWallets(){
+  try{
+    const w=await getDoc(doc(db,'wallets','default'));
+    if(w.exists()){
+      const d=w.data();
+      btcAddress.value=d?.btc?.address||'';
+      const t=d?.tags||{};
+      tagChime.value=t.chime||''; tagZelle.value=t.zelle||''; tagVenmo.value=t.venmo||''; tagPaypal.value=t.paypal||'';
+      usdtNetworks=(d?.usdt?.networks||[]).slice(); renderNetworks();
+    }else{ usdtNetworks=[]; renderNetworks(); }
+  }catch(e){console.warn(e)}
+}
+saveWallets.onclick=async()=>{
+  walletsMsg.textContent='Saving...';
+  try{
+    await setDoc(doc(db,'wallets','default'),{
+      btc:{address:(btcAddress.value||'').trim()},
+      usdt:{networks:usdtNetworks},
+      tags:{ chime:(tagChime.value||'').trim(), zelle:(tagZelle.value||'').trim(),
+             venmo:(tagVenmo.value||'').trim(), paypal:(tagPaypal.value||'').trim() }
+    },{merge:true});
+    walletsMsg.textContent='Saved ✓'; setTimeout(()=>walletsMsg.textContent='',1200);
+  }catch(e){walletsMsg.textContent='Error: '+(e.message||e.code)}
+};
+
+async function loadGiftcards(){ // list all giftcards
+  gcList.innerHTML='Loading...';
+  const snap=await getDocs(collection(db,'giftcards'));
+  const byKey=[];
+  snap.forEach(d=>{ byKey.push({id:d.id,...d.data()}); });
+  renderGiftcards(byKey);
+}
+function renderGiftcards(list){
+  if(!list.length){ gcList.innerHTML='<div class="muted">No gift card rates yet.</div>'; return; }
+  const tbl=el('table',{class:'table'});
+  tbl.innerHTML=`<thead><tr><th>Brand</th><th>Country</th><th>Rate (₦/$1)</th><th></th></tr></thead>`;
+  const tb=el('tbody');
+  list.forEach(r=>{
+    const tr=el('tr',{},[
+      el('td',{},[r.brand||'']),
+      el('td',{},[r.country||'']),
+      el('td',{},[String(r.rate||'')]),
+      el('td',{},[
+        el('button',{class:'btn-ghost',"data-id":r.id},['Edit']),
+        el('button',{class:'btn-danger',style:'margin-left:6px',"data-del":r.id},['Remove'])
+      ])
+    ]);
+    tb.appendChild(tr);
+  });
+  tbl.appendChild(tb); gcList.innerHTML=''; gcList.appendChild(tbl);
+  gcList.querySelectorAll('button[data-id]').forEach(b=> b.onclick= async()=>{
+    const id=b.getAttribute('data-id'); const d=await getDoc(doc(db,'giftcards',id));
+    if(d.exists()){ const v=d.data(); gcBrand.value=v.brand; gcCountry.value=v.country; gcRate.value=v.rate; }
+  });
+  gcList.querySelectorAll('button[data-del]').forEach(b=> b.onclick= async()=>{
+    await deleteDoc(doc(db,'giftcards',b.getAttribute('data-del'))); loadGiftcards();
+  });
+}
+addGc.onclick=async()=>{
+  const brand=(gcBrand.value||'').trim(); const country=gcCountry.value; const rate=Number(gcRate.value||0);
+  if(!brand||!country||!rate) return;
+  const id=`${brand}_${country}`.replace(/\s+/g,'-').toLowerCase();
+  await setDoc(doc(db,'giftcards',id),{brand,country,rate},{merge:true});
+  await loadGiftcards(); gcBrand.value=''; gcRate.value='';
+};
+
+async function loadWalletRates(){
+  wrList.innerHTML='Loading...';
+  const snap=await getDocs(collection(db,'walletRates'));
+  const rows=[];
+  snap.forEach(d=>{
+    const country=d.id; const rates=d.data()?.rates||{};
+    Object.keys(rates).forEach(type=> rows.push({country,type,rate:rates[type]}));
+  });
+  renderWr(rows);
+}
+function renderWr(list){
+  if(!list.length){ wrList.innerHTML='<div class="muted">No online wallet rates yet.</div>'; return; }
+  const tbl=el('table',{class:'table'});
+  tbl.innerHTML=`<thead><tr><th>Country</th><th>Wallet</th><th>Rate (₦/$1)</th><th></th></tr></thead>`;
+  const tb=el('tbody');
+  list.forEach(r=>{
+    const id=`${r.country}`;
+    const tr=el('tr',{},[
+      el('td',{},[r.country]),
+      el('td',{},[r.type]),
+      el('td',{},[String(r.rate)]),
+      el('td',{},[
+        el('button',{class:'btn-ghost',"data-edit":`${r.country}|${r.type}`},['Edit']),
+        el('button',{class:'btn-danger',style:'margin-left:6px',"data-remove":`${r.country}|${r.type}`},['Remove'])
+      ])
+    ]);
+    tb.appendChild(tr);
+  });
+  tbl.appendChild(tb); wrList.innerHTML=''; wrList.appendChild(tbl);
+
+  wrList.querySelectorAll('button[data-edit]').forEach(b=> b.onclick=()=>{
+    const [c,t]=b.getAttribute('data-edit').split('|');
+    wrCountry.value=c; wrType.value=t; wrRate.value='';
+  });
+  wrList.querySelectorAll('button[data-remove]').forEach(b=> b.onclick=async()=>{
+    const [c,t]=b.getAttribute('data-remove').split('|');
+    const refDoc=doc(db,'walletRates',c);
+    const d=await getDoc(refDoc); if(!d.exists()) return;
+    const rates=d.data().rates||{}; delete rates[t];
+    await setDoc(refDoc,{rates},{merge:true});
+    loadWalletRates();
+  });
+}
+addWr.onclick=async()=>{
+  const country=wrCountry.value; const type=wrType.value; const rate=Number(wrRate.value||0);
+  if(!country||!type||!rate) return;
+  const refDoc=doc(db,'walletRates',country);
+  const d=await getDoc(refDoc); const rates=(d.exists() && d.data().rates)||{};
+  rates[type]=rate;
+  await setDoc(refDoc,{rates},{merge:true});
+  await loadWalletRates(); wrRate.value='';
+};
+
+async function loadAnnouncements(){
+  const a=await getDoc(doc(db,'announcements','default'));
+  if(a.exists()){
+    const arr=Array.isArray(a.data().items)?a.data().items:[];
+    annTextarea.value=arr.join('\n');
   }
 }
-document.getElementById('saveProcessingTime').addEventListener('click', async () => {
-  await setDoc(doc(db, "settings", "processingTime"), { value: processingTime.value });
-  alert('Processing time saved.');
-});
+saveAnn.onclick=async()=>{
+  annMsg.textContent='Saving...';
+  try{
+    const items=(annTextarea.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+    await setDoc(doc(db,'announcements','default'),{items},{merge:true});
+    annMsg.textContent='Saved ✓'; setTimeout(()=>annMsg.textContent='',1200);
+  }catch(e){ annMsg.textContent='Error: '+(e.message||e.code); }
+};
 
-// ===== Customer Balances =====
-async function loadCustomerBalances() {
-  const snap = await getDocs(collection(db, "users"));
-  const div = document.getElementById('customerBalances');
-  div.innerHTML = '';
-  snap.forEach(docSnap => {
-    const u = docSnap.data();
-    div.innerHTML += `<p>${u.email} — Balance: ${u.balance || 0}</p>`;
+/*** Trades stream + actions ***/
+function watchTrades(){
+  const qRef=query(collection(db,'trades'),orderBy('createdAt','desc'));
+  onSnapshot(qRef,(snap)=>{
+    const rows=[];
+    snap.forEach(d=> rows.push({id:d.id,...d.data()}));
+    renderTrades(rows);
   });
+}
+function renderTrades(list){
+  if(!list.length){ tradesTableWrap.innerHTML='<div class="muted">No trades yet.</div>'; return; }
+  const tbl=el('table',{class:'table'});
+  tbl.innerHTML=`<thead>
+    <tr><th>Time</th><th>User</th><th>Type</th><th>Detail</th><th>Status</th><th>Images</th><th>Admin Proof</th><th>Actions</th></tr>
+  </thead>`;
+  const tb=el('tbody');
+  list.forEach(t=>{
+    const imgs=el('div',{class:'flex'}, (t.images||[]).map(u=> el('a',{href:u,target:'_blank'},[el('img',{src:u,style:'width:50px;height:50px;object-fit:cover;border-radius:6px'})])));
+    const proofs=el('div',{class:'flex'}, (t.adminProof||[]).map(u=> el('a',{href:u,target:'_blank'},[el('img',{src:u,style:'width:50px;height:50px;object-fit:cover;border-radius:6px'})])));
+    const st=el('span',{class:`pill status-${t.status||'Pending'}`},[t.status||'Pending']);
+    const detail = (()=>{
+      if(t.type==='giftcard') return `${t.cardBrand||''} • ${t.cardCountry||''} • $${t.faceValue||0} → ₦${t.expectedNaira||0}`;
+      if(t.type==='crypto') return `${t.cryptoType||''} • ${t.cryptoNetwork||''} • ₦${t.expectedNaira||0}`;
+      if(t.type==='wallet') return `${t.walletType||''} • ${t.walletCountry||''} • $${t.usdAmount||0} → ₦${t.expectedNaira||0}`;
+      return '';
+    })();
+
+    const tr=el('tr',{},[
+      el('td',{},[ new Date(t.createdAt?.seconds? t.createdAt.seconds*1000 : Date.now()).toLocaleString() ]),
+      el('td',{},[ t.userEmail||t.uid||'' ]),
+      el('td',{},[ t.type ]),
+      el('td',{},[ detail ]),
+      el('td',{},[ st ]),
+      el('td',{},[ imgs ]),
+      el('td',{},[ proofs ]),
+      el('td',{},[
+        el('div',{},[
+          el('select',{"data-st":t.id},[
+            el('option',{value:'Pending', selected:(t.status==='Pending')},['Pending']),
+            el('option',{value:'Approved', selected:(t.status==='Approved')},['Approved']),
+            el('option',{value:'Paid', selected:(t.status==='Paid')},['Paid']),
+            el('option',{value:'Rejected', selected:(t.status==='Rejected')},['Rejected'])
+          ]),
+          el('input',{"data-paid":t.id,placeholder:"Paid ₦ amount",type:"number",style:"margin-top:6px;width:140px"}),
+          el('input',{"data-proof":t.id, type:'file', multiple:true, accept:'image/*', style:'margin-top:6px'}),
+          el('button',{"data-save":t.id,class:"btn-primary",style:"margin-top:6px"},['Save'])
+        ])
+      ])
+    ]);
+    tb.appendChild(tr);
+  });
+  tbl.appendChild(tb);
+  tradesTableWrap.innerHTML=''; tradesTableWrap.appendChild(tbl);
+
+  tradesTableWrap.querySelectorAll('button[data-save]').forEach(btn=>{
+    btn.onclick=()=>saveTrade(btn.getAttribute('data-save'));
+  });
+}
+async function saveTrade(id){
+  const stSel = tradesTableWrap.querySelector(`select[data-st="${id}"]`);
+  const paidInp= tradesTableWrap.querySelector(`input[data-paid="${id}"]`);
+  const proofInp= tradesTableWrap.querySelector(`input[data-proof="${id}"]`);
+  const status= stSel?.value||'Pending';
+  const paidAmount= Number(paidInp?.value||0);
+
+  // upload proofs if any
+  const urls=[];
+  if(proofInp && proofInp.files && proofInp.files.length){
+    for(const f of proofInp.files){
+      const r= ref(storage, `tradeProofs/${id}/${Date.now()}_${f.name}`);
+      await uploadBytes(r,f); urls.push(await getDownloadURL(r));
+    }
+  }
+  const tRef=doc(db,'trades',id);
+  const snap=await getDoc(tRef);
+  if(!snap.exists()) return;
+  const t=snap.data();
+
+  const payload={ status, adminProof: (t.adminProof||[]).concat(urls) };
+  if(status==='Paid' && paidAmount>0){
+    payload.paidAmount=paidAmount;
+    // credit user balance
+    const uRef=doc(db,'users',t.uid);
+    await setDoc(uRef,{availableBalance: increment(paidAmount)}, {merge:true});
+    // add history record
+    await addDoc(collection(db,'users',t.uid,'history'),{
+      type:'credit', source:'trade', tradeId:id, amount:paidAmount, at:serverTimestamp()
+    });
+  }
+  await updateDoc(tRef,payload);
+}
+
+/*** Withdrawals ***/
+function watchWithdrawals(){
+  const qRef=query(collection(db,'withdrawals'),orderBy('createdAt','desc'));
+  onSnapshot(qRef,(snap)=>{
+    const rows=[]; snap.forEach(d=> rows.push({id:d.id,...d.data()}));
+    renderWithdrawals(rows);
+  });
+}
+function renderWithdrawals(list){
+  if(!list.length){ wdTableWrap.innerHTML='<div class="muted">No withdrawals yet.</div>'; return; }
+  const tbl=el('table',{class:'table'});
+  tbl.innerHTML=`<thead><tr><th>Time</th><th>User</th><th>Amount</th><th>Bank</th><th>Status</th><th>Admin Proof</th><th>Actions</th></tr></thead>`;
+  const tb=el('tbody');
+  list.forEach(w=>{
+    const proofs=el('div',{class:'flex'}, (w.adminProof||[]).map(u=> el('a',{href:u,target:'_blank'},[el('img',{src:u,style:'width:50px;height:50px;object-fit:cover;border-radius:6px'})])));
+    const st=el('span',{class:`pill status-${w.status||'Pending'}`},[w.status||'Pending']);
+    const bankTxt = w.bankSnapshot ? `${w.bankSnapshot.bankName} • ${w.bankSnapshot.accountName} • ${w.bankSnapshot.accountNumber}` : '';
+    const tr=el('tr',{},[
+      el('td',{},[ new Date(w.createdAt?.seconds? w.createdAt.seconds*1000 : Date.now()).toLocaleString() ]),
+      el('td',{},[ w.userEmail||w.uid||'' ]),
+      el('td',{},[ `₦${w.amount||0}` ]),
+      el('td',{},[ bankTxt ]),
+      el('td',{},[ st ]),
+      el('td',{},[ proofs ]),
+      el('td',{},[
+        el('div',{},[
+          el('select',{"data-wst":w.id},[
+            el('option',{value:'Pending', selected:(w.status==='Pending')},['Pending']),
+            el('option',{value:'Paid', selected:(w.status==='Paid')},['Paid']),
+            el('option',{value:'Rejected', selected:(w.status==='Rejected')},['Rejected'])
+          ]),
+          el('input',{"data-wproof":w.id, type:'file', multiple:true, accept:'image/*', style:'margin-top:6px'}),
+          el('button',{"data-wsave":w.id,class:"btn-primary",style:"margin-top:6px"},['Save'])
+        ])
+      ])
+    ]);
+    tb.appendChild(tr);
+  });
+  tbl.appendChild(tb); wdTableWrap.innerHTML=''; wdTableWrap.appendChild(tbl);
+  wdTableWrap.querySelectorAll('button[data-wsave]').forEach(b=> b.onclick=()=> saveWithdrawal(b.getAttribute('data-wsave')));
+}
+async function saveWithdrawal(id){
+  const stSel = wdTableWrap.querySelector(`select[data-wst="${id}"]`);
+  const proofInp = wdTableWrap.querySelector(`input[data-wproof="${id}"]`);
+  const status = stSel?.value||'Pending';
+
+  // upload proofs
+  const urls=[];
+  if(proofInp && proofInp.files && proofInp.files.length){
+    for(const f of proofInp.files){
+      const r= ref(storage, `withdrawProofs/${id}/${Date.now()}_${f.name}`);
+      await uploadBytes(r,f); urls.push(await getDownloadURL(r));
+    }
+  }
+  const wRef=doc(db,'withdrawals',id);
+  const snap=await getDoc(wRef); if(!snap.exists()) return;
+  const w=snap.data();
+
+  const payload={status, adminProof:(w.adminProof||[]).concat(urls)};
+  if(status==='Paid' && !w.settled){
+    // mark settled & (no debit now—already debited at request time)
+    payload.settled=true;
+  }
+  await updateDoc(wRef,payload);
 }
 </script>
 </body>
-</html>
+          </html>

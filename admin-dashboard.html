@@ -1,748 +1,303 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Toolspay — Admin Dashboard</title>
-  <link rel="stylesheet" href="style.css"/>
-
-  <style>
-    :root { --brand:#0b1220; --gold:#ffd700; }
-    body{background:#f7f7fb;color:#0f172a;font-family:system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;}
-    .container{max-width:1100px;margin:0 auto;padding:16px;}
-    .card{background:#fff;border:1px solid #eee;border-radius:14px;padding:16px;margin:14px 0;}
-    .row{display:grid;gap:12px}
-    @media(min-width:720px){.row-2{grid-template-columns:1fr 1fr}.row-3{grid-template-columns:1fr 1fr 1fr}}
-    label{font-weight:700;font-size:13px;margin-bottom:6px;display:block}
-    input,select,textarea{width:100%;padding:10px;border:1px solid #dcdcdc;border-radius:10px;background:#fff}
-    button{padding:10px 14px;border-radius:10px;border:0;cursor:pointer}
-    .btn-primary{background:#000;color:var(--gold);border:2px solid var(--gold)}
-    .btn-ghost{background:#f1f5f9}
-    .btn-danger{background:#fee2e2}
-    .muted{color:#667085;font-size:12px}
-    .header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-    .flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .hidden{display:none}
-    .list{border:1px dashed #ddd;border-radius:12px;padding:10px}
-    .tag{padding:4px 8px;border:1px solid #ddd;border-radius:999px;font-size:12px}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px;border-bottom:1px solid #eee;text-align:left}
-    th{background:#fafafa;font-size:13px}
-    .pill{background:#0ea5e9;color:#fff;border-radius:999px;padding:2px 8px;font-size:11px}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Dashboard</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f7f8fa;
+    padding: 20px;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #111;
+    color: #fff;
+    padding: 10px 20px;
+  }
+  h1 {
+    font-size: 1.5em;
+  }
+  button {
+    padding: 8px 12px;
+    background: crimson;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  section {
+    margin-top: 20px;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  table, th, td {
+    border: 1px solid #ccc;
+  }
+  th, td {
+    padding: 8px;
+    text-align: left;
+  }
+  input, select {
+    padding: 5px;
+    margin: 5px 0;
+    width: 100%;
+  }
+</style>
 </head>
-
 <body>
-  <header style="padding:16px;border-bottom:1px solid #eee;background:var(--brand);">
-    <div class="container header" style="color:#fff;">
-      <div class="flex">
-        <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#111,var(--gold));display:flex;align-items:center;justify-content:center;font-weight:800;">TP</div>
-        <div>
-          <div style="font-weight:800;">Toolspay — Admin</div>
-          <div class="muted" style="color:#cbd5e1">Manage rates, wallets, admins & announcements</div>
-        </div>
-      </div>
-      <div class="flex">
-        <span id="whoami" class="muted"></span>
-        <button id="logoutBtn" class="btn-ghost">Sign out</button>
-      </div>
-    </div>
-  </header>
+<header>
+  <h1>Admin Dashboard</h1>
+  <div>
+    <span id="adminEmail"></span>
+    <button id="logoutBtn">Logout</button>
+  </div>
+</header>
 
-  <main class="container">
+<section>
+  <h2>Gift Card Rates Management</h2>
+  <form id="giftCardForm">
+    <input type="text" id="giftCardName" placeholder="Gift Card Name" required />
+    <input type="number" id="giftCardRate" placeholder="Rate" required />
+    <input type="text" id="giftCardCountry" placeholder="Country" required />
+    <button type="submit">Add / Update Gift Card</button>
+  </form>
+  <table id="giftCardTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Rate</th>
+        <th>Country</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
 
-    <!-- AUTH -->
-    <div id="authBlock" class="card">
-      <h2>Admin sign in</h2>
-      <p class="muted">Only emails inside <code>admins</code> collection can access.</p>
-      <div class="row row-2" style="margin-top:10px;">
-        <div>
-          <label>Email</label>
-          <input id="email" type="email" placeholder="you@example.com"/>
-        </div>
-        <div>
-          <label>Password</label>
-          <input id="password" type="password" placeholder="••••••••"/>
-        </div>
-      </div>
-      <div class="flex" style="margin-top:10px;">
-        <button id="loginBtn" class="btn-primary">Sign in</button>
-        <button id="resetBtn" class="btn-ghost">Send reset link</button>
-      </div>
-      <div id="authMsg" class="muted" style="margin-top:8px;"></div>
-    </div>
+<section>
+  <h2>Online Wallet Rates Management</h2>
+  <form id="walletForm">
+    <input type="text" id="walletName" placeholder="Wallet Name" required />
+    <input type="number" id="walletRate" placeholder="Rate" required />
+    <button type="submit">Add / Update Wallet</button>
+  </form>
+  <table id="walletTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Rate</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
 
-    <!-- NOT AUTHORIZED -->
-    <div id="notAdmin" class="card hidden">
-      <h3 style="color:#b91c1c">Not authorized</h3>
-      <p class="muted">This email is not in <code>admins</code>. Use the one-time “Grant admin” page to add yourself, or ask an existing admin.</p>
-      <div class="muted">If you’re already an admin, reload the page after a few seconds.</div>
-    </div>
+<section>
+  <h2>Crypto Wallet Management</h2>
+  <form id="cryptoForm">
+    <select id="cryptoType">
+      <option value="BTC">BTC</option>
+      <option value="USDT">USDT</option>
+    </select>
+    <input type="text" id="cryptoAddress" placeholder="Wallet Address" required />
+    <input type="file" id="cryptoQR" />
+    <button type="submit">Save Crypto Wallet</button>
+  </form>
+  <div id="cryptoList"></div>
+</section>
 
-    <!-- DASHBOARD -->
-    <section id="adminPanel" class="hidden">
+<section>
+  <h2>Countries List</h2>
+  <form id="countryForm">
+    <input type="text" id="countryName" placeholder="Country Name" required />
+    <button type="submit">Add Country</button>
+  </form>
+  <ul id="countryList"></ul>
+</section>
 
-      <!-- Invite Admin -->
-      <div class="card">
-        <div class="header"><h2>Admins</h2><span class="muted">Collection: <code>admins</code></span></div>
-        <div class="row row-3" style="margin-top:10px;">
-          <div>
-            <label>Admin email</label>
-            <input id="newAdminEmail" type="email" placeholder="new-admin@example.com"/>
-          </div>
-          <div>
-            <label>Note (optional)</label>
-            <input id="newAdminNote" placeholder="e.g. Support staff"/>
-          </div>
-          <div style="display:flex;align-items:end;">
-            <button id="addAdminBtn" class="btn-ghost">Grant admin</button>
-          </div>
-        </div>
-        <div class="muted" style="margin-top:6px;">They must have an Auth account. You can create it in Firebase Authentication (Email/Password) or ask them to sign up via your site, then add their email here.</div>
-        <div style="margin-top:10px;">
-          <table id="adminsTable">
-            <thead><tr><th>Email</th><th>Note</th><th>Since</th><th></th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div id="adminsMsg" class="muted"></div>
-      </div>
+<section>
+  <h2>Processing Time</h2>
+  <input type="text" id="processingTime" placeholder="e.g., 5-10 minutes" />
+  <button id="saveProcessingTime">Save</button>
+</section>
 
-      <!-- Rates -->
-      <div class="card">
-        <div class="header">
-          <h2>Global Rates</h2>
-          <span class="muted">Doc: <code>rates/default</code></span>
-        </div>
-        <div class="row row-2" style="margin-top:10px;">
-          <div>
-            <label>USD → NGN (global)</label>
-            <input id="usdToNgn" type="number" placeholder="1500"/>
-            <div class="muted">Displayed and used for default calculations.</div>
-          </div>
-          <div>
-            <label>Gift card base (₦ per $1)</label>
-            <input id="giftcardBase" type="number" placeholder="1450"/>
-            <div class="muted">Each brand/country can override below.</div>
-          </div>
-        </div>
+<section>
+  <h2>Customer Balances & History</h2>
+  <div id="customerBalances"></div>
+</section>
 
-        <div class="row row-3" style="margin-top:10px;">
-          <div>
-            <label>Gift cards — processing time (hrs)</label>
-            <input id="tGift" type="number" placeholder="1"/>
-          </div>
-          <div>
-            <label>Crypto — processing time (hrs)</label>
-            <input id="tCrypto" type="number" placeholder="0.5"/>
-          </div>
-          <div>
-            <label>Online wallets — processing time (hrs)</label>
-            <input id="tWallets" type="number" placeholder="0.5"/>
-          </div>
-        </div>
+<script type="module" src="./firebase.js"></script>
+<script type="module">
+import {
+  auth, db, storage,
+  signOut, onAuthStateChanged,
+  doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs,
+  collection, addDoc, serverTimestamp,
+  uploadFileReturnURL
+} from './firebase.js';
 
-        <div style="margin-top:10px;">
-          <button id="saveRates" class="btn-primary">Save global rates</button>
-          <span id="ratesMsg" class="muted"></span>
-        </div>
-      </div>
+// ===== Check if logged in =====
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = 'admin-login.html';
+  } else {
+    document.getElementById('adminEmail').textContent = user.email;
+    loadGiftCards();
+    loadWallets();
+    loadCrypto();
+    loadCountries();
+    loadProcessingTime();
+    loadCustomerBalances();
+  }
+});
 
-      <!-- Gift Card Rates by Country/Brand -->
-      <div class="card">
-        <div class="header">
-          <h2>Gift Card Rates per Country & Brand</h2>
-          <span class="muted">Collection: <code>giftcardRates</code></span>
-        </div>
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await signOut(auth);
+});
 
-        <div class="row row-3" style="margin-top:10px;">
-          <div>
-            <label>Country</label>
-            <select id="gcCountry">
-              <option>USA</option><option>UK</option><option>Canada</option><option>Australia</option>
-              <option>EU</option><option>Switzerland</option><option>Germany</option><option>France</option>
-              <option>Italy</option><option>Spain</option><option>Ireland</option><option>UAE</option>
-            </select>
-          </div>
-          <div>
-            <label>Brand</label>
-            <select id="gcBrand">
-              <option>Amazon</option><option>Apple / iTunes</option><option>Google Play</option>
-              <option>Steam</option><option>Razer Gold</option><option>Walmart</option>
-              <option>Visa Gift Card</option><option>American Express</option>
-            </select>
-          </div>
-          <div>
-            <label>Rate (₦ per $1)</label>
-            <input id="gcRate" type="number" placeholder="e.g. 1480"/>
-          </div>
-        </div>
+// ===== Gift Card CRUD =====
+async function loadGiftCards() {
+  const snap = await getDocs(collection(db, "giftCards"));
+  const tbody = document.querySelector('#giftCardTable tbody');
+  tbody.innerHTML = '';
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${data.name}</td>
+      <td>${data.rate}</td>
+      <td>${data.country}</td>
+      <td><button onclick="deleteGiftCard('${docSnap.id}')">Delete</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+window.deleteGiftCard = async (id) => {
+  await deleteDoc(doc(db, "giftCards", id));
+  loadGiftCards();
+};
+document.getElementById('giftCardForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = giftCardName.value.trim();
+  const rate = parseFloat(giftCardRate.value);
+  const country = giftCardCountry.value.trim();
+  await setDoc(doc(db, "giftCards", `${name}_${country}`), {
+    name, rate, country, updatedAt: serverTimestamp()
+  });
+  e.target.reset();
+  loadGiftCards();
+});
 
-        <div class="row row-2" style="margin-top:10px;">
-          <div>
-            <label>Status</label>
-            <select id="gcActive">
-              <option value="true">Active (show to customers)</option>
-              <option value="false">Hidden</option>
-            </select>
-          </div>
-          <div style="display:flex;align-items:end;">
-            <button id="addGcRate" class="btn-ghost">Add / Update rate</button>
-          </div>
-        </div>
+// ===== Wallet CRUD =====
+async function loadWallets() {
+  const snap = await getDocs(collection(db, "wallets"));
+  const tbody = document.querySelector('#walletTable tbody');
+  tbody.innerHTML = '';
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${data.name}</td>
+      <td>${data.rate}</td>
+      <td><button onclick="deleteWallet('${docSnap.id}')">Delete</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+window.deleteWallet = async (id) => {
+  await deleteDoc(doc(db, "wallets", id));
+  loadWallets();
+};
+document.getElementById('walletForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = walletName.value.trim();
+  const rate = parseFloat(walletRate.value);
+  await setDoc(doc(db, "wallets", name), { name, rate, updatedAt: serverTimestamp() });
+  e.target.reset();
+  loadWallets();
+});
 
-        <div class="muted" style="margin-top:6px;">Add as many country/brand rows as you want. Customers will see the right rate and get an instant payout estimate before upload.</div>
+// ===== Crypto Wallets =====
+async function loadCrypto() {
+  const snap = await getDocs(collection(db, "cryptoWallets"));
+  const list = document.getElementById('cryptoList');
+  list.innerHTML = '';
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
+    list.innerHTML += `<p>${data.type}: ${data.address}<br><img src="${data.qr}" width="100" /></p>`;
+  });
+}
+document.getElementById('cryptoForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const type = cryptoType.value;
+  const address = cryptoAddress.value.trim();
+  let qrUrl = "";
+  if (cryptoQR.files.length) {
+    qrUrl = await uploadFileReturnURL(cryptoQR.files[0], "cryptoQRs");
+  }
+  await setDoc(doc(db, "cryptoWallets", type), { type, address, qr: qrUrl });
+  e.target.reset();
+  loadCrypto();
+});
 
-        <div style="margin-top:10px;">
-          <table id="gcTable">
-            <thead><tr><th>Country</th><th>Brand</th><th>Rate (₦/$)</th><th>Status</th><th></th></tr></thead>
-            <tbody></tbody>
-          </table>
-          <div id="gcMsg" class="muted"></div>
-        </div>
-      </div>
+// ===== Countries =====
+async function loadCountries() {
+  const snap = await getDocs(collection(db, "countries"));
+  const list = document.getElementById('countryList');
+  list.innerHTML = '';
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
+    const li = document.createElement('li');
+    li.innerHTML = `${data.name} <button onclick="deleteCountry('${docSnap.id}')">Remove</button>`;
+    list.appendChild(li);
+  });
+}
+window.deleteCountry = async (id) => {
+  await deleteDoc(doc(db, "countries", id));
+  loadCountries();
+};
+document.getElementById('countryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = countryName.value.trim();
+  await setDoc(doc(db, "countries", name), { name });
+  e.target.reset();
+  loadCountries();
+});
 
-      <!-- Digital Wallet Rates by Country (Chime/PayPal/Zelle/Venmo) -->
-      <div class="card">
-        <div class="header">
-          <h2>Online Wallet Rates (by Country)</h2>
-          <span class="muted">Collection: <code>digitalWalletRates</code></span>
-        </div>
+// ===== Processing Time =====
+async function loadProcessingTime() {
+  const ref = doc(db, "settings", "processingTime");
+  const snap = await getDoc(ref);
+  if (snap.exists()) {
+    processingTime.value = snap.data().value;
+  }
+}
+document.getElementById('saveProcessingTime').addEventListener('click', async () => {
+  await setDoc(doc(db, "settings", "processingTime"), { value: processingTime.value });
+  alert('Processing time saved.');
+});
 
-        <div class="row row-3" style="margin-top:10px;">
-          <div>
-            <label>Country</label>
-            <select id="dwCountry">
-              <option>USA</option><option>UK</option><option>Canada</option><option>Australia</option>
-              <option>EU</option><option>Switzerland</option><option>Germany</option><option>France</option>
-              <option>Italy</option><option>Spain</option><option>Ireland</option><option>UAE</option>
-            </select>
-          </div>
-          <div>
-            <label>Wallet Type</label>
-            <select id="dwType">
-              <option>Chime</option><option>PayPal</option><option>Zelle</option><option>Venmo</option>
-            </select>
-          </div>
-          <div>
-            <label>Rate (₦ per $1)</label>
-            <input id="dwRate" type="number" placeholder="e.g. 1500"/>
-          </div>
-        </div>
-
-        <div class="row row-2" style="margin-top:10px;">
-          <div>
-            <label>Status</label>
-            <select id="dwActive">
-              <option value="true">Active</option>
-              <option value="false">Hidden</option>
-            </select>
-          </div>
-          <div style="display:flex;align-items:end;">
-            <button id="addDwRate" class="btn-ghost">Add / Update wallet rate</button>
-          </div>
-        </div>
-
-        <div class="muted" style="margin-top:6px;">Customers will see these rates before they click “Chat admin for tag”.</div>
-
-        <div style="margin-top:10px;">
-          <table id="dwTable">
-            <thead><tr><th>Country</th><th>Wallet</th><th>Rate (₦/$)</th><th>Status</th><th></th></tr></thead>
-            <tbody></tbody>
-          </table>
-          <div id="dwMsg" class="muted"></div>
-        </div>
-      </div>
-
-      <!-- Wallets (BTC, USDT, Tags) -->
-      <div class="card">
-        <div class="header">
-          <h2>Wallets</h2>
-          <span class="muted">Doc: <code>wallets/default</code></span>
-        </div>
-
-        <div class="row row-2" style="margin-top:10px;">
-          <div>
-            <label>BTC Address</label>
-            <input id="btcAddress" placeholder="bc1... or 1..."/>
-          </div>
-          <div>
-            <label>Online wallet tags (quick copy)</label>
-            <div class="row">
-              <input id="tagChime" placeholder="Chime tag (optional)"/>
-              <input id="tagZelle" placeholder="Zelle tag/email (optional)"/>
-              <input id="tagVenmo" placeholder="@venmo (optional)"/>
-              <input id="tagPaypal" placeholder="PayPal email (optional)"/>
-            </div>
-            <div class="muted">For live chat — you’ll paste the correct tag to the user.</div>
-          </div>
-        </div>
-
-        <div class="card" style="background:#fafafa;margin-top:12px;">
-          <div class="header">
-            <h3>USDT Networks</h3>
-            <span class="muted">Add each network + address</span>
-          </div>
-          <div id="networksList" class="list" style="margin-top:8px;"></div>
-          <div class="row row-3" style="margin-top:8px;">
-            <div><input id="newNetName" placeholder="TRC20 / ERC20 / BEP20"/></div>
-            <div><input id="newNetAddr" placeholder="USDT address for this network"/></div>
-            <div><button id="addNetwork" class="btn-ghost">Add network</button></div>
-          </div>
-        </div>
-
-        <div style="margin-top:10px;">
-          <button id="saveWallets" class="btn-primary">Save wallets</button>
-          <span id="walletsMsg" class="muted"></span>
-        </div>
-      </div>
-
-      <!-- Announcements -->
-      <div class="card">
-        <div class="header">
-          <h2>Announcements</h2>
-          <span class="muted">Doc: <code>announcements/default</code></span>
-        </div>
-        <label style="margin-top:10px;">One per line</label>
-        <textarea id="annTextarea" rows="5" placeholder="Welcome to Toolspay&#10;Trade only inside this site"></textarea>
-        <div style="margin-top:10px;">
-          <button id="saveAnn" class="btn-primary">Save announcements</button>
-          <span id="annMsg" class="muted"></span>
-        </div>
-      </div>
-
-    </section>
-  </main>
-
-  <!-- Firebase + Admin Script -->
-  <script type="module">
-    /* =======================
-       Firebase (Modular v10)
-       ======================= */
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import {
-      getAuth, onAuthStateChanged, signInWithEmailAndPassword,
-      sendPasswordResetEmail, signOut
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import {
-      getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
-      getDocs, collection, query, where, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    // >>> YOUR CONFIG (as requested)
-    const firebaseConfig = {
-      apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
-      authDomain: "toolspay-54167.firebaseapp.com",
-      projectId: "toolspay-54167",
-      storageBucket: "toolspay-54167.firebasestorage.app",
-      messagingSenderId: "71318117342",
-      appId: "1:71318117342:web:1952711453e19e19281b4f"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db   = getFirestore(app);
-
-    /* ==============
-       UI references
-       ============== */
-    const authBlock  = document.getElementById('authBlock');
-    const adminPanel = document.getElementById('adminPanel');
-    const notAdmin   = document.getElementById('notAdmin');
-
-    const emailEl = document.getElementById('email');
-    const passEl  = document.getElementById('password');
-    const loginBtn = document.getElementById('loginBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const authMsg = document.getElementById('authMsg');
-    const whoami = document.getElementById('whoami');
-
-    // Admins
-    const newAdminEmail = document.getElementById('newAdminEmail');
-    const newAdminNote  = document.getElementById('newAdminNote');
-    const addAdminBtn   = document.getElementById('addAdminBtn');
-    const adminsTable   = document.querySelector('#adminsTable tbody');
-    const adminsMsg     = document.getElementById('adminsMsg');
-
-    // Global rates & times
-    const usdToNgn = document.getElementById('usdToNgn');
-    const giftcardBase = document.getElementById('giftcardBase');
-    const tGift = document.getElementById('tGift');
-    const tCrypto = document.getElementById('tCrypto');
-    const tWallets = document.getElementById('tWallets');
-    const saveRates = document.getElementById('saveRates');
-    const ratesMsg = document.getElementById('ratesMsg');
-
-    // Giftcard rates
-    const gcCountry = document.getElementById('gcCountry');
-    const gcBrand   = document.getElementById('gcBrand');
-    const gcRate    = document.getElementById('gcRate');
-    const gcActive  = document.getElementById('gcActive');
-    const addGcRate = document.getElementById('addGcRate');
-    const gcTable   = document.querySelector('#gcTable tbody');
-    const gcMsg     = document.getElementById('gcMsg');
-
-    // Digital wallet rates
-    const dwCountry = document.getElementById('dwCountry');
-    const dwType    = document.getElementById('dwType');
-    const dwRate    = document.getElementById('dwRate');
-    const dwActive  = document.getElementById('dwActive');
-    const addDwRate = document.getElementById('addDwRate');
-    const dwTable   = document.querySelector('#dwTable tbody');
-    const dwMsg     = document.getElementById('dwMsg');
-
-    // Wallets doc
-    const btcAddress = document.getElementById('btcAddress');
-    const tagChime = document.getElementById('tagChime');
-    const tagZelle = document.getElementById('tagZelle');
-    const tagVenmo = document.getElementById('tagVenmo');
-    const tagPaypal = document.getElementById('tagPaypal');
-    const networksList = document.getElementById('networksList');
-    const newNetName = document.getElementById('newNetName');
-    const newNetAddr = document.getElementById('newNetAddr');
-    const addNetwork = document.getElementById('addNetwork');
-    const saveWallets = document.getElementById('saveWallets');
-    const walletsMsg = document.getElementById('walletsMsg');
-    let usdtNetworks = []; // {network,address}
-
-    // Announcements
-    const annTextarea = document.getElementById('annTextarea');
-    const saveAnn = document.getElementById('saveAnn');
-    const annMsg = document.getElementById('annMsg');
-
-    /* ===========
-       Auth flows
-       =========== */
-    loginBtn.onclick = async () => {
-      authMsg.textContent = 'Signing in...';
-      try {
-        await signInWithEmailAndPassword(auth, (emailEl.value||'').trim(), passEl.value);
-        authMsg.textContent = '';
-      } catch (e) {
-        authMsg.textContent = 'Sign in failed: ' + (e?.message || e?.code || 'unknown');
-      }
-    };
-    resetBtn.onclick = async () => {
-      const em = (emailEl.value||'').trim();
-      if (!em){ authMsg.textContent='Enter email first.'; return; }
-      try {
-        await sendPasswordResetEmail(auth, em);
-        authMsg.textContent = 'Reset link sent to ' + em;
-      } catch (e) { authMsg.textContent = 'Reset failed: ' + (e?.message||e?.code); }
-    };
-    logoutBtn.onclick = async () => { await signOut(auth); location.reload(); };
-
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        whoami.textContent = '';
-        authBlock.classList.remove('hidden');
-        adminPanel.classList.add('hidden');
-        notAdmin.classList.add('hidden');
-        return;
-      }
-      whoami.textContent = user.email || '';
-      // Check if email is admin
-      const a = await getDoc(doc(db, 'admins', user.email));
-      if (!a.exists()) {
-        authBlock.classList.add('hidden');
-        adminPanel.classList.add('hidden');
-        notAdmin.classList.remove('hidden');
-        return;
-      }
-      // Authorized
-      authBlock.classList.add('hidden');
-      notAdmin.classList.add('hidden');
-      adminPanel.classList.remove('hidden');
-
-      // Load data
-      await Promise.all([loadAdmins(), loadRates(), loadWallets(), loadAnnouncements(), loadGcRates(), loadDwRates()]);
-    });
-
-    /* =======================
-       Admins (invite/remove)
-       ======================= */
-    async function loadAdmins(){
-      adminsTable.innerHTML = '<tr><td colspan="4" class="muted">Loading...</td></tr>';
-      const snap = await getDocs(collection(db,'admins'));
-      adminsTable.innerHTML = '';
-      if (snap.empty){
-        adminsTable.innerHTML = '<tr><td colspan="4" class="muted">No admins yet.</td></tr>';
-        return;
-      }
-      snap.forEach(d=>{
-        const data = d.data();
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${d.id}</td>
-          <td>${data.note||''}</td>
-          <td>${data.createdAt ? new Date(data.createdAt.seconds?data.createdAt.seconds*1000:data.createdAt).toLocaleString() : ''}</td>
-          <td><button class="btn-danger" data-email="${d.id}">Remove</button></td>
-        `;
-        tr.querySelector('button').onclick = async (e)=>{
-          const email = e.currentTarget.getAttribute('data-email');
-          if (!confirm('Remove admin: '+email+' ?')) return;
-          await deleteDoc(doc(db,'admins',email));
-          loadAdmins();
-        };
-        adminsTable.appendChild(tr);
-      });
-    }
-    addAdminBtn.onclick = async ()=>{
-      adminsMsg.textContent = 'Granting...';
-      const em = (newAdminEmail.value||'').trim().toLowerCase();
-      if (!em){ adminsMsg.textContent='Enter email.'; return; }
-      try{
-        await setDoc(doc(db,'admins',em), { note:(newAdminNote.value||'').trim(), createdAt: serverTimestamp() }, { merge:true });
-        adminsMsg.textContent = 'Granted ✓';
-        newAdminEmail.value = ''; newAdminNote.value='';
-        loadAdmins();
-      }catch(e){ adminsMsg.textContent = 'Error: '+(e?.message||e?.code); }
-    };
-
-    /* ==========================
-       Global rates / time save
-       ========================== */
-    async function loadRates(){
-      const r = await getDoc(doc(db,'rates','default'));
-      if (r.exists()){
-        const d = r.data();
-        usdToNgn.value = d.usdToNgn ?? '';
-        giftcardBase.value = d.giftcardBase ?? '';
-        tGift.value   = d?.processing?.giftcards ?? '';
-        tCrypto.value = d?.processing?.crypto ?? '';
-        tWallets.value= d?.processing?.wallets ?? '';
-      }
-    }
-    saveRates.onclick = async ()=>{
-      ratesMsg.textContent = 'Saving...';
-      try{
-        await setDoc(doc(db,'rates','default'), {
-          usdToNgn: Number(usdToNgn.value||0),
-          giftcardBase: Number(giftcardBase.value||0),
-          processing: {
-            giftcards: Number(tGift.value||0),
-            crypto: Number(tCrypto.value||0),
-            wallets: Number(tWallets.value||0)
-          }
-        }, { merge:true });
-        ratesMsg.textContent = 'Saved ✓';
-        setTimeout(()=>ratesMsg.textContent='',1200);
-      }catch(e){ ratesMsg.textContent='Error: '+(e?.message||e?.code); }
-    };
-
-    /* ===================================
-       Gift card rates (brand x country)
-       =================================== */
-    async function loadGcRates(){
-      gcTable.innerHTML = '<tr><td colspan="5" class="muted">Loading...</td></tr>';
-      const snap = await getDocs(collection(db,'giftcardRates'));
-      gcTable.innerHTML = '';
-      if (snap.empty){
-        gcTable.innerHTML = '<tr><td colspan="5" class="muted">No gift card rates yet.</td></tr>';
-        return;
-      }
-      snap.forEach(d=>{
-        const x = d.data();
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${x.country}</td>
-          <td>${x.brand}</td>
-          <td>₦${Number(x.rate||0).toLocaleString()}</td>
-          <td>${x.active ? '<span class="pill">Active</span>' : '<span class="muted">Hidden</span>'}</td>
-          <td>
-            <button class="btn-ghost" data-id="${d.id}" data-edit="1">Edit</button>
-            <button class="btn-danger" data-id="${d.id}">Delete</button>
-          </td>
-        `;
-        // Edit prefill
-        tr.querySelector('[data-edit]').onclick = ()=>{
-          gcCountry.value = x.country; gcBrand.value = x.brand; gcRate.value = x.rate; gcActive.value = String(!!x.active);
-          addGcRate.setAttribute('data-editing-id', d.id);
-          gcMsg.textContent = 'Editing row... click "Add / Update rate" to save.';
-        };
-        // Delete
-        tr.querySelector('.btn-danger').onclick = async ()=>{
-          if (!confirm('Delete this rate?')) return;
-          await deleteDoc(doc(db,'giftcardRates',d.id));
-          loadGcRates();
-        };
-        gcTable.appendChild(tr);
-      });
-    }
-    addGcRate.onclick = async ()=>{
-      gcMsg.textContent = 'Saving...';
-      try{
-        const payload = {
-          country: gcCountry.value,
-          brand: gcBrand.value,
-          rate: Number(gcRate.value||0),
-          active: gcActive.value === 'true',
-          updatedAt: serverTimestamp()
-        };
-        const editingId = addGcRate.getAttribute('data-editing-id');
-        if (editingId){
-          await updateDoc(doc(db,'giftcardRates',editingId), payload);
-          addGcRate.removeAttribute('data-editing-id');
-        }else{
-          // Try to upsert by (country+brand): find existing
-          const q = query(collection(db,'giftcardRates'),
-            where('country','==',payload.country), where('brand','==',payload.brand));
-          const exists = await getDocs(q);
-          if (!exists.empty){
-            // update first match
-            await updateDoc(doc(db,'giftcardRates', exists.docs[0].id), payload);
-          }else{
-            await addDoc(collection(db,'giftcardRates'), { ...payload, createdAt: serverTimestamp() });
-          }
-        }
-        gcMsg.textContent='Saved ✓'; setTimeout(()=>gcMsg.textContent='',1200);
-        gcRate.value=''; loadGcRates();
-      }catch(e){ gcMsg.textContent='Error: '+(e?.message||e?.code); }
-    };
-
-    /* =================================
-       Digital wallet rates (by country)
-       ================================= */
-    async function loadDwRates(){
-      dwTable.innerHTML = '<tr><td colspan="5" class="muted">Loading...</td></tr>';
-      const snap = await getDocs(collection(db,'digitalWalletRates'));
-      dwTable.innerHTML = '';
-      if (snap.empty){
-        dwTable.innerHTML = '<tr><td colspan="5" class="muted">No wallet rates yet.</td></tr>';
-        return;
-      }
-      snap.forEach(d=>{
-        const x = d.data();
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${x.country}</td>
-          <td>${x.type}</td>
-          <td>₦${Number(x.rate||0).toLocaleString()}</td>
-          <td>${x.active ? '<span class="pill">Active</span>' : '<span class="muted">Hidden</span>'}</td>
-          <td>
-            <button class="btn-ghost" data-id="${d.id}" data-edit="1">Edit</button>
-            <button class="btn-danger" data-id="${d.id}">Delete</button>
-          </td>
-        `;
-        tr.querySelector('[data-edit]').onclick = ()=>{
-          dwCountry.value = x.country; dwType.value = x.type; dwRate.value = x.rate; dwActive.value = String(!!x.active);
-          addDwRate.setAttribute('data-editing-id', d.id);
-          dwMsg.textContent = 'Editing row... click "Add / Update wallet rate" to save.';
-        };
-        tr.querySelector('.btn-danger').onclick = async ()=>{
-          if (!confirm('Delete this rate?')) return;
-          await deleteDoc(doc(db,'digitalWalletRates', d.id));
-          loadDwRates();
-        };
-        dwTable.appendChild(tr);
-      });
-    }
-    addDwRate.onclick = async ()=>{
-      dwMsg.textContent = 'Saving...';
-      try{
-        const payload = {
-          country: dwCountry.value,
-          type: dwType.value,
-          rate: Number(dwRate.value||0),
-          active: dwActive.value === 'true',
-          updatedAt: serverTimestamp()
-        };
-        const editingId = addDwRate.getAttribute('data-editing-id');
-        if (editingId){
-          await updateDoc(doc(db,'digitalWalletRates', editingId), payload);
-          addDwRate.removeAttribute('data-editing-id');
-        }else{
-          // upsert by (country+type)
-          const q = query(collection(db,'digitalWalletRates'),
-            where('country','==',payload.country), where('type','==',payload.type));
-          const exists = await getDocs(q);
-          if (!exists.empty){
-            await updateDoc(doc(db,'digitalWalletRates', exists.docs[0].id), payload);
-          }else{
-            await addDoc(collection(db,'digitalWalletRates'), { ...payload, createdAt: serverTimestamp() });
-          }
-        }
-        dwMsg.textContent='Saved ✓'; setTimeout(()=>dwMsg.textContent='',1200);
-        dwRate.value=''; loadDwRates();
-      }catch(e){ dwMsg.textContent='Error: '+(e?.message||e?.code); }
-    };
-
-    /* =========================
-       Wallets (BTC / USDT / tags)
-       ========================= */
-    function renderNetworks(){
-      networksList.innerHTML = '';
-      if (!usdtNetworks.length){
-        networksList.innerHTML = '<div class="muted">No USDT networks yet.</div>'; return;
-      }
-      usdtNetworks.forEach((n,idx)=>{
-        const row = document.createElement('div');
-        row.className='flex'; row.style.justifyContent='space-between'; row.style.padding='6px 0';
-        row.innerHTML = `
-          <div class="flex"><span class="tag">${n.network}</span>
-            <span class="muted" style="margin-left:6px;">${n.address}</span></div>
-          <button class="btn-ghost" data-idx="${idx}">Remove</button>`;
-        row.querySelector('button').onclick = (e)=>{
-          const i = Number(e.currentTarget.getAttribute('data-idx'));
-          usdtNetworks.splice(i,1); renderNetworks();
-        };
-        networksList.appendChild(row);
-      });
-    }
-    addNetwork.onclick = ()=>{
-      const net=(newNetName.value||'').trim(); const addr=(newNetAddr.value||'').trim();
-      if (!net||!addr) return; usdtNetworks.push({network:net,address:addr});
-      newNetName.value=''; newNetAddr.value=''; renderNetworks();
-    };
-
-    async function loadWallets(){
-      const w = await getDoc(doc(db,'wallets','default'));
-      if (w.exists()){
-        const d = w.data();
-        btcAddress.value = d?.btc?.address || '';
-        const tags = d?.tags || {};
-        tagChime.value = tags.chime||''; tagZelle.value = tags.zelle||'';
-        tagVenmo.value = tags.venmo||''; tagPaypal.value = tags.paypal||'';
-        usdtNetworks = (d?.usdt?.networks || []).slice(); renderNetworks();
-      }else{ usdtNetworks=[]; renderNetworks(); }
-    }
-    saveWallets.onclick = async ()=>{
-      walletsMsg.textContent='Saving...';
-      try{
-        await setDoc(doc(db,'wallets','default'),{
-          btc:{ address:(btcAddress.value||'').trim() },
-          usdt:{ networks: usdtNetworks },
-          tags:{
-            chime:(tagChime.value||'').trim(),
-            zelle:(tagZelle.value||'').trim(),
-            venmo:(tagVenmo.value||'').trim(),
-            paypal:(tagPaypal.value||'').trim()
-          },
-          updatedAt: serverTimestamp()
-        },{merge:true});
-        walletsMsg.textContent='Saved ✓'; setTimeout(()=>walletsMsg.textContent='',1200);
-      }catch(e){ walletsMsg.textContent='Error: '+(e?.message||e?.code); }
-    };
-
-    /* ===============
-       Announcements
-       =============== */
-    async function loadAnnouncements(){
-      const a = await getDoc(doc(db,'announcements','default'));
-      if (a.exists()){
-        const arr = Array.isArray(a.data().items)?a.data().items:[];
-        annTextarea.value = arr.join('\n');
-      }
-    }
-    saveAnn.onclick = async ()=>{
-      annMsg.textContent='Saving...';
-      try{
-        const items = (annTextarea.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
-        await setDoc(doc(db,'announcements','default'), { items, updatedAt: serverTimestamp() }, { merge:true });
-        annMsg.textContent='Saved ✓'; setTimeout(()=>annMsg.textContent='',1200);
-      }catch(e){ annMsg.textContent='Error: '+(e?.message||e?.code); }
-    };
-  </script>
+// ===== Customer Balances =====
+async function loadCustomerBalances() {
+  const snap = await getDocs(collection(db, "users"));
+  const div = document.getElementById('customerBalances');
+  div.innerHTML = '';
+  snap.forEach(docSnap => {
+    const u = docSnap.data();
+    div.innerHTML += `<p>${u.email} — Balance: ${u.balance || 0}</p>`;
+  });
+}
+</script>
 </body>
 </html>

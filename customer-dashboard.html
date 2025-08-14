@@ -1,881 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Toolspay — Customer</title>
-<meta name="color-scheme" content="light dark"/>
-<style>
-  :root{
-    --bg: #0b1220; --card:#0f172a; --text:#e2e8f0; --muted:#94a3b8;
-    --brand:#ffd700; --ok:#10b981; --danger:#ef4444; --border:#1f2937; --chip:#111827;
-  }
-  @media (prefers-color-scheme: light){
-    :root{
-      --bg:#f7f7f8; --card:#ffffff; --text:#111827; --muted:#6b7280;
-      --brand:#b58900; --ok:#059669; --danger:#b91c1c; --border:#e5e7eb; --chip:#f3f4f6;
-    }
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-  .container{max-width:1000px;margin:0 auto;padding:16px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin:12px 0}
-  .row{display:grid;gap:12px}
-  @media(min-width:720px){.row-2{grid-template-columns:1fr 1fr}.row-3{grid-template-columns:1fr 1fr 1fr}}
-  label{font-size:12px;font-weight:700;opacity:.8}
-  input,select,textarea{width:100%;padding:11px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text)}
-  input[type="file"]{padding:8px}
-  button{padding:10px 14px;border-radius:12px;border:0;cursor:pointer}
-  .btn{background:#111;color:var(--brand);border:2px solid var(--brand)}
-  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
-  .btn-muted{background:var(--chip);color:var(--text);border:1px solid var(--border)}
-  .muted{color:var(--muted);font-size:12px}
-  .header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .hidden{display:none}
-  .chip{padding:6px 10px;background:var(--chip);border:1px solid var(--border);border-radius:999px;font-size:12px}
-  .money{font-weight:800}
-  .brand-badge{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#111,#ffd700);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900}
-  .center{display:flex;align-items:center;justify-content:center}
-  .toolbar{position:sticky;top:0;background:var(--bg);z-index:9;border-bottom:1px solid var(--border)}
-  .right{margin-left:auto}
-
-  /* Splash */
-  #splash{position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:24px}
-  #splash .tp{font-size:28px;font-weight:900;border:2px solid var(--brand);color:var(--brand);padding:12px 18px;border-radius:16px}
-  .qr{background:#fff;border-radius:12px;padding:10px}
-  .divider{height:1px;background:var(--border);margin:12px 0}
-
-  /* Mobile polish */
-  @media (max-width: 480px){
-    .header{flex-direction:column;align-items:flex-start}
-    .brand-badge{width:36px;height:36px}
-    button{width:100%}
-    .toolbar .header .flex:last-child{width:100%;justify-content:space-between}
-    .card{padding:14px}
-    input,select,textarea{padding:12px}
-  }
-</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ToolsPay - Customer Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
 </head>
 <body>
 
-<!-- Splash (auto-hides; also has a fail-safe timeout) -->
-<div id="splash">
-  <div class="tp">TP</div>
-  <div class="muted" id="splashMsg">Loading dashboard…</div>
-</div>
-
-<!-- Top bar -->
-<header class="toolbar">
-  <div class="container header">
-    <div class="flex">
-      <div class="brand-badge">TP</div>
-      <div>
-        <div style="font-weight:800;">Toolspay</div>
-        <div class="muted">Sell Gift Cards • BTC • USDT → Get paid in ₦</div>
-      </div>
-    </div>
-    <div class="flex">
-      <button id="modeBtn" class="btn-ghost" title="Dark/Light">🌓</button>
-      <button id="openChatBtn" class="btn-ghost" title="Live chat">💬 Chat</button>
-      <button id="logoutBtn" class="btn-ghost">Sign out</button>
-    </div>
-  </div>
-</header>
-
-<main class="container">
-  <!-- AUTH VIEWS -->
-  <section id="authView" class="card hidden">
-    <h2>Welcome</h2>
-    <p class="muted">Create an account or sign in to trade. A verification link will be sent to your email.</p>
-    <div class="row row-2" style="margin-top:10px;">
-      <div>
-        <label>Email</label>
-        <input id="authEmail" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email"/>
-      </div>
-      <div>
-        <label>Password</label>
-        <input id="authPass" type="password" placeholder="••••••••" autocomplete="current-password"/>
-      </div>
-    </div>
-    <div class="row row-2" style="margin-top:10px;">
-      <button id="signUpBtn" class="btn">Sign up</button>
-      <button id="signInBtn" class="btn-ghost">Sign in</button>
-    </div>
-    <div class="flex" style="margin-top:8px;">
-      <button id="forgotBtn" class="btn-muted">Forgot password</button>
-      <span id="authMsg" class="muted"></span>
-    </div>
-  </section>
-
-  <!-- DASHBOARD -->
-  <section id="dashView" class="hidden">
-    <!-- Announcements -->
-    <div class="card" id="annCard">
-      <div class="header"><h3>Announcements</h3></div>
-      <div id="annList" class="flex"></div>
+    <!-- Login/Signup Form -->
+    <div id="auth-container">
+        <h2>Welcome to ToolsPay</h2>
+        <input type="email" id="email" placeholder="Email" />
+        <input type="password" id="password" placeholder="Password" />
+        <button id="login-btn">Sign In</button>
+        <button id="signup-btn">Sign Up</button>
+        <p><a href="#" id="forgot-password">Forgot Password?</a></p>
     </div>
 
-    <!-- Quick stats + referral -->
-    <div class="row row-3">
-      <div class="card">
-        <div class="muted">Available balance</div>
-        <div id="balNgn" class="money" style="font-size:28px;">₦0</div>
-        <div class="muted">Withdraw to your bank after trades are paid.</div>
-      </div>
-      <div class="card">
-        <div class="muted">Referral link</div>
-        <div style="word-break:break-all" id="refLink"></div>
-        <div class="flex" style="margin-top:8px;">
-          <button id="copyRef" class="btn-ghost">Copy</button>
-          <button id="shareRef" class="btn-ghost">Share</button>
+    <!-- Dashboard (Hidden until logged in) -->
+    <div id="dashboard" style="display:none;">
+        <h2>Customer Dashboard</h2>
+        <p id="welcome-text"></p>
+
+        <h3>Available Balance: <span id="balance">₦0.00</span></h3>
+
+        <div id="trade-options">
+            <button id="gift-cards">Gift Cards</button>
+            <button id="wallets">Online Wallets</button>
         </div>
-        <div class="muted">Earn ₦1000 when your friend completes their first paid trade.</div>
-      </div>
-      <div class="card">
-        <div class="muted">Processing time</div>
-        <div id="procTimes" class="flex"></div>
-        <div class="muted">Times set by admin per category/country.</div>
-      </div>
+
+        <h3>Trade History</h3>
+        <ul id="trade-history"></ul>
+
+        <h3>Referral Program</h3>
+        <p>Your referral link:</p>
+        <input type="text" id="referral-link" readonly />
+        <p>Bonus: ₦<span id="bonus">0</span></p>
     </div>
 
-    <!-- Rates (from admin) -->
-    <div class="card">
-      <div class="header"><h3>Today’s Rates</h3></div>
-      <div class="row row-3">
-        <div><div class="muted">USD → NGN</div><div id="rateUsd" class="money">—</div></div>
-        <div><div class="muted">Gift cards (base)</div><div id="rateGiftBase" class="money">—</div></div>
-        <div><div class="muted">Crypto</div><div id="rateCrypto" class="money">Uses USD→NGN</div></div>
-      </div>
-      <div class="divider"></div>
-      <div class="row row-2">
-        <div>
-          <h4>Gift card rates by brand/country</h4>
-          <div id="giftRates" class="row"></div>
-        </div>
-        <div>
-          <h4>Online wallet rates</h4>
-          <div id="walletRates" class="row"></div>
-        </div>
-      </div>
-    </div>
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
+            authDomain: "toolspay-54167.firebaseapp.com",
+            projectId: "toolspay-54167",
+            storageBucket: "toolspay-54167.firebasestorage.app",
+            messagingSenderId: "71318117342",
+            appId: "1:71318117342:web:1952711453e19e19281b4f"
+        };
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-    <!-- Bank account -->
-    <div class="card">
-      <div class="header"><h3>Your bank details (for payouts)</h3></div>
-      <div class="row row-3">
-        <div><label>Bank name</label><input id="bankName" placeholder="e.g., Access Bank"/></div>
-        <div><label>Account name</label><input id="acctName" placeholder="Your name"/></div>
-        <div><label>Account number</label><input id="acctNo" placeholder="0123456789" inputmode="numeric"/></div>
-      </div>
-      <div class="flex" style="margin-top:10px;">
-        <button id="saveBank" class="btn">Save bank</button>
-        <span id="bankMsg" class="muted"></span>
-      </div>
-    </div>
+        // Elements
+        const loginBtn = document.getElementById("login-btn");
+        const signupBtn = document.getElementById("signup-btn");
+        const forgotPassword = document.getElementById("forgot-password");
 
-    <!-- Trade tabs -->
-    <div class="card">
-      <div class="flex">
-        <button class="btn-ghost" data-tab="gift">Sell Gift Cards</button>
-        <button class="btn-ghost" data-tab="crypto">Sell BTC / USDT</button>
-        <button class="btn-ghost" data-tab="wallet">Sell via Online Wallet</button>
-        <div class="right"></div>
-      </div>
-      <div class="divider"></div>
+        // Login
+        loginBtn.addEventListener("click", () => {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    showDashboard(userCredential.user);
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        });
 
-      <!-- Gift card form -->
-      <div id="tab-gift">
-        <div class="row row-3">
-          <div>
-            <label>Brand</label>
-            <select id="giftBrand"></select>
-          </div>
-          <div>
-            <label>Country</label>
-            <select id="giftCountry"></select>
-          </div>
-          <div>
-            <label>Face value ($)</label>
-            <input id="giftAmount" type="number" placeholder="100" inputmode="decimal"/>
-          </div>
-        </div>
-        <div class="row row-2" style="margin-top:10px;">
-          <div>
-            <label>Upload card images (JPG/PNG, up to 5)</label>
-            <input id="giftFiles" type="file" accept="image/*" multiple/>
-            <div class="muted">Optional: add receipt images too.</div>
-          </div>
-          <div>
-            <label>Estimated payout (₦)</label>
-            <input id="giftEstimate" disabled placeholder="₦0"/>
-            <div class="muted">Uses admin rates for selected brand & country.</div>
-          </div>
-        </div>
-        <div class="flex" style="margin-top:10px;">
-          <button id="submitGift" class="btn">Submit gift card</button>
-          <span id="giftMsg" class="muted"></span>
-        </div>
-      </div>
+        // Signup
+        signupBtn.addEventListener("click", () => {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    alert("Account created!");
+                    showDashboard(userCredential.user);
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        });
 
-      <!-- Crypto form -->
-      <div id="tab-crypto" class="hidden">
-        <div class="row row-3">
-          <div>
-            <label>Crypto</label>
-            <select id="cryptoType">
-              <option value="BTC">BTC</option>
-              <option value="USDT">USDT</option>
-            </select>
-          </div>
-          <div>
-            <label>Network (for USDT)</label>
-            <select id="usdtNet"><option value="">—</option></select>
-            <div class="muted">If BTC, network not needed.</div>
-          </div>
-          <div>
-            <label>Amount (crypto units)</label>
-            <input id="cryptoAmount" type="number" placeholder="0.100" inputmode="decimal"/>
-          </div>
-        </div>
+        // Forgot Password
+        forgotPassword.addEventListener("click", () => {
+            const email = document.getElementById("email").value;
+            auth.sendPasswordResetEmail(email)
+                .then(() => {
+                    alert("Password reset email sent!");
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        });
 
-        <div class="row row-2" style="margin-top:10px;">
-          <div>
-            <label>Send to this address</label>
-            <input id="cryptoAddress" disabled/>
-            <div class="muted">This is the admin wallet for your selection.</div>
-            <div class="flex" style="margin-top:8px;">
-              <button id="copyAddr" class="btn-ghost">Copy address</button>
-            </div>
-          </div>
-          <div>
-            <label>QR</label>
-            <div id="qrBox" class="qr center"></div>
-            <div class="muted">Scan in your wallet app.</div>
-          </div>
-        </div>
-
-        <div class="flex" style="margin-top:10px;">
-          <button id="markCryptoSent" class="btn">I’ve sent the crypto</button>
-          <span id="cryptoMsg" class="muted"></span>
-        </div>
-      </div>
-
-      <!-- Online wallet form -->
-      <div id="tab-wallet" class="hidden">
-        <div class="row row-3">
-          <div>
-            <label>Wallet type</label>
-            <select id="owType"></select>
-            <div class="muted">Rate displays beside each wallet type above.</div>
-          </div>
-          <div>
-            <label>Country</label>
-            <select id="owCountry"></select>
-          </div>
-          <div>
-            <label>Amount (USD)</label>
-            <input id="owAmount" type="number" placeholder="100" inputmode="decimal"/>
-          </div>
-        </div>
-        <div class="row row-2" style="margin-top:10px;">
-          <div>
-            <label>Estimated payout (₦)</label>
-            <input id="owEstimate" disabled placeholder="₦0"/>
-          </div>
-          <div>
-            <label>Next step</label>
-            <div class="flex">
-              <button id="openChatForTag" class="btn-ghost">💬 Chat admin for tag</button>
-              <div class="muted">Ask admin for the exact tag to pay.</div>
-            </div>
-          </div>
-        </div>
-        <div class="flex" style="margin-top:10px;">
-          <button id="submitOW" class="btn">I’ve sent the money</button>
-          <span id="owMsg" class="muted"></span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Withdraw -->
-    <div class="card">
-      <div class="header"><h3>Withdraw</h3></div>
-      <div class="row row-3">
-        <div>
-          <label>Available (₦)</label>
-          <input id="wdAvail" disabled/>
-        </div>
-        <div>
-          <label>Amount (₦)</label>
-          <input id="wdAmount" type="number" placeholder="5000" inputmode="numeric"/>
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <button id="reqWithdraw" class="btn">Request withdraw</button>
-        </div>
-      </div>
-      <div id="wdMsg" class="muted" style="margin-top:8px;"></div>
-    </div>
-
-    <!-- History -->
-    <div class="card">
-      <div class="header"><h3>History</h3></div>
-      <div id="history" class="row"></div>
-    </div>
-  </section>
-</main>
-
-<!-- Firebase + App -->
-<script type="module">
-/* ----------------- Firebase init (YOUR CONFIG INCLUDED) ----------------- */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  sendEmailVerification, sendPasswordResetEmail, signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import {
-  getStorage, ref as sRef, uploadBytes, getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-
-/* ==== YOUR CONFIG (unchanged) ==== */
-const firebaseConfig = {
-  apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
-  authDomain: "toolspay-54167.firebaseapp.com",
-  projectId: "toolspay-54167",
-  storageBucket: "toolspay-54167.firebasestorage.app",
-  messagingSenderId: "71318117342",
-  appId: "1:71318117342:web:1952711453e19e19281b4f"
-};
-/* ================================= */
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
-/* ----------------- UI helpers ----------------- */
-const $ = (id)=>document.getElementById(id);
-const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
-const currency = (n)=>'₦' + (Number(n||0)).toLocaleString();
-
-/* Splash show/hide + fail-safe */
-const splash = $('splash');
-const splashMsg = $('splashMsg');
-let authEventFired = false;
-async function showSplash(ms=1200){ splash.classList.remove('hidden'); await sleep(ms); hideSplash(); }
-function hideSplash(){ splash.classList.add('hidden'); }
-function showAuth(){ $('authView').classList.remove('hidden'); $('dashView').classList.add('hidden'); }
-
-/* Mode toggle */
-$('modeBtn').onclick = ()=>{
-  const dark = document.documentElement.style.colorScheme === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches;
-  document.documentElement.style.colorScheme = dark ? 'light' : 'dark';
-};
-
-/* Tawk chat triggers (if present) */
-function openTawk(){ try{ window.Tawk_API?.maximize(); }catch(e){} }
-$('openChatBtn').onclick = openTawk;
-
-/* Tabs */
-const tabs = { gift:$('tab-gift'), crypto:$('tab-crypto'), wallet:$('tab-wallet') };
-document.querySelectorAll('[data-tab]').forEach(btn=>{
-  btn.onclick=()=>{ Object.values(tabs).forEach(el=>el.classList.add('hidden')); tabs[btn.dataset.tab].classList.remove('hidden'); };
-});
-
-/* ----------------- Global state ----------------- */
-let currentUser = null;
-let usdToNgn = 0;
-let giftRates = {};
-let walletRateMap = {};
-let btcAddress = '';
-let usdtNetworks = [];
-let procTimeMap = {};
-
-/* ----------------- DOM refs ----------------- */
-const authView = $('authView');
-const dashView = $('dashView');
-const authEmail = $('authEmail');
-const authPass  = $('authPass');
-const signUpBtn = $('signUpBtn');
-const signInBtn = $('signInBtn');
-const forgotBtn = $('forgotBtn');
-const authMsg   = $('authMsg');
-const logoutBtn = $('logoutBtn');
-const annList   = $('annList');
-const balNgn    = $('balNgn');
-const refLinkEl = $('refLink');
-const copyRef   = $('copyRef');
-const shareRef  = $('shareRef');
-const procTimes = $('procTimes');
-const rateUsd = $('rateUsd');
-const rateGiftBase = $('rateGiftBase');
-const giftRatesBox = $('giftRates');
-const walletRatesBox = $('walletRates');
-const bankName = $('bankName');
-const acctName = $('acctName');
-const acctNo   = $('acctNo');
-const bankMsg  = $('bankMsg');
-const saveBank = $('saveBank');
-const giftBrand = $('giftBrand');
-const giftCountry = $('giftCountry');
-const giftAmount = $('giftAmount');
-const giftFiles = $('giftFiles');
-const giftEstimate = $('giftEstimate');
-const submitGift = $('submitGift');
-const giftMsg = $('giftMsg');
-const cryptoType = $('cryptoType');
-const usdtNet = $('usdtNet');
-const cryptoAmount = $('cryptoAmount');
-const cryptoAddress = $('cryptoAddress');
-const qrBox = $('qrBox');
-const copyAddr = $('copyAddr');
-const markCryptoSent = $('markCryptoSent');
-const cryptoMsg = $('cryptoMsg');
-const owType = $('owType');
-const owCountry = $('owCountry');
-const owAmount = $('owAmount');
-const owEstimate = $('owEstimate');
-const openChatForTag = $('openChatForTag');
-const submitOW = $('submitOW');
-const owMsg = $('owMsg');
-const wdAvail = $('wdAvail');
-const wdAmount = $('wdAmount');
-const reqWithdraw = $('reqWithdraw');
-const wdMsg = $('wdMsg');
-const historyBox = $('history');
-
-/* ----------------- QR helper ----------------- */
-function renderQR(target, text){
-  target.innerHTML = '';
-  if(!text){ target.textContent = '—'; return; }
-  const img = new Image();
-  img.alt = 'QR';
-  img.style.maxWidth = '160px';
-  img.src = `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(text)}`;
-  img.onerror = ()=>{ target.textContent = text; };
-  target.appendChild(img);
-}
-
-/* ----------------- Auth actions ----------------- */
-signUpBtn.onclick = async ()=>{
-  authMsg.textContent = 'Creating account...';
-  try{
-    const cred = await createUserWithEmailAndPassword(auth, authEmail.value.trim(), authPass.value);
-    const url = new URL(location.href);
-    const ref = url.searchParams.get('ref');
-    await setDoc(doc(db, 'users', cred.user.uid), {
-      email: cred.user.email,
-      createdAt: serverTimestamp(),
-      balance: 0,
-      bank: { bankName:'', acctName:'', acctNo:'' },
-      referrerUid: ref || '',
-      firstTradePaid: false
-    }, { merge:true });
-    try{ await sendEmailVerification(cred.user); }catch(e){}
-    authMsg.textContent = 'Account created. Verification link sent to your email.';
-  }catch(e){
-    authMsg.textContent = e.message || e.code;
-  }
-};
-
-signInBtn.onclick = async ()=>{
-  authMsg.textContent = 'Signing in...';
-  try{
-    await signInWithEmailAndPassword(auth, authEmail.value.trim(), authPass.value);
-    authMsg.textContent = '';
-  }catch(e){ authMsg.textContent = e.message || e.code; }
-};
-
-forgotBtn.onclick = async ()=>{
-  const em = (authEmail.value||'').trim();
-  if(!em){ authMsg.textContent = 'Enter your email first.'; return; }
-  try{
-    await sendPasswordResetEmail(auth, em);
-    authMsg.textContent = 'Reset link sent to ' + em;
-  }catch(e){ authMsg.textContent = e.message || e.code; }
-};
-
-logoutBtn.onclick = ()=> signOut(auth);
-
-/* ----------------- Load admin data ----------------- */
-async function loadPublicData(){
-  try{
-    const r = await getDoc(doc(db,'rates','default'));
-    if(r.exists()){
-      const d = r.data();
-      usdToNgn = Number(d.usdToNgn||0);
-      rateUsd.textContent = currency(usdToNgn);
-      rateGiftBase.textContent = currency(Number(d.giftcardBase||0)) + ' / $';
-    }
-    const w = await getDoc(doc(db,'wallets','default'));
-    if(w.exists()){
-      const d = w.data();
-      btcAddress = d?.btc?.address || '';
-      usdtNetworks = (d?.usdt?.networks || []);
-      usdtNet.innerHTML = '<option value="">—</option>' + usdtNetworks.map(n=>`<option value="${n.network}">${n.network}</option>`).join('');
-    }
-    const a = await getDoc(doc(db,'announcements','default'));
-    annList.innerHTML = '';
-    if(a.exists()){
-      (a.data().items||[]).forEach(t=>{
-        const span = document.createElement('span'); span.className='chip'; span.textContent=t;
-        annList.appendChild(span);
-      });
-    }
-    const gr = await getDoc(doc(db,'giftcardRates','default'));
-    giftRates = gr.exists() ? (gr.data().brands||{}) : {};
-    const wr = await getDoc(doc(db,'walletRates','default'));
-    walletRateMap = wr.exists() ? (wr.data().types||{}) : {};
-    const pt = await getDoc(doc(db,'processingTimes','default'));
-    procTimeMap = pt.exists() ? (pt.data()||{}) : {};
-    renderProcTimes();
-    renderRateBoxes();
-    fillFormSelects();
-    updateGiftEstimate();
-    updateOwEstimate();
-  }catch(err){
-    console.error(err);
-  }
-}
-
-/* Render processing times chips */
-function renderProcTimes(){
-  procTimes.innerHTML='';
-  const parts = [];
-  if(procTimeMap.gift) parts.push(['Gift cards', procTimeMap.gift]);
-  if(procTimeMap.btc) parts.push(['BTC', procTimeMap.btc]);
-  if(procTimeMap.usdt) parts.push(['USDT', procTimeMap.usdt]);
-  if(procTimeMap.wallet) parts.push(['Online wallets', procTimeMap.wallet]);
-  parts.forEach(([k,v])=>{
-    const c=document.createElement('span'); c.className='chip'; c.textContent=`${k}: ${v}`;
-    procTimes.appendChild(c);
-  });
-}
-
-/* Render rates summary lists */
-function renderRateBoxes(){
-  giftRatesBox.innerHTML='';
-  Object.entries(giftRates).forEach(([brand, obj])=>{
-    const wrap=document.createElement('div'); wrap.className='chip'; wrap.style.whiteSpace='normal';
-    const countries = obj?.countries||{};
-    const pieces = Object.entries(countries).slice(0,5).map(([cc,rate])=>`${cc}: ₦${rate}/$`);
-    wrap.textContent = `${brand} — ${pieces.join('  •  ')}${Object.keys(countries).length>5?' …':''}`;
-    giftRatesBox.appendChild(wrap);
-  });
-  if(!Object.keys(giftRates).length){
-    const span=document.createElement('span'); span.className='muted'; span.textContent='No gift card rates yet.';
-    giftRatesBox.appendChild(span);
-  }
-  walletRatesBox.innerHTML='';
-  Object.entries(walletRateMap).forEach(([type,obj])=>{
-    const wrap=document.createElement('div'); wrap.className='chip'; wrap.style.whiteSpace='normal';
-    const countries = obj?.countries||{};
-    const pieces = Object.entries(countries).slice(0,5).map(([cc,rate])=>`${cc}: ₦${rate}/$`);
-    wrap.textContent = `${type} — ${pieces.join('  •  ')}${Object.keys(countries).length>5?' …':''}`;
-    walletRatesBox.appendChild(wrap);
-  });
-  if(!Object.keys(walletRateMap).length){
-    const span=document.createElement('span'); span.className='muted'; span.textContent='No online wallet rates yet.';
-    walletRatesBox.appendChild(span);
-  }
-}
-
-/* Fill select options */
-function fillFormSelects(){
-  const brands = Object.keys(giftRates);
-  giftBrand.innerHTML = brands.map(b=>`<option value="${b}">${b}</option>`).join('') || '<option value="">—</option>';
-  const b = giftBrand.value;
-  const gc = (giftRates[b]?.countries)||{};
-  giftCountry.innerHTML = Object.keys(gc).map(c=>`<option value="${c}">${c}</option>`).join('') || '<option value="">—</option>';
-  const wtypes = Object.keys(walletRateMap);
-  owType.innerHTML = wtypes.map(t=>`<option value="${t}">${t}</option>`).join('') || '<option value="">—</option>';
-  const t = owType.value;
-  const wc = (walletRateMap[t]?.countries)||{};
-  owCountry.innerHTML = Object.keys(wc).map(c=>`<option value="${c}">${c}</option>`).join('') || '<option value="">—</option>';
-}
-
-/* Estimates */
-function updateGiftEstimate(){
-  const brand = giftBrand.value;
-  const country = giftCountry.value;
-  const amt = Number(giftAmount.value||0);
-  const rate = giftRates[brand]?.countries?.[country] || 0;
-  const est = Math.max(0, amt * rate);
-  giftEstimate.value = currency(est);
-}
-function updateOwEstimate(){
-  const type = owType.value;
-  const country = owCountry.value;
-  const amt = Number(owAmount.value||0);
-  const rate = walletRateMap[type]?.countries?.[country] || 0;
-  const est = Math.max(0, amt * rate);
-  owEstimate.value = currency(est);
-}
-
-/* Select change */
-giftBrand.onchange = ()=>{ fillFormSelects(); updateGiftEstimate(); };
-giftCountry.onchange = updateGiftEstimate;
-giftAmount.oninput = updateGiftEstimate;
-owType.onchange = ()=>{ fillFormSelects(); updateOwEstimate(); };
-owCountry.onchange = updateOwEstimate;
-owAmount.oninput = updateOwEstimate;
-
-/* Crypto UI */
-function refreshCryptoAddress(){
-  if(cryptoType.value==='BTC'){
-    cryptoAddress.value = btcAddress||'';
-    renderQR(qrBox, btcAddress||'');
-    usdtNet.value='';
-    usdtNet.disabled = true;
-  }else{
-    usdtNet.disabled = false;
-    const sel = usdtNetworks.find(n=>n.network===usdtNet.value) || usdtNetworks[0];
-    const addr = sel?.address || '';
-    cryptoAddress.value = addr;
-    renderQR(qrBox, addr);
-  }
-}
-cryptoType.onchange = refreshCryptoAddress;
-usdtNet.onchange = refreshCryptoAddress;
-
-/* Copy helpers */
-copyAddr.onclick = async ()=>{
-  if(!cryptoAddress.value) return;
-  try{ await navigator.clipboard.writeText(cryptoAddress.value);
-       copyAddr.textContent='Copied ✓'; setTimeout(()=>copyAddr.textContent='Copy address',900);}catch(e){}
-};
-copyRef.onclick = async ()=>{
-  try{ await navigator.clipboard.writeText(refLinkEl.textContent);
-       copyRef.textContent='Copied ✓'; setTimeout(()=>copyRef.textContent='Copy',900);}catch(e){}
-};
-shareRef.onclick = async ()=>{
-  const url = refLinkEl.textContent;
-  if(navigator.share){
-    try{ await navigator.share({ title:'Toolspay', text:'Trade on Toolspay and get paid in ₦', url }); }catch(e){}
-  }else{
-    try{ await navigator.clipboard.writeText(url); }catch(e){}
-  }
-};
-
-/* Save bank */
-saveBank.onclick = async ()=>{
-  bankMsg.textContent = 'Saving...';
-  try{
-    await setDoc(doc(db,'users',currentUser.uid),{
-      bank:{
-        bankName: bankName.value.trim(),
-        acctName: acctName.value.trim(),
-        acctNo:   acctNo.value.trim()
-      }
-    },{merge:true});
-    bankMsg.textContent = 'Saved ✓';
-    setTimeout(()=>bankMsg.textContent='',1200);
-  }catch(e){ bankMsg.textContent = e.message || e.code; }
-};
-
-/* Upload helper */
-async function uploadImagesReturnUrls(files, folder){
-  const list = Array.from(files||[]).slice(0,5);
-  const urls=[];
-  for(const f of list){
-    const r = sRef(storage, `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}_${f.name}`);
-    await uploadBytes(r, f);
-    urls.push(await getDownloadURL(r));
-  }
-  return urls;
-}
-
-/* Submit gift card trade */
-submitGift.onclick = async ()=>{
-  if(!giftBrand.value || !giftCountry.value || !giftAmount.value){ giftMsg.textContent='Fill brand, country and amount.'; return; }
-  giftMsg.textContent='Uploading...';
-  try{
-    const urls = await uploadImagesReturnUrls(giftFiles.files, `trades/${currentUser.uid}`);
-    const rate = giftRates[giftBrand.value]?.countries?.[giftCountry.value] || 0;
-    const est = Math.max(0, Number(giftAmount.value||0)*rate);
-    await addDoc(collection(db,'trades'),{
-      uid: currentUser.uid, type: 'gift', brand: giftBrand.value, country: giftCountry.value,
-      amountUsd: Number(giftAmount.value||0), estimatedNgn: est, images: urls,
-      status: 'pending', createdAt: serverTimestamp()
-    });
-    giftMsg.textContent='Submitted ✓ We’ll review and pay to your bank.';
-    setTimeout(()=>giftMsg.textContent='',2000);
-    giftFiles.value=''; giftAmount.value=''; updateGiftEstimate();
-  }catch(e){ giftMsg.textContent = e.message || e.code; }
-};
-
-/* Mark crypto sent */
-markCryptoSent.onclick = async ()=>{
-  cryptoMsg.textContent='Submitting...';
-  try{
-    const isBtc = cryptoType.value==='BTC';
-    const addr = isBtc ? (btcAddress||'') : (usdtNetworks.find(n=>n.network===usdtNet.value)?.address||'');
-    await addDoc(collection(db,'trades'),{
-      uid: currentUser.uid, type: isBtc ? 'btc' : 'usdt',
-      network: isBtc ? '' : (usdtNet.value||''), address: addr,
-      amountCrypto: Number(cryptoAmount.value||0), status:'pending', createdAt: serverTimestamp()
-    });
-    cryptoMsg.textContent='Marked ✓ We’ll confirm and pay to your bank.';
-    setTimeout(()=>cryptoMsg.textContent='',2000);
-    cryptoAmount.value='';
-  }catch(e){ cryptoMsg.textContent = e.message || e.code; }
-};
-
-/* Online wallet flow */
-openChatForTag.onclick = openTawk;
-$('openChatBtn').onclick = openTawk;
-submitOW.onclick = async ()=>{
-  if(!owType.value || !owCountry.value || !owAmount.value){ owMsg.textContent='Fill wallet, country, and amount.'; return; }
-  owMsg.textContent='Submitting...';
-  try{
-    const rate = walletRateMap[owType.value]?.countries?.[owCountry.value] || 0;
-    const est = Math.max(0, Number(owAmount.value||0)*rate);
-    await addDoc(collection(db,'trades'),{
-      uid: currentUser.uid, type:'wallet', walletType: owType.value, country: owCountry.value,
-      amountUsd: Number(owAmount.value||0), estimatedNgn: est, status:'pending', createdAt: serverTimestamp()
-    });
-    owMsg.textContent='Submitted ✓ Please ensure you paid the correct tag (as given in chat).';
-    setTimeout(()=>owMsg.textContent='',2000);
-    owAmount.value=''; updateOwEstimate();
-  }catch(e){ owMsg.textContent = e.message || e.code; }
-};
-
-/* Withdraw */
-reqWithdraw.onclick = async ()=>{
-  wdMsg.textContent='Requesting...';
-  const amt = Number(wdAmount.value||0);
-  const avail = Number(wdAvail.value?.replace(/[₦,]/g,'')||0);
-  if(amt<=0){ wdMsg.textContent='Enter a valid amount.'; return; }
-  if(amt>avail){ wdMsg.textContent='Amount exceeds available balance.'; return; }
-  try{
-    await addDoc(collection(db,'withdrawals'),{
-      uid: currentUser.uid, amount: amt,
-      bank: { bankName: bankName.value.trim(), acctName: acctName.value.trim(), acctNo: acctNo.value.trim() },
-      status:'pending', createdAt: serverTimestamp()
-    });
-    wdMsg.textContent='Withdraw request sent ✓';
-    setTimeout(()=>wdMsg.textContent='',1600);
-    wdAmount.value='';
-  }catch(e){ wdMsg.textContent = e.message || e.code; }
-};
-
-/* Watch user doc + history */
-function watchUserData(uid){
-  onSnapshot(doc(db,'users',uid),(snap)=>{
-    const d = snap.data()||{};
-    const bal = Number(d.balance||0);
-    balNgn.textContent = currency(bal);
-    wdAvail.value = currency(bal);
-    const b = d.bank||{};
-    bankName.value = b.bankName||''; acctName.value = b.acctName||''; acctNo.value = b.acctNo||'';
-  });
-  const q1 = query(collection(db,'trades'), where('uid','==',uid), orderBy('createdAt','desc'));
-  onSnapshot(q1,(qs)=>{
-    historyBox.innerHTML='';
-    qs.forEach(docu=>{
-      const t = docu.data();
-      const item = document.createElement('div'); item.className='row';
-      const top = document.createElement('div'); top.className='flex';
-      const tag = document.createElement('span'); tag.className='chip'; tag.textContent = (t.type||'').toUpperCase();
-      const st  = document.createElement('span'); st.className='chip'; st.textContent = t.status || 'pending';
-      top.append(tag, st);
-      const mid = document.createElement('div'); mid.className='muted';
-      mid.textContent = JSON.stringify({
-        brand:t.brand, country:t.country, wallet:t.walletType, network:t.network,
-        amountUsd:t.amountUsd, amountCrypto:t.amountCrypto, estimatedNgn:t.estimatedNgn
-      });
-      item.appendChild(top); item.appendChild(mid);
-      historyBox.appendChild(item);
-    });
-  });
-  const q2 = query(collection(db,'withdrawals'), where('uid','==',uid), orderBy('createdAt','desc'));
-  onSnapshot(q2,(qs)=>{
-    if(!qs.empty){
-      const h = document.createElement('div'); h.className='row';
-      const title = document.createElement('div'); title.innerHTML = '<div class="divider"></div><h4>Your withdrawals</h4>';
-      historyBox.appendChild(title);
-      qs.forEach(docu=>{
-        const w = docu.data();
-        const item = document.createElement('div'); item.className='row';
-        const top = document.createElement('div'); top.className='flex';
-        const tag = document.createElement('span'); tag.className='chip'; tag.textContent = 'WITHDRAW';
-        const st  = document.createElement('span'); st.className='chip'; st.textContent = w.status || 'pending';
-        const amt = document.createElement('span'); amt.className='chip'; amt.textContent = currency(w.amount);
-        top.append(tag, st, amt);
-        item.appendChild(top);
-        historyBox.appendChild(item);
-      });
-    }
-  });
-}
-
-/* Referral link display */
-function setRefLink(uid){
-  const url = new URL(location.href);
-  url.search = '';
-  const link = url.origin + url.pathname + '?ref=' + uid;
-  refLinkEl.textContent = link;
-}
-
-/* --------- AUTH STATE + Robust splash handling ---------- */
-onAuthStateChanged(auth, async (user)=>{
-  authEventFired = true;
-  if(!user){
-    authView.classList.remove('hidden');
-    dashView.classList.add('hidden');
-    hideSplash();
-    return;
-  }
-  try{
-    currentUser = user;
-    const uref = doc(db,'users',user.uid);
-    const u = await getDoc(uref);
-    if(!u.exists()){
-      await setDoc(uref,{ email:user.email, createdAt:serverTimestamp(), balance:0, bank:{}, firstTradePaid:false },{merge:true});
-    }
-    setRefLink(user.uid);
-    await loadPublicData();
-    watchUserData(user.uid);
-    refreshCryptoAddress();
-    authView.classList.add('hidden');
-    dashView.classList.remove('hidden');
-    hideSplash();
-  }catch(err){
-    console.error(err);
-    splashMsg.textContent = 'Loaded with fallback. If content is empty, refresh.';
-    hideSplash();
-    authView.classList.remove('hidden');
-    dashView.classList.add('hidden');
-  }
-});
-
-/* Fallback: if auth never responds, show auth after 3s */
-window.addEventListener('load', ()=>{
-  setTimeout(()=>{
-    if(!authEventFired){
-      splashMsg.textContent = 'Network slow — showing sign in.';
-      showAuth();
-      hideSplash();
-    }
-  }, 3000);
-});
-
-/* Chat for tag button */
-openChatForTag.onclick = openTawk;
-</script>
-
-<!-- Paste your Tawk widget BELOW (keep last for speed)
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;s1.src='https://embed.tawk.to/XXXXXXXX/default';s1.charset='UTF-8';s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);})();
-</script>
--->
-
+        // Show dashboard
+        function showDashboard(user) {
+            document.getElementById("auth-container").style.display = "none";
+            document.getElementById("dashboard").style.display = "block";
+            document.getElementById("welcome-text").textContent = `Welcome, ${user.email}`;
+            document.getElementById("referral-link").value = `${window.location.origin}/?ref=${user.uid}`;
+        }
+    </script>
 </body>
-  </html>
+</html>

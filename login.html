@@ -1,58 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Toolspay — Login</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
-  <div class="auth-wrap">
-    <h1>Welcome back</h1>
-    <div class="card">
-      <label>Email</label>
-      <input id="email" type="email" placeholder="you@example.com"/>
-      <label>Password</label>
-      <input id="password" type="password" placeholder="••••••••"/>
-      <div class="row">
-        <button id="loginBtn" class="btn-primary">Login</button>
-        <a class="btn-ghost" href="reset.html">Forgot password?</a>
-      </div>
-      <div id="msg" class="muted"></div>
-    </div>
-    <p class="muted">New here? <a href="signup.html">Create an account</a></p>
-  </div>
+  <h2>Login</h2>
+  <input type="email" id="email" placeholder="Email"><br>
+  <input type="password" id="password" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
 
-  <script type="module">
-    import {
-      auth, signInWithEmailAndPassword, onAuthStateChanged, isAdminEmail
-    } from './firebase-auth.js';
-
-    const email = document.getElementById('email');
-    const password = document.getElementById('password');
-    const loginBtn = document.getElementById('loginBtn');
-    const msg = document.getElementById('msg');
-
-    loginBtn.onclick = async () => {
-      msg.textContent = 'Checking...';
-      try {
-        const cred = await signInWithEmailAndPassword(auth, email.value.trim(), password.value);
-        const user = cred.user;
-        if (!user.emailVerified) {
-          msg.textContent = 'Please verify your email (check inbox for OTP link).';
-          return;
-        }
-        const admin = await isAdminEmail(user.email);
-        location.href = admin ? 'admin-dashboard.html' : 'customer-dashboard.html';
-      } catch (e) { msg.textContent = e.message || e.code; }
+  <script>
+    // ✅ Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
+      authDomain: "toolspay-54167.firebaseapp.com",
+      projectId: "toolspay-54167",
+      storageBucket: "toolspay-54167.firebasestorage.app",
+      messagingSenderId: "71318117342",
+      appId: "1:71318117342:web:1952711453e19e19281b4f"
     };
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user && user.emailVerified) {
-        const admin = await isAdminEmail(user.email);
-        location.href = admin ? 'admin-dashboard.html' : 'customer-dashboard.html';
-      }
-    });
+    // ✅ Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ✅ Login Function
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+
+          // ✅ Check if Admin
+          db.collection("users").doc(user.uid).get().then(doc => {
+            if (doc.exists) {
+              const data = doc.data();
+              if (data.role === "admin") {
+                window.location.href = "admin-dashboard.html";
+              } else {
+                window.location.href = "customer-dashboard.html";
+              }
+            } else {
+              alert("No role assigned to this account.");
+            }
+          });
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    }
   </script>
 </body>
 </html>

@@ -1,56 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Grant Admin</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <h1>Grant Admin Access</h1>
-  <button id="loginBtn">Login</button>
-  <button id="grantBtn" disabled>Grant admin to my email</button>
+  <div class="auth-wrap">
+    <h2>Grant admin to current signed-in email</h2>
+    <div class="card">
+      <label>Email</label>
+      <input id="email" type="email" placeholder="you@example.com"/>
+      <label>Password</label>
+      <input id="password" type="password" placeholder="••••••••"/>
+      <button id="loginBtn" class="btn-primary">Sign in</button>
+      <button id="grantBtn" class="btn-ghost" disabled>Grant</button>
+      <div id="msg" class="muted"></div>
+    </div>
+  </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script type="module">
+    import { auth, signInWithEmailAndPassword, addAdminByEmail } from './firebase-auth.js';
+    const email=document.getElementById('email');
+    const password=document.getElementById('password');
+    const loginBtn=document.getElementById('loginBtn');
+    const grantBtn=document.getElementById('grantBtn');
+    const msg=document.getElementById('msg');
 
-  <script>
-    // Your Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
-      authDomain: "toolspay-54167.firebaseapp.com",
-      projectId: "toolspay-54167",
-      storageBucket: "toolspay-54167.firebasestorage.app",
-      messagingSenderId: "71318117342",
-      appId: "1:71318117342:web:1952711453e19e19281b4f"
-    };
-    firebase.initializeApp(firebaseConfig);
-
-    const db = firebase.firestore();
-
-    // Login
-    document.getElementById('loginBtn').onclick = async () => {
-      const email = prompt("Enter your admin email");
-      const password = prompt("Enter your password");
+    loginBtn.onclick = async ()=>{
+      msg.textContent='Signing in...';
       try {
-        await firebase.auth().signInWithEmailAndPassword(email, password);
-        alert("Logged in! Now you can grant admin.");
-        document.getElementById('grantBtn').disabled = false;
-      } catch (err) {
-        alert(err.message);
-      }
+        await signInWithEmailAndPassword(auth, email.value.trim(), password.value);
+        grantBtn.disabled=false; msg.textContent='Signed in. Now click Grant.';
+      } catch(e){ msg.textContent=e.message||e.code; }
     };
-
-    // Grant admin
-    document.getElementById('grantBtn').onclick = async () => {
-      const user = firebase.auth().currentUser;
-      if (!user) return alert("You must log in first.");
+    grantBtn.onclick = async ()=>{
       try {
-        await db.collection('admins').doc(user.uid).set({ email: user.email });
-        alert("Admin granted successfully!");
-      } catch (err) {
-        alert(err.message);
-      }
+        await addAdminByEmail(email.value.trim());
+        msg.textContent='Granted ✓. You can open admin-dashboard.html';
+      } catch(e){ msg.textContent=e.message||e.code; }
     };
   </script>
 </body>

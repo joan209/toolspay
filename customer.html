@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Toolspay — Customer</title>
+<meta name="color-scheme" content="light dark"/>
+<style>
+  :root{
+    --bg:#0b1220; --card:#0f172a; --text:#e2e8f0; --muted:#94a3b8;
+    --brand:#ffd700; --ok:#10b981; --danger:#ef4444; --border:#1f2937; --chip:#111827;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f7f7f8; --card:#ffffff; --text:#111827; --muted:#6b7280; --brand:#b58900; --ok:#059669; --danger:#b91c1c; --border:#e5e7eb; --chip:#f3f4f6; }
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+  .container{max-width:1000px;margin:0 auto;padding:16px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin:12px 0}
+  .row{display:grid;gap:12px}
+  @media(min-width:720px){.row-2{grid-template-columns:1fr 1fr}.row-3{grid-template-columns:1fr 1fr 1fr}}
+  label{font-size:12px;font-weight:700;opacity:.8}
+  input,select,textarea{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:15px}
+  button{padding:12px 16px;border-radius:12px;border:0;cursor:pointer;font-weight:700}
+  .btn{background:#111;color:var(--brand);border:2px solid var(--brand)}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+  .btn-muted{background:var(--chip);color:var(--text);border:1px solid var(--border)}
+  .muted{color:var(--muted);font-size:12px}
+  .header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .hidden{display:none}
+  .chip{padding:6px 10px;background:var(--chip);border:1px solid var(--border);border-radius:999px;font-size:12px}
+  .money{font-weight:800}
+  .brand-badge{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#111,#ffd700);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900}
+  .toolbar{position:sticky;top:0;background:var(--bg);z-index:9;border-bottom:1px solid var(--border)}
+  .right{margin-left:auto}
+
+  /* Splash */
+  #splash{position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;transition:opacity .25s ease}
+  #splash.fade{opacity:0;pointer-events:none}
+  #splash .tp{font-size:28px;font-weight:900;border:2px solid var(--brand);color:var(--brand);padding:12px 18px;border-radius:16px}
+
+  /* Auth centered + bold on mobile */
+  #authView{max-width:520px;margin:12vh auto 6vh}
+  @media (max-width:520px){
+    #authView{margin:14vh 12px 8vh}
+    #authView h2{font-size:24px;margin:0 0 8px}
+    #authView .row-2{grid-template-columns:1fr}
+  }
+
+  /* Collapsible history */
+  details summary{cursor:pointer;list-style:none}
+  details summary::-webkit-details-marker{display:none}
+
+  /* Floating chat button & panel */
+  #chatBtn{position:fixed;right:16px;bottom:16px;border-radius:999px;padding:12px 16px;background:var(--brand);color:#111;font-weight:900;z-index:40;border:0}
+  #chatPanel{position:fixed;right:16px;bottom:70px;width:320px;max-height:60vh;overflow:hidden;border-radius:16px;border:1px solid var(--border);background:var(--card);display:none;z-index:41}
+  #chatHeader{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  #chatBody{padding:10px 12px;height:40vh;overflow:auto}
+  .msg{margin:6px 0;padding:8px 10px;border-radius:12px;max-width:90%}
+  .me{background:#1b2538;margin-left:auto}
+  .them{background:#202a3f}
+  #chatInputWrap{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<!-- Splash -->
+<div id="splash">
+  <div class="tp">TP</div>
+  <div class="muted">Loading…</div>
+</div>
+
+<!-- Top bar (hidden until login) -->
+<header class="toolbar hidden" id="topbar">
+  <div class="container header">
+    <div class="flex">
+      <div class="brand-badge">TP</div>
+      <div>
+        <div style="font-weight:800;">Toolspay</div>
+        <div class="muted">Sell Gift Cards • BTC • USDT → Paid in ₦</div>
+      </div>
+    </div>
+    <div class="flex">
+      <button id="modeBtn" class="btn-ghost" title="Dark/Light" type="button">🌓</button>
+      <button id="tabGift" class="btn-ghost" type="button">Gift Cards</button>
+      <button id="tabCrypto" class="btn-ghost" type="button">Crypto</button>
+      <button id="tabWallet" class="btn-ghost" type="button">Online Wallet</button>
+      <button id="tabProfile" class="btn-ghost" type="button">Profile</button>
+      <button id="logoutBtn" class="btn-ghost" type="button">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- AUTH VIEW -->
+  <section id="authView" class="card hidden">
+    <h2 style="font-weight:900;">Welcome</h2>
+    <p class="muted" style="font-size:13px">Create an account or sign in to trade. We’ll email a verification link.</p>
+
+    <div class="row row-2">
+      <div><label>Full name</label><input id="fullName" placeholder="John Doe" autocomplete="name"/></div>
+      <div><label>Username</label><input id="username" placeholder="johndoe" autocomplete="nickname"/></div>
+    </div>
+
+    <div class="row row-2" style="margin-top:10px;">
+      <div><label>Email</label><input id="authEmail" type="email" placeholder="you@gmail.com" autocomplete="email" required/></div>
+      <div><label>Password</label><input id="authPass" type="password" placeholder="••••••••" autocomplete="new-password" required/></div>
+    </div>
+
+    <div class="row row-2" style="margin-top:10px;">
+      <div><label>Confirm password</label><input id="authPass2" type="password" placeholder="••••••••" autocomplete="new-password"/></div>
+      <div><label>&nbsp;</label><button id="signUpBtn" class="btn" type="button">Sign up</button></div>
+    </div>
+
+    <div class="row row-2" style="margin-top:10px;">
+      <button id="signInBtn" class="btn-ghost" type="button">Sign in</button>
+      <button id="forgotBtn" class="btn-muted" type="button">Forgot password</button>
+    </div>
+
+    <div class="flex" style="margin-top:6px;">
+      <span id="authMsg" class="muted" style="font-size:13px"></span>
+    </div>
+  </section>
+
+  <!-- DASHBOARD (hidden until verified) -->
+  <section id="dashView" class="hidden">
+
+    <!-- First row: balance + collapsible history -->
+    <div class="row row-2">
+      <div class="card">
+        <div class="muted">Available balance</div>
+        <div id="balNgn" class="money" style="font-size:28px;">₦0</div>
+        <div class="muted">Withdraw to your bank after trades are paid.</div>
+      </div>
+      <div class="card">
+        <details id="histDetails">
+          <summary><strong>History</strong> <span class="muted">(tap to open)</span></summary>
+          <div id="history" class="row" style="margin-top:8px;"></div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Tabs content -->
+    <div id="viewGift" class="card">
+      <div class="flex"><h3>Sell Gift Cards</h3><div class="right"></div></div>
+      <div class="row row-3">
+        <div><label>Brand</label><select id="giftBrand"></select></div>
+        <div><label>Country</label><select id="giftCountry"></select></div>
+        <div><label>Face value ($)</label><input id="giftAmount" type="number" placeholder="100"/></div>
+      </div>
+      <div class="row row-2" style="margin-top:10px;">
+        <div>
+          <label>Upload images (up to 5)</label>
+          <input id="giftFiles" type="file" accept="image/*" multiple/>
+          <div class="muted">Add receipt images if you have them.</div>
+        </div>
+        <div>
+          <label>Estimated payout (₦)</label>
+          <input id="giftEstimate" disabled placeholder="₦0"/>
+        </div>
+      </div>
+      <div class="flex" style="margin-top:10px;">
+        <button id="submitGift" class="btn" type="button">Submit gift card</button>
+        <span id="giftMsg" class="muted"></span>
+      </div>
+    </div>
+
+    <div id="viewCrypto" class="card hidden">
+      <div class="flex"><h3>Sell Crypto</h3><div class="right"></div></div>
+      <div class="row row-3">
+        <div><label>Crypto</label>
+          <select id="cryptoType"><option value="BTC">BTC</option><option value="USDT">USDT</option></select>
+        </div>
+        <div><label>Network (for USDT)</label><select id="usdtNet"><option value="">—</option></select></div>
+        <div><label>Amount</label><input id="cryptoAmount" type="number" placeholder="0.100"/></div>
+      </div>
+      <div class="row row-2" style="margin-top:10px;">
+        <div>
+          <label>Send to this address</label>
+          <input id="cryptoAddress" disabled/>
+          <div class="flex" style="margin-top:8px;"><button id="copyAddr" class="btn-ghost" type="button">Copy address</button></div>
+        </div>
+        <div><label>QR</label><div id="qrBox" class="center" style="background:#fff;border-radius:12px;padding:10px"></div></div>
+      </div>
+      <div class="flex" style="margin-top:10px;">
+        <button id="markCryptoSent" class="btn" type="button">I’ve sent the crypto</button>
+        <span id="cryptoMsg" class="muted"></span>
+      </div>
+    </div>
+
+    <div id="viewWallet" class="card hidden">
+      <div class="flex"><h3>Online Wallet Transfer</h3><div class="right"></div></div>
+      <div class="row row-3">
+        <div><label>Wallet type</label><select id="owType"></select></div>
+        <div><label>Country</label><select id="owCountry"></select></div>
+        <div><label>Amount (USD)</label><input id="owAmount" type="number" placeholder="100"/></div>
+      </div>
+      <div class="row row-2" style="margin-top:10px;">
+        <div><label>Estimated payout (₦)</label><input id="owEstimate" disabled placeholder="₦0"/></div>
+        <div class="flex" style="align-items:flex-end;"><button id="openChatForTag" class="btn-ghost" type="button">💬 Chat admin for tag</button></div>
+      </div>
+      <div class="flex" style="margin-top:10px;">
+        <button id="submitOW" class="btn" type="button">I’ve sent the money</button>
+        <span id="owMsg" class="muted"></span>
+      </div>
+    </div>
+
+    <div id="viewProfile" class="card hidden">
+      <div class="flex"><h3>Profile</h3><div class="right"></div></div>
+      <div class="row row-3">
+        <div><label>Full name</label><input id="pFull" placeholder=""/></div>
+        <div><label>Username</label><input id="pUser" placeholder=""/></div>
+        <div><label>Email</label><input id="pEmail" disabled/></div>
+      </div>
+      <div class="row row-3">
+        <div><label>Bank name</label><input id="bankName" placeholder="e.g. Access Bank"/></div>
+        <div><label>Account name</label><input id="acctName" placeholder="Your name"/></div>
+        <div><label>Account number</label><input id="acctNo" placeholder="0123456789"/></div>
+      </div>
+      <div class="flex" style="margin-top:10px;">
+        <button id="saveProfile" class="btn" type="button">Save profile</button>
+        <span id="bankMsg" class="muted"></span>
+      </div>
+    </div>
+
+    <!-- Withdraw -->
+    <div class="card">
+      <div class="header"><h3>Withdraw</h3></div>
+      <div class="row row-3">
+        <div><label>Available (₦)</label><input id="wdAvail" disabled/></div>
+        <div><label>Amount (₦)</label><input id="wdAmount" type="number" placeholder="5000"/></div>
+        <div><label>&nbsp;</label><button id="reqWithdraw" class="btn" type="button">Request withdraw</button></div>
+      </div>
+      <div id="wdMsg" class="muted" style="margin-top:8px;"></div>
+    </div>
+
+  </section>
+</main>
+
+<!-- Floating Chat -->
+<button id="chatBtn" class="hidden" type="button">💬 Chat</button>
+<div id="chatPanel">
+  <div id="chatHeader"><strong>Chat with Admin</strong><button id="chatClose" class="btn-ghost" type="button">✕</button></div>
+  <div id="chatBody"></div>
+  <div id="chatInputWrap">
+    <input id="chatInput" placeholder="Type a message…"/>
+    <button id="chatSend" class="btn" type="button">Send</button>
+  </div>
+</div>
+
+<!-- Firebase + App -->
+<script type="module">
+/* ---------- Firebase ---------- */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  sendEmailVerification, sendPasswordResetEmail, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+/* ---- YOUR CONFIG (unchanged) ---- */
+const firebaseConfig = {
+  apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
+  authDomain: "toolspay-54167.firebaseapp.com",
+  projectId: "toolspay-54167",
+  storageBucket: "toolspay-54167.firebasestorage.app",
+  messagingSenderId: "71318117342",
+  appId: "1:71318117342:web:1952711453e19e19281b4f"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+/* ---------- Helpers ---------- */
+const $ = (id)=>document.getElementById(id);
+const currency = (n)=>'₦' + (Number(n||0)).toLocaleString();
+const splash = $('splash');
+const topbar = $('topbar');
+function hideSplash(){ splash.classList.add('fade'); setTimeout(()=>splash.classList.add('hidden'),250); }
+function setTheme(mode){
+  // mode: "light" | "dark" | "auto"
+  if(mode==='light'){ document.documentElement.style.colorScheme='light'; localStorage.setItem('tpTheme','light'); }
+  else if(mode==='dark'){ document.documentElement.style.colorScheme='dark'; localStorage.setItem('tpTheme','dark'); }
+  else { document.documentElement.style.colorScheme=''; localStorage.removeItem('tpTheme'); }
+}
+(function(){ const saved=localStorage.getItem('tpTheme'); if(saved) setTheme(saved); })();
+
+/* ---------- State & DOM refs ---------- */
+let currentUser=null, usdToNgn=0, giftRates={}, walletRateMap={}, btcAddress='', usdtNetworks=[];
+const authView=$('authView'), dashView=$('dashView');
+const authEmail=$('authEmail'), authPass=$('authPass'), authPass2=$('authPass2'), fullName=$('fullName'), username=$('username');
+const signUpBtn=$('signUpBtn'), signInBtn=$('signInBtn'), forgotBtn=$('forgotBtn'), authMsg=$('authMsg'), logoutBtn=$('logoutBtn');
+const modeBtn=$('modeBtn');
+const tabGift=$('tabGift'), tabCrypto=$('tabCrypto'), tabWallet=$('tabWallet'), tabProfile=$('tabProfile');
+const viewGift=$('viewGift'), viewCrypto=$('viewCrypto'), viewWallet=$('viewWallet'), viewProfile=$('viewProfile');
+const balNgn=$('balNgn'), wdAvail=$('wdAvail'), historyBox=$('history');
+const bankName=$('bankName'), acctName=$('acctName'), acctNo=$('acctNo');
+const pFull=$('pFull'), pUser=$('pUser'), pEmail=$('pEmail');
+const saveProfile=$('saveProfile');
+const giftBrand=$('giftBrand'), giftCountry=$('giftCountry'), giftAmount=$('giftAmount'), giftFiles=$('giftFiles'), giftEstimate=$('giftEstimate'), submitGift=$('submitGift'), giftMsg=$('giftMsg');
+const cryptoType=$('cryptoType'), usdtNet=$('usdtNet'), cryptoAmount=$('cryptoAmount'), cryptoAddress=$('cryptoAddress'), qrBox=$('qrBox'), copyAddr=$('copyAddr'), markCryptoSent=$('markCryptoSent'), cryptoMsg=$('cryptoMsg');
+const owType=$('owType'), owCountry=$('owCountry'), owAmount=$('owAmount'), owEstimate=$('owEstimate'), openChatForTag=$('openChatForTag'), submitOW=$('submitOW'), owMsg=$('owMsg');
+const wdAmount=$('wdAmount'), reqWithdraw=$('reqWithdraw'), wdMsg=$('wdMsg');
+const chatBtn=$('chatBtn'), chatPanel=$('chatPanel'), chatClose=$('chatClose'), chatBody=$('chatBody'), chatInput=$('chatInput'), chatSend=$('chatSend');
+
+/* ---------- Nav / Tabs ---------- */
+function showView(which){
+  [viewGift, viewCrypto, viewWallet, viewProfile].forEach(x=>x.classList.add('hidden'));
+  which.classList.remove('hidden');
+}
+tabGift.onclick = ()=>showView(viewGift);
+tabCrypto.onclick= ()=>showView(viewCrypto);
+tabWallet.onclick= ()=>showView(viewWallet);
+tabProfile.onclick=()=>showView(viewProfile);
+
+/* ---------- Theme toggle ---------- */
+modeBtn.onclick = ()=>{
+  const saved = localStorage.getItem('tpTheme');
+  if(!saved){ setTheme('dark'); }
+  else if(saved==='dark'){ setTheme('light'); }
+  else { setTheme('auto'); }
+};
+
+/* ---------- QR via Google Charts ---------- */
+function renderQR(target, text){
+  target.innerHTML='';
+  if(!text){ target.textContent='—'; return; }
+  const img=new Image(); img.alt='QR'; img.style.maxWidth='160px';
+  img.src=`https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(text)}`;
+  img.onerror=()=>{ target.textContent=text; };
+  target.appendChild(img);
+}
+
+/* ---------- Public (optional) admin data ---------- */
+async function loadPublicData(){
+  try{
+    const r=await getDoc(doc(db,'rates','default'));
+    if(r.exists()){ const d=r.data(); usdToNgn=Number(d.usdToNgn||0); }
+  }catch(e){}
+  try{
+    const g=await getDoc(doc(db,'giftcardRates','default')); giftRates=g.exists()? (g.data().brands||{}):{};
+  }catch(e){ giftRates={}; }
+  try{
+    const w=await getDoc(doc(db,'walletRates','default')); walletRateMap=w.exists()? (w.data().types||{}):{};
+  }catch(e){ walletRateMap={}; }
+  try{
+    const w=await getDoc(doc(db,'wallets','default'));
+    if(w.exists()){ const d=w.data(); btcAddress=d?.btc?.address||''; usdtNetworks=(d?.usdt?.networks||[]); usdtNet.innerHTML='<option value="">—</option>'+usdtNetworks.map(n=>`<option value="${n.network}">${n.network}</option>`).join(''); }
+  }catch(e){}
+  fillSelects();
+  updateGiftEstimate(); updateOwEstimate(); refreshCryptoAddress();
+}
+
+function fillSelects(){
+  const brands=Object.keys(giftRates);
+  giftBrand.innerHTML=brands.map(b=>`<option value="${b}">${b}</option>`).join('') || '<option value="">—</option>';
+  const gc=giftRates[giftBrand.value]?.countries || {};
+  giftCountry.innerHTML=Object.keys(gc).map(c=>`<option value="${c}">${c}</option>`).join('') || '<option value="">—</option>';
+
+  const wtypes=Object.keys(walletRateMap);
+  owType.innerHTML=wtypes.map(t=>`<option value="${t}">${t}</option>`).join('') || '<option value="">—</option>';
+  const wc=walletRateMap[owType.value]?.countries || {};
+  owCountry.innerHTML=Object.keys(wc).map(c=>`<option value="${c}">${c}</option>`).join('') || '<option value="">—</option>';
+}
+
+function updateGiftEstimate(){
+  const rate=giftRates[giftBrand.value]?.countries?.[giftCountry.value] || 0;
+  const est=Math.max(0, Number(giftAmount.value||0)*rate);
+  giftEstimate.value=currency(est);
+}
+function updateOwEstimate(){
+  const rate=walletRateMap[owType.value]?.countries?.[owCountry.value] || 0;
+  const est=Math.max(0, Number(owAmount.value||0)*rate);
+  owEstimate.value=currency(est);
+}
+giftBrand.onchange=()=>{ fillSelects(); updateGiftEstimate(); };
+giftCountry.onchange=updateGiftEstimate;
+giftAmount.oninput=updateGiftEstimate;
+owType.onchange=()=>{ fillSelects(); updateOwEstimate(); };
+owCountry.onchange=updateOwEstimate;
+owAmount.oninput=updateOwEstimate;
+
+function refreshCryptoAddress(){
+  if(cryptoType.value==='BTC'){
+    cryptoAddress.value=btcAddress||''; renderQR(qrBox, btcAddress||''); usdtNet.value=''; usdtNet.disabled=true;
+  }else{
+    usdtNet.disabled=false;
+    const sel=usdtNetworks.find(n=>n.network===usdtNet.value) || usdtNetworks[0];
+    const addr=sel?.address||''; cryptoAddress.value=addr; renderQR(qrBox, addr);
+  }
+}
+cryptoType.onchange=refreshCryptoAddress; usdtNet.onchange=refreshCryptoAddress;
+
+/* ---------- Auth actions ---------- */
+function validEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e||''); }
+
+signUpBtn.onclick = async ()=>{
+  const email=(authEmail.value||'').trim();
+  const pass=authPass.value||'';
+  const pass2=authPass2.value||'';
+  const name=(fullName.value||'').trim();
+  const u=(username.value||'').trim();
+
+  if(!validEmail(email)){ authMsg.textContent='Enter a valid email.'; return; }
+  if(pass.length<6){ authMsg.textContent='Password must be at least 6 characters.'; return; }
+  if(pass!==pass2){ authMsg.textContent='Passwords do not match.'; return; }
+
+  authMsg.textContent='Creating account…';
+  try{
+    const cred=await createUserWithEmailAndPassword(auth,email,pass);
+    await setDoc(doc(db,'users',cred.user.uid),{
+      email, fullName:name, username:u, createdAt:serverTimestamp(),
+      balance:0, bank:{bankName:'',acctName:'',acctNo:''}, firstTradePaid:false
+    },{merge:true});
+    try{ await sendEmailVerification(cred.user); }catch(e){}
+    authMsg.textContent='Account created. Check your email to verify, then sign in.';
+  }catch(e){ authMsg.textContent=e.message||e.code; }
+};
+
+signInBtn.onclick = async ()=>{
+  const email=(authEmail.value||'').trim();
+  const pass=authPass.value||'';
+  if(!validEmail(email)){ authMsg.textContent='Enter a valid email.'; return; }
+  if(!pass){ authMsg.textContent='Enter your password.'; return; }
+  authMsg.textContent='Signing in…';
+  try{
+    const cred=await signInWithEmailAndPassword(auth,email,pass);
+    if(!cred.user.emailVerified){
+      authMsg.textContent='Please verify your email, then sign in again.';
+      await signOut(auth);
+      return;
+    }
+    authMsg.textContent='';
+  }catch(e){ authMsg.textContent=e.message||e.code; }
+};
+
+forgotBtn.onclick = async ()=>{
+  const email=(authEmail.value||'').trim();
+  if(!validEmail(email)){ authMsg.textContent='Enter a valid email above first.'; return; }
+  try{ await sendPasswordResetEmail(auth,email); authMsg.textContent='Reset link sent to '+email; }
+  catch(e){ authMsg.textContent=e.message||e.code; }
+};
+
+logoutBtn.onclick=()=>signOut(auth);
+
+/* ---------- Profile save ---------- */
+saveProfile.onclick = async ()=>{
+  try{
+    await setDoc(doc(db,'users',currentUser.uid),{
+      fullName:(pFull.value||'').trim(),
+      username:(pUser.value||'').trim(),
+      bank:{ bankName:(bankName.value||'').trim(), acctName:(acctName.value||'').trim(), acctNo:(acctNo.value||'').trim() }
+    },{merge:true});
+    $('bankMsg').textContent='Saved ✓'; setTimeout(()=>$('bankMsg').textContent='',1200);
+  }catch(e){ $('bankMsg').textContent=e.message||e.code; }
+};
+
+/* ---------- Trades ---------- */
+async function uploadImagesReturnUrls(files, folder){
+  const list=Array.from(files||[]).slice(0,5), urls=[];
+  for(const f of list){ const r=sRef(storage,`${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}_${f.name}`); await uploadBytes(r,f); urls.push(await getDownloadURL(r)); }
+  return urls;
+}
+submitGift.onclick = async ()=>{
+  if(!giftBrand.value || !giftCountry.value || !giftAmount.value){ giftMsg.textContent='Fill brand, country and amount.'; return; }
+  giftMsg.textContent='Uploading…';
+  try{
+    const urls=await uploadImagesReturnUrls(giftFiles.files,`trades/${currentUser.uid}`);
+    const rate=giftRates[giftBrand.value]?.countries?.[giftCountry.value]||0;
+    const est=Math.max(0, Number(giftAmount.value||0)*rate);
+    await addDoc(collection(db,'trades'),{
+      uid:currentUser.uid,type:'gift',brand:giftBrand.value,country:giftCountry.value,
+      amountUsd:Number(giftAmount.value||0),estimatedNgn:est,images:urls,status:'pending',createdAt:serverTimestamp()
+    });
+    giftMsg.textContent='Submitted ✓'; setTimeout(()=>giftMsg.textContent='',1500);
+    giftFiles.value=''; giftAmount.value=''; updateGiftEstimate();
+  }catch(e){ giftMsg.textContent=e.message||e.code; }
+};
+copyAddr.onclick = async ()=>{ if(!cryptoAddress.value) return; try{ await navigator.clipboard.writeText(cryptoAddress.value); copyAddr.textContent='Copied ✓'; setTimeout(()=>copyAddr.textContent='Copy address',900);}catch(e){} };
+markCryptoSent.onclick = async ()=>{
+  cryptoMsg.textContent='Submitting…';
+  try{
+    const isBtc=cryptoType.value==='BTC';
+    const addr=isBtc? (btcAddress||'') : (usdtNetworks.find(n=>n.network===usdtNet.value)?.address||'');
+    await addDoc(collection(db,'trades'),{
+      uid:currentUser.uid,type:isBtc?'btc':'usdt',network:isBtc?'':(usdtNet.value||''),address:addr,
+      amountCrypto:Number(cryptoAmount.value||0),status:'pending',createdAt:serverTimestamp()
+    });
+    cryptoMsg.textContent='Marked ✓'; setTimeout(()=>cryptoMsg.textContent='',1500); cryptoAmount.value='';
+  }catch(e){ cryptoMsg.textContent=e.message||e.code; }
+};
+openChatForTag.onclick=()=>{ chatPanel.style.display='block'; };
+
+/* ---------- Withdraw ---------- */
+reqWithdraw.onclick = async ()=>{
+  wdMsg.textContent='Requesting…';
+  const amt=Number(wdAmount.value||0);
+  const avail=Number((wdAvail.value||'').replace(/[₦,]/g,'')||0);
+  if(amt<=0){ wdMsg.textContent='Enter a valid amount.'; return; }
+  if(amt>avail){ wdMsg.textContent='Amount exceeds available balance.'; return; }
+  try{
+    await addDoc(collection(db,'withdrawals'),{
+      uid:currentUser.uid, amount:amt,
+      bank:{ bankName:(bankName.value||'').trim(), acctName:(acctName.value||'').trim(), acctNo:(acctNo.value||'').trim() },
+      status:'pending', createdAt:serverTimestamp()
+    });
+    wdMsg.textContent='Withdraw request sent ✓'; setTimeout(()=>wdMsg.textContent='',1500); wdAmount.value='';
+  }catch(e){ wdMsg.textContent=e.message||e.code; }
+};
+
+/* ---------- Chat (Firestore) ---------- */
+let chatUnsub=null;
+function openChat(){
+  chatPanel.style.display='block';
+  if(chatUnsub) return;
+  const q1=query(collection(db,'chats',currentUser.uid,'messages'), orderBy('createdAt','asc'));
+  chatUnsub=onSnapshot(q1,(qs)=>{
+    chatBody.innerHTML='';
+    qs.forEach(d=>{
+      const m=d.data();
+      const div=document.createElement('div');
+      div.className='msg '+(m.from==='user'?'me':'them');
+      div.textContent=m.text||'';
+      chatBody.appendChild(div);
+    });
+    chatBody.scrollTop=chatBody.scrollHeight;
+  });
+}
+chatBtn.onclick=openChat;
+chatClose.onclick=()=>{ chatPanel.style.display='none'; };
+chatSend.onclick=async ()=>{
+  const t=(chatInput.value||'').trim(); if(!t) return;
+  chatInput.value='';
+  await addDoc(collection(db,'chats',currentUser.uid,'messages'),{ from:'user', text:t, createdAt:serverTimestamp() });
+};
+
+/* ---------- Watch user + history ---------- */
+function watchUser(uid){
+  onSnapshot(doc(db,'users',uid),(s)=>{
+    const d=s.data()||{};
+    const bal=Number(d.balance||0); balNgn.textContent=currency(bal); wdAvail.value=currency(bal);
+    pFull.value=d.fullName||''; pUser.value=d.username||''; pEmail.value=d.email||'';
+    const b=d.bank||{}; bankName.value=b.bankName||''; acctName.value=b.acctName||''; acctNo.value=b.acctNo||'';
+  });
+  const qT=query(collection(db,'trades'), where('uid','==',uid), orderBy('createdAt','desc'));
+  onSnapshot(qT,(qs)=>{
+    historyBox.innerHTML='';
+    qs.forEach(x=>{
+      const t=x.data();
+      const row=document.createElement('div'); row.className='row';
+      const top=document.createElement('div'); top.className='flex';
+      const tag=document.createElement('span'); tag.className='chip'; tag.textContent=(t.type||'').toUpperCase();
+      const st=document.createElement('span'); st.className='chip'; st.textContent=t.status||'pending';
+      top.append(tag,st);
+      const mid=document.createElement('div'); mid.className='muted';
+      mid.textContent = JSON.stringify({brand:t.brand,country:t.country,wallet:t.walletType,network:t.network,amountUsd:t.amountUsd,amountCrypto:t.amountCrypto,estimatedNgn:t.estimatedNgn});
+      row.append(top,mid);
+      historyBox.appendChild(row);
+    });
+  });
+}
+
+/* ---------- Auth state + show views ---------- */
+let authResolved=false;
+setTimeout(()=>{ if(!authResolved){ authView.classList.remove('hidden'); hideSplash(); } }, 2500);
+
+onAuthStateChanged(auth, async (user)=>{
+  authResolved=true;
+  if(!user){
+    currentUser=null;
+    topbar.classList.add('hidden');
+    chatBtn.classList.add('hidden');
+    authView.classList.remove('hidden');
+    showView(viewGift); // default tab (still hidden by auth view)
+    dashView.classList.add('hidden');
+    hideSplash();
+    return;
+  }
+  if(!user.emailVerified){
+    authMsg.textContent='Please verify your email, then sign in again.';
+    await signOut(auth);
+    hideSplash();
+    return;
+  }
+  currentUser=user;
+  try{
+    const uref=doc(db,'users',user.uid);
+    const u=await getDoc(uref);
+    if(!u.exists()){
+      await setDoc(uref,{ email:user.email, createdAt:serverTimestamp(), balance:0, bank:{}, firstTradePaid:false },{merge:true});
+    }
+    await loadPublicData();
+    watchUser(user.uid);
+    // UI on
+    authView.classList.add('hidden');
+    dashView.classList.remove('hidden');
+    topbar.classList.remove('hidden');
+    chatBtn.classList.remove('hidden');
+    showView(viewGift); // they first see Gift Cards
+  }catch(e){
+    authMsg.textContent=e.message||e.code;
+    authView.classList.remove('hidden');
+    dashView.classList.add('hidden');
+  }finally{ hideSplash(); }
+});
+</script>
+
+<!-- If you use Tawk/other widget, paste it last (optional) -->
+<!--
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;s1.src='https://embed.tawk.to/XXXXXXXX/default';s1.charset='UTF-8';s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);})();
+</script>
+-->
+</body>
+                                            </html>

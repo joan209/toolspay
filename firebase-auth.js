@@ -1,35 +1,65 @@
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
+// firebase-auth.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // Public, read-only config the dashboard needs before auth
-    match /rates/{doc} { allow read: if true; allow write: if request.auth != null; }
-    match /giftcardRates/{doc} { allow read: if true; allow write: if request.auth != null; }
-    match /walletRates/{doc} { allow read: if true; allow write: if request.auth != null; }
-    match /wallets/{doc} { allow read: if true; allow write: if request.auth != null; }
-    match /announcements/{doc} { allow read: if true; allow write: if request.auth != null; }
-    match /processingTimes/{doc} { allow read: if true; allow write: if request.auth != null; }
+// Your Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
+  authDomain: "toolspay-54167.firebaseapp.com",
+  projectId: "toolspay-54167",
+  storageBucket: "toolspay-54167.firebasestorage.app",
+  messagingSenderId: "71318117342",
+  appId: "1:71318117342:web:1952711453e19e19281b4f"
+};
 
-    // Users: each user can read/write their own doc
-    match /users/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
-    }
+// Init Firebase
+const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
 
-    // Trades: user can create & read their own trades
-    match /trades/{tradeId} {
-      allow create: if request.auth != null;
-      allow read, update, delete: if request.auth != null && request.resource.data.uid == request.auth.uid;
-    }
-
-    // Withdrawals: user can create & read their own
-    match /withdrawals/{wdId} {
-      allow create: if request.auth != null;
-      allow read, update, delete: if request.auth != null && request.resource.data.uid == request.auth.uid;
-    }
-
-    // Chat
-    match /chats/{uid}/messages/{msgId} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
-    }
+// ================= SIGN UP =================
+export async function signUpUser(email, password, confirmPassword) {
+  if (password !== confirmPassword) {
+    alert("Passwords do not match!");
+    return;
   }
-      }
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Redirect to profile page after sign up
+    window.location.href = "profile.html";
+
+  } catch (error) {
+    alert("Error: " + error.message);
+  }
+}
+
+// ================= SIGN IN =================
+export async function signInUser(email, password) {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Check if profile exists
+    const docRef = doc(db, "users", user.uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      window.location.href = "customer-dashboard.html";
+    } else {
+      window.location.href = "profile.html";
+    }
+
+  } catch (error) {
+    alert("Error: " + error.message);
+  }
+}
+
+// ================= SIGN OUT =================
+export async function logOutUser() {
+  await signOut(auth);
+  window.location.href = "login.html";
+}

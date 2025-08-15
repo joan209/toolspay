@@ -1,56 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Toolspay — Sign up</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up - Toolspay</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
 </head>
-<body>
-  <div class="auth-wrap">
-    <h1>Create account</h1>
-    <div class="card">
-      <label>Full name</label>
-      <input id="fullName" placeholder="Your name"/>
-      <label>Email</label>
-      <input id="email" type="email" placeholder="you@example.com"/>
-      <label>Password</label>
-      <input id="password" type="password" placeholder="••••••••"/>
-      <div class="row">
-        <button id="signupBtn" class="btn-primary">Sign up</button>
-      </div>
-      <div id="msg" class="muted"></div>
-    </div>
-    <p class="muted">Have an account? <a href="login.html">Login</a></p>
+<body class="light-mode">
+  <div class="container">
+    <h2>Create Your Account</h2>
+
+    <form id="signupForm">
+      <input type="text" id="fullName" placeholder="Full Name" required />
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="email" id="email" placeholder="Email Address" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+
+      <button type="submit">Sign Up</button>
+      <p>Already have an account? <a href="login.html">Login here</a></p>
+    </form>
+
+    <p id="errorMessage" style="color:red;"></p>
   </div>
 
-  <script type="module">
-    import {
-      auth, db, createUserWithEmailAndPassword, updateProfile, setDoc, doc, sendEmailVerification
-    } from './firebase-auth.js';
-
-    const fullName = document.getElementById('fullName');
-    const email = document.getElementById('email');
-    const password = document.getElementById('password');
-    const btn = document.getElementById('signupBtn');
-    const msg = document.getElementById('msg');
-
-    btn.onclick = async () => {
-      msg.textContent = 'Creating...';
-      try {
-        const cred = await createUserWithEmailAndPassword(auth, email.value.trim(), password.value);
-        await updateProfile(cred.user, { displayName: fullName.value.trim() });
-        await setDoc(doc(db, 'users', cred.user.uid), {
-          email: cred.user.email,
-          name: fullName.value.trim(),
-          balanceNgn: 0,
-          bank: { bankName: '', accountName: '', accountNumber: '' },
-          createdAt: Date.now()
-        }, { merge: true });
-        await sendEmailVerification(cred.user); // OTP via email link
-        msg.textContent = 'Verification email sent. Check your inbox then login.';
-      } catch (e) { msg.textContent = e.message || e.code; }
+  <script>
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
+      authDomain: "toolspay-54167.firebaseapp.com",
+      projectId: "toolspay-54167",
+      storageBucket: "toolspay-54167.firebasestorage.app",
+      messagingSenderId: "71318117342",
+      appId: "1:71318117342:web:1952711453e19e19281b4f"
     };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    document.getElementById("signupForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const fullName = document.getElementById("fullName").value.trim();
+      const username = document.getElementById("username").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const errorMessage = document.getElementById("errorMessage");
+
+      if (!fullName || !username || !email || !password || !confirmPassword) {
+        errorMessage.textContent = "Please fill in all fields.";
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        errorMessage.textContent = "Passwords do not match.";
+        return;
+      }
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          // Store profile data in localStorage (later will be saved to Firestore if needed)
+          localStorage.setItem("fullName", fullName);
+          localStorage.setItem("username", username);
+          localStorage.setItem("email", email);
+
+          // Redirect to login page after signup
+          window.location.href = "login.html";
+        })
+        .catch((error) => {
+          errorMessage.textContent = error.message;
+        });
+    });
   </script>
 </body>
 </html>

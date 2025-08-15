@@ -1,55 +1,35 @@
-<!-- file: firebase-auth.js -->
-<script type="module">
-  // This file is a JS Module. It exports Firebase objects & helpers for your pages.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
 
-  // Firebase v10 modular imports
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
-    getAuth, signInWithEmailAndPassword, sendPasswordResetEmail,
-    onAuthStateChanged, signOut, createUserWithEmailAndPassword, sendEmailVerification
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import {
-    getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection,
-    getDocs, query, where, serverTimestamp, onSnapshot
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import {
-    getStorage, ref, uploadBytes, getDownloadURL, deleteObject
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+    // Public, read-only config the dashboard needs before auth
+    match /rates/{doc} { allow read: if true; allow write: if request.auth != null; }
+    match /giftcardRates/{doc} { allow read: if true; allow write: if request.auth != null; }
+    match /walletRates/{doc} { allow read: if true; allow write: if request.auth != null; }
+    match /wallets/{doc} { allow read: if true; allow write: if request.auth != null; }
+    match /announcements/{doc} { allow read: if true; allow write: if request.auth != null; }
+    match /processingTimes/{doc} { allow read: if true; allow write: if request.auth != null; }
 
-  // ====== YOUR CONFIG (as provided) ======
-  const firebaseConfig = {
-    apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
-    authDomain: "toolspay-54167.firebaseapp.com",
-    projectId: "toolspay-54167",
-    storageBucket: "toolspay-54167.firebasestorage.app",
-    messagingSenderId: "71318117342",
-    appId: "1:71318117342:web:1952711453e19e19281b4f"
-  };
+    // Users: each user can read/write their own doc
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
 
-  // Init
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
+    // Trades: user can create & read their own trades
+    match /trades/{tradeId} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if request.auth != null && request.resource.data.uid == request.auth.uid;
+    }
 
-  // Helper to allowlist admins (document id = email)
-  async function addAdminByEmail(email) {
-    await setDoc(doc(db, 'admins', email), {
-      createdAt: serverTimestamp()
-    }, { merge: true });
+    // Withdrawals: user can create & read their own
+    match /withdrawals/{wdId} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if request.auth != null && request.resource.data.uid == request.auth.uid;
+    }
+
+    // Chat
+    match /chats/{uid}/messages/{msgId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
   }
-
-  // Export everything we’ll need
-  export {
-    app, auth, db, storage,
-    // auth helpers
-    signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut,
-    createUserWithEmailAndPassword, sendEmailVerification,
-    // firestore
-    doc, getDoc, setDoc, updateDoc, addDoc, collection, getDocs, query, where, serverTimestamp, onSnapshot,
-    // storage
-    ref, uploadBytes, getDownloadURL, deleteObject,
-    // custom
-    addAdminByEmail
-  };
-</script>
+      }

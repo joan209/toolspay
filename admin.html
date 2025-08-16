@@ -1,325 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Toolspay — Admin</title>
-<meta name="color-scheme" content="light dark"/>
-<style>
-  :root{
-    --bg:#f7f7f8; --card:#ffffff; --text:#111827; --muted:#6b7280; --brand:#b58900;
-    --ok:#059669; --danger:#b91c1c; --border:#e5e7eb; --chip:#f3f4f6;
-  }
-  [data-theme="dark"]{
-    --bg:#0b1220; --card:#0f172a; --text:#e2e8f0; --muted:#94a3b8; --brand:#ffd700;
-    --ok:#10b981; --danger:#ef4444; --border:#1f2937; --chip:#111827;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-
-  .toolbar{position:sticky;top:0;background:var(--bg);z-index:20;border-bottom:1px solid var(--border)}
-  .container{max-width:1200px;margin:0 auto;padding:12px 16px}
-  .header{display:flex;align-items:center;gap:12px}
-  .brand-badge{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#111,var(--brand));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900}
-  nav{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
-  .link{padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);text-decoration:none;font-weight:600}
-  .link.active{border-color:var(--brand)}
-  .btn{padding:10px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:700;background:#111;color:var(--brand);border:2px solid var(--brand)}
-  .btn-ghost{padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer}
-  .muted{color:var(--muted);font-size:12px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:16px}
-  .row{display:grid;gap:12px}
-  .hidden{display:none}
-
-  /* Layout: sidebar + chat */
-  .wrap{display:grid;grid-template-columns:280px 1fr;gap:12px;margin:12px auto;max-width:1200px;padding:0 16px}
-  @media (max-width:900px){ .wrap{grid-template-columns:1fr} .sidebar{order:2} .chat{order:1} }
-
-  .sidebar{min-height:70vh}
-  .side-head{display:flex;gap:8px;align-items:center;padding:12px;border-bottom:1px solid var(--border)}
-  .search{display:flex;gap:8px;padding:12px;border-bottom:1px solid var(--border)}
-  input,select{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text)}
-  .list{max-height:70vh;overflow:auto}
-  .thread{display:flex;gap:8px;align-items:center;padding:12px;border-top:1px solid var(--border);cursor:pointer}
-  .thread:hover{background:var(--chip)}
-  .thread .badge{margin-left:auto;background:var(--brand);color:#111;font-weight:800;border-radius:999px;padding:2px 8px;font-size:11px}
-  .circle{width:30px;height:30px;border-radius:999px;background:var(--chip);display:flex;align-items:center;justify-content:center;font-weight:800}
-
-  .chat{min-height:70vh;display:flex;flex-direction:column}
-  .chat-head{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border)}
-  .chat-body{padding:16px;overflow:auto;height:60vh}
-  .bubble{max-width:80%;padding:10px 12px;border-radius:14px;margin:8px 0;line-height:1.35;border:1px solid var(--border)}
-  .me{margin-left:auto;background:var(--chip)}
-  .them{background:transparent}
-  .time{font-size:11px;color:var(--muted);margin-top:4px}
-  .chat-input{display:flex;gap:8px;padding:12px;border-top:1px solid var(--border)}
-  textarea{flex:1;padding:10px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);min-height:44px;max-height:160px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - ToolsPay</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="firebase-auth.js" defer></script>
+  <script src="admin.js" defer></script>
 </head>
-<body>
+<body class="light-mode">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-left">
+      <h2>ToolsPay Admin</h2>
+    </div>
+    <div class="nav-right">
+      <span id="adminUsername" class="username"></span>
+      <button id="chatToggle" class="btn">💬 Chat</button>
+      <button id="modeToggle" class="btn">🌙</button>
+      <button id="logoutBtn" class="btn">Logout</button>
+    </div>
+  </nav>
 
-<!-- Top bar -->
-<header class="toolbar">
-  <div class="container header">
-    <div class="brand-badge">TP</div>
-    <div>
-      <div style="font-weight:900;">Toolspay — Admin</div>
-      <div class="muted">Manage trades, rates, and support</div>
-    </div>
-    <nav>
-      <a class="link" href="admin.html">Dashboard</a>
-      <a class="link" href="admin-trades.html">Trades</a>
-      <a class="link" href="admin-rates.html">Rates</a>
-      <a class="link" href="admin-wallets.html">Wallets</a>
-      <a class="link" href="admin-processing.html">Processing</a>
-      <a class="link active" href="admin.html#messages">Messages</a>
-      <button id="modeBtn" class="btn-ghost" type="button">🌓</button>
-      <button id="logoutBtn" class="btn-ghost" type="button">Logout</button>
-    </nav>
-  </div>
-</header>
+  <!-- Dashboard Content -->
+  <main class="dashboard">
+    <h3>Welcome, <span id="welcomeName">Admin</span></h3>
+    <p>Here you can manage customers, transactions, and settings.</p>
 
-<!-- Messages layout -->
-<main class="wrap">
-  <!-- Sidebar -->
-  <aside class="sidebar card" id="threadsPanel">
-    <div class="side-head">
-      <strong>Customers</strong>
-      <span class="muted" id="countThreads"></span>
-    </div>
-    <div class="search">
-      <input id="searchEmail" type="email" placeholder="Find by email…"/>
-      <button id="newThreadBtn" class="btn-ghost" type="button">Start</button>
-    </div>
-    <div id="threadsList" class="list"></div>
-  </aside>
+    <section>
+      <h4>Customer Accounts</h4>
+      <div id="customerList">Loading...</div>
+    </section>
 
-  <!-- Chat -->
-  <section class="chat card">
-    <div class="chat-head">
-      <div>
-        <div id="chatTitle" style="font-weight:800;">Select a customer…</div>
-        <div id="chatSub" class="muted"></div>
-      </div>
-      <div class="muted" id="chatMeta"></div>
+    <section>
+      <h4>Recent Transactions</h4>
+      <div id="transactionList">Loading...</div>
+    </section>
+  </main>
+
+  <!-- Chat Panel -->
+  <div id="chatPanel" class="chat-panel hidden">
+    <div class="chat-header">
+      <h4>Admin Chat</h4>
+      <button id="closeChat" class="btn">✖</button>
     </div>
-    <div id="chatBody" class="chat-body"></div>
+    <div id="chatMessages" class="chat-messages"></div>
     <div class="chat-input">
-      <textarea id="chatInput" placeholder="Type a reply…" disabled></textarea>
-      <button id="sendBtn" class="btn" type="button" disabled>Send</button>
+      <input type="text" id="chatBox" placeholder="Type a message...">
+      <button id="sendChat" class="btn">Send</button>
     </div>
-  </section>
-</main>
+  </div>
 
-<!-- Firebase + App -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth, onAuthStateChanged, signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp,
-  collection, query, where, orderBy, limit, onSnapshot, addDoc
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-/* ---------------- Config (yours) ---------------- */
-const firebaseConfig = {
-  apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
-  authDomain: "toolspay-54167.firebaseapp.com",
-  projectId: "toolspay-54167",
-  storageBucket: "toolspay-54167.firebasestorage.app",
-  messagingSenderId: "71318117342",
-  appId: "1:71318117342:web:1952711453e19e19281b4f"
-};
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-/* --------------- Admin allowlist ---------------- */
-const ADMIN_EMAILS = [
-  // add your admin emails here:
-  // "owner@toolspay.com",
-];
-
-/* --------------- Theme toggle ------------------- */
-const modeBtn = document.getElementById('modeBtn');
-function applyTheme(t){ document.documentElement.setAttribute('data-theme', t); localStorage.setItem('tp-theme', t); }
-(function initTheme(){
-  const saved = localStorage.getItem('tp-theme') || 'light';
-  applyTheme(saved);
-})();
-modeBtn.onclick = ()=>{
-  const now = document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
-  applyTheme(now);
-};
-
-/* --------------- DOM refs ----------------------- */
-const logoutBtn   = document.getElementById('logoutBtn');
-const threadsList = document.getElementById('threadsList');
-const countThreads= document.getElementById('countThreads');
-const searchEmail = document.getElementById('searchEmail');
-const newThreadBtn= document.getElementById('newThreadBtn');
-
-const chatTitle = document.getElementById('chatTitle');
-const chatSub   = document.getElementById('chatSub');
-const chatMeta  = document.getElementById('chatMeta');
-const chatBody  = document.getElementById('chatBody');
-const chatInput = document.getElementById('chatInput');
-const sendBtn   = document.getElementById('sendBtn');
-
-logoutBtn.onclick = ()=> signOut(auth);
-
-/* --------------- Global state ------------------- */
-let CURRENT_ADMIN = null;
-let currentThreadId = null;
-let unsubscribeMessages = null;
-
-/* --------------- Helpers ------------------------ */
-const $el = (tag, cls, txt)=>{ const e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; };
-const fmtTime = (ts)=>{
-  if(!ts) return '';
-  try{
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
-    return d.toLocaleString();
-  }catch(_){ return ''; }
-};
-const scrollToBottom = ()=>{ chatBody.scrollTop = chatBody.scrollHeight; };
-
-/* --------------- Auth guard --------------------- */
-onAuthStateChanged(auth, async (user)=>{
-  if(!user){ location.href = "signup.html"; return; }
-  // Allow by email list OR Firestore role=admin
-  let allow = ADMIN_EMAILS.includes(user.email);
-  if(!allow){
-    try{
-      const uref = doc(db, 'users', user.uid);
-      const usnap = await getDoc(uref);
-      allow = (usnap.exists() && (usnap.data()?.role === 'admin'));
-    }catch(e){ /* ignore */ }
-  }
-  if(!allow){ await signOut(auth); alert("Admin only."); return; }
-  CURRENT_ADMIN = user;
-  bootMessages();
-});
-
-/* --------------- Firestore schema ----------------
-supportThreads/{threadId}:
-  { uid, email, displayName, lastMessage, lastSender, updatedAt,
-    unreadForAdmin: number, unreadForUser: number }
-
-supportThreads/{threadId}/messages/{autoId}:
-  { from: 'admin'|'user', text, createdAt, readByAdmin: bool, readByUser: bool }
----------------------------------------------------*/
-
-/* --------------- Threads list ------------------- */
-function bootMessages(){
-  const qThreads = query(collection(db,'supportThreads'), orderBy('updatedAt','desc'));
-  onSnapshot(qThreads, (qs)=>{
-    threadsList.innerHTML = '';
-    countThreads.textContent = qs.size ? `(${qs.size})` : '';
-    qs.forEach(th=>{
-      const t = th.data();
-      const item = $el('div','thread');
-      item.onclick = ()=> openThread(th.id, t);
-      const circle = $el('div','circle', (t.displayName?.[0] || t.email?.[0] || '?').toUpperCase());
-      const info = $el('div', null);
-      const top = $el('div', null, t.displayName || t.email || th.id);
-      top.style.fontWeight = '800';
-      const sub = $el('div','muted', t.lastMessage || '');
-      info.append(top, sub);
-      item.append(circle, info);
-      if((t.unreadForAdmin||0) > 0){
-        const badge = $el('span','badge', String(t.unreadForAdmin));
-        item.appendChild(badge);
-      }
-      threadsList.appendChild(item);
-    });
-  });
-}
-
-/* --------------- Open a thread ------------------ */
-async function openThread(id, meta){
-  currentThreadId = id;
-  chatTitle.textContent = meta.displayName || meta.email || id;
-  chatSub.textContent = meta.email || '';
-  chatMeta.textContent = 'Last activity: ' + (fmtTime(meta.updatedAt) || '—');
-  chatInput.disabled = false; sendBtn.disabled = false;
-  chatBody.innerHTML = '';
-
-  // stop previous listener
-  if(unsubscribeMessages) unsubscribeMessages();
-
-  const qMsgs = query(collection(db,'supportThreads', id, 'messages'), orderBy('createdAt','asc'), limit(500));
-  unsubscribeMessages = onSnapshot(qMsgs, (qs)=>{
-    chatBody.innerHTML = '';
-    qs.forEach(m=>{
-      const d = m.data();
-      const bubble = $el('div','bubble ' + (d.from==='admin'?'me':'them'));
-      bubble.innerHTML = `<div>${(d.text||'').replace(/</g,'&lt;')}</div><div class="time">${fmtTime(d.createdAt)}</div>`;
-      chatBody.appendChild(bubble);
-    });
-    scrollToBottom();
-  });
-
-  // mark unread for admin -> 0
-  try{
-    await updateDoc(doc(db,'supportThreads', id), { unreadForAdmin: 0 });
-  }catch(e){}
-}
-
-/* --------------- Send message ------------------- */
-async function sendCurrent(){
-  const text = (chatInput.value||'').trim();
-  if(!text || !currentThreadId) return;
-  chatInput.value = '';
-  try{
-    await addDoc(collection(db,'supportThreads', currentThreadId, 'messages'), {
-      from:'admin', text, createdAt: serverTimestamp(), readByAdmin:true, readByUser:false
-    });
-    await updateDoc(doc(db,'supportThreads', currentThreadId), {
-      lastMessage: text, lastSender:'admin', updatedAt: serverTimestamp(),
-      unreadForUser: ( (await getDoc(doc(db,'supportThreads', currentThreadId))).data()?.unreadForUser || 0 ) + 1
-    });
-  }catch(e){
-    alert(e.message || e.code);
-  }
-}
-sendBtn.onclick = sendCurrent;
-chatInput.addEventListener('keydown', (e)=>{
-  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendCurrent(); }
-});
-
-/* --------------- Start new thread ---------------- */
-newThreadBtn.onclick = async ()=>{
-  const email = (searchEmail.value||'').trim().toLowerCase();
-  if(!email){ alert('Enter a customer email'); return; }
-  try{
-    // Find user by email
-    const qUsers = query(collection(db,'users'), where('email','==',email), limit(1));
-    let userDoc = null;
-    await new Promise((resolve)=> {
-      onSnapshot(qUsers, (qs)=>{ userDoc = qs.docs[0] || null; resolve(); }, { once:true });
-    });
-    if(!userDoc){ alert('No user with that email'); return; }
-    const uid = userDoc.id;
-    const udata = userDoc.data()||{};
-    const tid = uid; // one thread per user UID
-
-    const treadRef = doc(db,'supportThreads', tid);
-    const snap = await getDoc(treadRef);
-    if(!snap.exists()){
-      await setDoc(treadRef, {
-        uid, email: (udata.email||email), displayName: (udata.displayName||udata.name||''),
-        lastMessage:'', lastSender:'', updatedAt: serverTimestamp(),
-        unreadForAdmin:0, unreadForUser:0
-      });
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
     }
-    openThread(tid, (await getDoc(treadRef)).data()||{email});
-  }catch(e){
-    alert(e.message || e.code);
-  }
-};
-</script>
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: var(--nav-bg);
+      color: var(--nav-text);
+    }
+    .btn {
+      margin-left: 10px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+    .dashboard { padding: 20px; }
+    .chat-panel {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 300px;
+      height: 400px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-panel.hidden { display: none; }
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      background: var(--nav-bg);
+      border-bottom: 1px solid #ccc;
+    }
+    .chat-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    .chat-input {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 5px;
+    }
+
+    /* Dark & Light Mode */
+    .light-mode {
+      --bg: #ffffff;
+      --text: #000000;
+      --nav-bg: #f0f0f0;
+      --nav-text: #000000;
+    }
+    .dark-mode {
+      --bg: #121212;
+      --text: #ffffff;
+      --nav-bg: #1f1f1f;
+      --nav-text: #ffffff;
+    }
+  </style>
+
+  <script>
+    // Dark/Light Mode Toggle
+    const modeToggle = document.getElementById("modeToggle");
+    modeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+      document.body.classList.toggle("light-mode");
+      modeToggle.textContent = document.body.classList.contains("dark-mode") ? "☀️" : "🌙";
+    });
+
+    // Chat Toggle
+    const chatPanel = document.getElementById("chatPanel");
+    document.getElementById("chatToggle").addEventListener("click", () => {
+      chatPanel.classList.toggle("hidden");
+    });
+    document.getElementById("closeChat").addEventListener("click", () => {
+      chatPanel.classList.add("hidden");
+    });
+
+    // Show admin username (example: you can fetch from Firebase)
+    const username = localStorage.getItem("adminUsername") || "Admin";
+    document.getElementById("adminUsername").textContent = username;
+    document.getElementById("welcomeName").textContent = username;
+
+    // Chat send function
+    document.getElementById("sendChat").addEventListener("click", () => {
+      const msgBox = document.getElementById("chatBox");
+      const message = msgBox.value.trim();
+      if(message) {
+        const chatMessages = document.getElementById("chatMessages");
+        const msgElem = document.createElement("div");
+        msgElem.textContent = "You: " + message;
+        chatMessages.appendChild(msgElem);
+        msgBox.value = "";
+      }
+    });
+  </script>
 </body>
 </html>

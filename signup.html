@@ -1,79 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign Up - Toolspay</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolsPay - Sign Up</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f9f9f9;
+      transition: background 0.3s, color 0.3s;
+    }
+    .dark-mode {
+      background: #121212;
+      color: white;
+    }
+    .container {
+      width: 90%;
+      max-width: 450px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+      background: white;
+    }
+    .dark-mode .container {
+      background: #1e1e1e;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background: #28a745;
+      color: white;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #218838;
+    }
+    .links {
+      text-align: center;
+      margin-top: 12px;
+    }
+    .links a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    .toggle-btn {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+    }
+  </style>
 </head>
-<body class="light-mode">
+<body>
   <div class="container">
-    <h2>Create Your Account</h2>
-
-    <form id="signupForm">
-      <input type="text" id="fullName" placeholder="Full Name" required />
-      <input type="text" id="username" placeholder="Username" required />
-      <input type="email" id="email" placeholder="Email Address" required />
-      <input type="password" id="password" placeholder="Password" required />
-      <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
-
-      <button type="submit">Sign Up</button>
-      <p>Already have an account? <a href="login.html">Login here</a></p>
-    </form>
-
-    <p id="errorMessage" style="color:red;"></p>
+    <h2>Create Account</h2>
+    <input type="text" id="fullname" placeholder="Full Name" required>
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="email" id="email" placeholder="Enter Email" required>
+    <input type="password" id="password" placeholder="Enter Password" required>
+    <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+    <button onclick="signup()">Sign Up</button>
+    <div class="links">
+      <a href="signin.html">Already have an account? Sign In</a>
+    </div>
+    <div class="toggle-btn">
+      <button type="button" onclick="toggleMode()">🌙 / ☀️</button>
+    </div>
   </div>
 
+  <!-- Firebase + Auth -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
   <script>
-    // Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
       authDomain: "toolspay-54167.firebaseapp.com",
       projectId: "toolspay-54167",
-      storageBucket: "toolspay-54167.firebasestorage.app",
+      storageBucket: "toolspay-54167.appspot.com",
       messagingSenderId: "71318117342",
       appId: "1:71318117342:web:1952711453e19e19281b4f"
     };
 
     const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    const auth = firebase.getAuth(app);
+    const db = firebase.getFirestore(app);
 
-    document.getElementById("signupForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      const fullName = document.getElementById("fullName").value.trim();
-      const username = document.getElementById("username").value.trim();
-      const email = document.getElementById("email").value.trim();
+    function signup() {
+      const fullname = document.getElementById("fullname").value;
+      const username = document.getElementById("username").value;
+      const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
-      const errorMessage = document.getElementById("errorMessage");
-
-      if (!fullName || !username || !email || !password || !confirmPassword) {
-        errorMessage.textContent = "Please fill in all fields.";
-        return;
-      }
 
       if (password !== confirmPassword) {
-        errorMessage.textContent = "Passwords do not match.";
+        alert("Passwords do not match!");
         return;
       }
 
-      auth.createUserWithEmailAndPassword(email, password)
+      firebase.createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
-          // Store profile data in localStorage (later will be saved to Firestore if needed)
-          localStorage.setItem("fullName", fullName);
-          localStorage.setItem("username", username);
-          localStorage.setItem("email", email);
-
-          // Redirect to login page after signup
-          window.location.href = "login.html";
+          const user = userCredential.user;
+          // Save extra profile info in Firestore
+          firebase.setDoc(firebase.doc(db, "users", user.uid), {
+            fullname: fullname,
+            username: username,
+            email: email,
+            createdAt: new Date()
+          });
+          alert("Signup successful!");
+          window.location.href = "profile.html";
         })
         .catch((error) => {
-          errorMessage.textContent = error.message;
+          alert("Error: " + error.message);
         });
-    });
+    }
+
+    function toggleMode() {
+      document.body.classList.toggle("dark-mode");
+    }
   </script>
 </body>
 </html>

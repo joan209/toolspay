@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Admin - Toolspay</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="dashboard.html">Toolspay</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="wallet.html">Wallet</a></li>
+          <li class="nav-item"><a class="nav-link" href="trades.html">Trades</a></li>
+          <li class="nav-item"><a class="nav-link" href="profile.html">Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="support.html">Support</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Support Page -->
+  <div class="container mt-4">
+    <h3>Contact Admin</h3>
+    <p>If you’re facing any issues, send a message to Admin below:</p>
+
+    <form id="supportForm">
+      <div class="mb-3">
+        <label for="message" class="form-label">Your Message</label>
+        <textarea class="form-control" id="message" rows="3" placeholder="Type your issue..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Send Message</button>
+    </form>
+
+    <div class="mt-4">
+      <h5>Your Previous Messages</h5>
+      <div id="userMessages" style="max-height: 250px; overflow-y: auto;" class="border p-2 bg-white">
+        <!-- Messages will show here -->
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Temporary storage (replace later with Firebase)
+    let userMessages = [];
+
+    const form = document.getElementById("supportForm");
+    const userMessagesDiv = document.getElementById("userMessages");
+
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      let msg = document.getElementById("message").value;
+      if(msg.trim() === "") return;
+      
+      // Save message
+      userMessages.push("You: " + msg);
+
+      // Display
+      let msgDiv = document.createElement("div");
+      msgDiv.classList.add("border","p-2","mb-2");
+      msgDiv.textContent = "You: " + msg;
+      userMessagesDiv.appendChild(msgDiv);
+
+      document.getElementById("message").value = "";
+      userMessagesDiv.scrollTop = userMessagesDiv.scrollHeight;
+
+      // (Later we connect this to Firebase so Admin sees it too)
+    });
+  </script>
+</body>
+</html>

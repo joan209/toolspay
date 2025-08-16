@@ -21,7 +21,7 @@
     }
     .container {
       width: 90%;
-      max-width: 450px;
+      max-width: 400px;
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
@@ -36,7 +36,7 @@
     }
     input {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin: 8px 0;
       border: 1px solid #ccc;
       border-radius: 8px;
@@ -51,22 +51,24 @@
       border-radius: 8px;
       font-size: 16px;
       cursor: pointer;
+      margin-top: 10px;
     }
     button:hover {
-      background: #218838;
-    }
-    .links {
-      text-align: center;
-      margin-top: 12px;
-    }
-    .links a {
-      color: #007bff;
-      text-decoration: none;
+      background: #1e7e34;
     }
     .toggle-btn {
       margin-top: 15px;
       display: flex;
       justify-content: center;
+    }
+    .link {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 8px;
     }
   </style>
 </head>
@@ -75,19 +77,20 @@
     <h2>Create Account</h2>
     <input type="text" id="fullname" placeholder="Full Name" required>
     <input type="text" id="username" placeholder="Username" required>
-    <input type="email" id="email" placeholder="Enter Email" required>
-    <input type="password" id="password" placeholder="Enter Password" required>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
     <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-    <button onclick="signup()">Sign Up</button>
-    <div class="links">
-      <a href="signin.html">Already have an account? Sign In</a>
+    <button onclick="signUp()">Sign Up</button>
+    <div class="error" id="error"></div>
+    <div class="link">
+      <p>Already have an account? <a href="signin.html">Sign In</a></p>
     </div>
     <div class="toggle-btn">
       <button type="button" onclick="toggleMode()">🌙 / ☀️</button>
     </div>
   </div>
 
-  <!-- Firebase + Auth -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
@@ -105,34 +108,36 @@
     const auth = firebase.getAuth(app);
     const db = firebase.getFirestore(app);
 
-    function signup() {
+    async function signUp() {
       const fullname = document.getElementById("fullname").value;
       const username = document.getElementById("username").value;
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
+      const errorBox = document.getElementById("error");
 
       if (password !== confirmPassword) {
-        alert("Passwords do not match!");
+        errorBox.textContent = "Passwords do not match!";
         return;
       }
 
-      firebase.createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          // Save extra profile info in Firestore
-          firebase.setDoc(firebase.doc(db, "users", user.uid), {
-            fullname: fullname,
-            username: username,
-            email: email,
-            createdAt: new Date()
-          });
-          alert("Signup successful!");
-          window.location.href = "profile.html";
-        })
-        .catch((error) => {
-          alert("Error: " + error.message);
+      try {
+        const userCredential = await firebase.createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Save extra profile data in Firestore
+        await firebase.setDoc(firebase.doc(db, "users", user.uid), {
+          fullname: fullname,
+          username: username,
+          email: email,
+          createdAt: new Date()
         });
+
+        alert("Account created successfully! Please sign in.");
+        window.location.href = "signin.html";
+      } catch (error) {
+        errorBox.textContent = error.message;
+      }
     }
 
     function toggleMode() {

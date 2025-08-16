@@ -1,792 +1,324 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Toolspay — Customer</title>
-<meta name="color-scheme" content="light dark"/>
-<style>
-  :root{
-    --bg: #f7f7f8; /* start light */
-    --card:#ffffff;
-    --text:#111827;
-    --muted:#6b7280;
-    --brand:#b58900;
-    --ok:#059669;
-    --danger:#b91c1c;
-    --border:#e5e7eb;
-    --chip:#f3f4f6;
-  }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --bg: #0b1220;
-      --card: #0f172a;
-      --text: #e2e8f0;
-      --muted:#94a3b8;
-      --brand:#ffd700;
-      --ok:#10b981;
-      --danger:#ef4444;
-      --border:#1f2937;
-      --chip:#111827;
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ToolsPay — Customer Dashboard</title>
+
+  <!-- Bootstrap (for fast, clean UI) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --brand: #b58900;        /* gold-ish brand */
+      --brand-contrast: #111;  /* contrast text for brand buttons */
     }
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
-  .container{max-width:1000px;margin:0 auto;padding:16px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin:12px 0}
-  .row{display:grid;gap:10px}
-  @media(min-width:720px){.row-2{grid-template-columns:1fr 1fr}.row-3{grid-template-columns:1fr 1fr 1fr}}
-  label{font-size:13px;font-weight:700;opacity:.9}
-  input,select,textarea{width:100%;padding:11px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:15px}
-  button{padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:700}
-  .btn{background:#111;color:var(--brand);border:2px solid var(--brand)}
-  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
-  .btn-muted{background:var(--chip);color:var(--text);border:1px solid var(--border)}
-  .muted{color:var(--muted);font-size:13px}
-  .header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .hidden{display:none}
-  .chip{padding:6px 10px;background:var(--chip);border:1px solid var(--border);border-radius:999px;font-size:13px}
-  .money{font-weight:800}
-  .brand-badge{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#111,#ffd700);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900}
-  .center{display:flex;align-items:center;justify-content:center}
-  /* Splash */
-  #splash{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;background:var(--bg);z-index:9999;transition:opacity .25s ease}
-  #splash.hidden{opacity:0;pointer-events:none}
-  #splash .tp{font-size:28px;font-weight:900;border:2px solid var(--brand);color:var(--brand);padding:10px 16px;border-radius:12px}
-  .toolbar{position:sticky;top:0;background:var(--bg);z-index:9;border-bottom:1px solid var(--border)}
-  .nav{display:flex;gap:8px;align-items:center}
-  nav a{padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--text);border:1px solid transparent;font-weight:700}
-  nav a.active{border:1px solid var(--border);background:var(--card)}
-  /* auth centered on mobile */
-  #authView{max-width:520px;margin:10vh auto;padding:18px}
-  @media(max-width:520px){
-    #authView{margin:14vh 10px 8vh}
-    #authView h2{font-size:22px}
-    .row-2{grid-template-columns:1fr}
-  }
-  .error{color:var(--danger);font-weight:700}
-</style>
+    body { background: #f8f9fa; } /* start in LIGHT mode */
+    .brand-btn {
+      background: var(--brand);
+      color: var(--brand-contrast);
+      border: none;
+      font-weight: 700;
+    }
+    .brand-btn:hover { opacity: .9; }
+    .card-rounded { border-radius: 16px; }
+    .chip {
+      display: inline-block; padding: .375rem .65rem; border-radius: 999px;
+      background: #f1f3f5; font-size: .85rem; border: 1px solid #e9ecef;
+    }
+    /* floating chat button for visibility */
+    #chatFab {
+      position: fixed; right: 18px; bottom: 18px; z-index: 50;
+    }
+  </style>
+
+  <!-- Firebase (compat to keep global 'firebase' object) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+
+  <script>
+    /* ==== Your Firebase config (as you sent) ==== */
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
+      authDomain: "toolspay-54167.firebaseapp.com",
+      projectId: "toolspay-54167",
+      storageBucket: "toolspay-54167.firebasestorage.app",
+      messagingSenderId: "71318117342",
+      appId: "1:71318117342:web:1952711453e19e19281b4f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+  </script>
 </head>
-<body>
+<body class="bg-light">
 
-<!-- Splash -->
-<div id="splash">
-  <div class="tp">TP</div>
-  <div class="muted">Loading dashboard…</div>
-</div>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom" id="mainNavbar">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="customer-dashboard.html">ToolsPay</a>
 
-<header class="toolbar">
-  <div class="container header">
-    <div class="flex">
-      <div class="brand-badge">TP</div>
-      <div>
-        <div style="font-weight:900;">Toolspay</div>
-        <div class="muted">Sell Gift Cards • BTC • USDT → Get paid in ₦</div>
-      </div>
-    </div>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navCollapse"
+              aria-controls="navCollapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-    <div class="flex nav" id="topNav">
-      <!-- nav links (controlled by hash routing) -->
-      <a href="#/dashboard" id="navDash" class="active">Dashboard</a>
-      <a href="#/profile" id="navProfile">Profile</a>
-      <a href="#/history" id="navHistory">History</a>
-      <a href="#/wallet" id="navWallet">Wallet</a>
-      <div style="width:8px"></div>
-      <button id="modeBtn" class="btn-ghost" title="Dark/Light" type="button">🌓</button>
-      <button id="openChatBtn" class="btn-ghost" title="Live chat" type="button">💬</button>
-      <button id="logoutBtn" class="btn-ghost" type="button">Sign out</button>
-    </div>
-  </div>
-</header>
+      <div class="collapse navbar-collapse" id="navCollapse">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link active" href="customer-dashboard.html">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="sell-crypto.html">Sell Bitcoin/USDT</a></li>
+          <li class="nav-item"><a class="nav-link" href="online-wallet.html">Online Wallet</a></li>
+          <!-- Profile = hidden until login -->
+          <li class="nav-item d-none" id="profileNav"><a class="nav-link" href="profile.html">Profile</a></li>
+        </ul>
 
-<main class="container">
-
-  <!-- AUTH VIEW (shown if not logged in) -->
-  <section id="authView" class="card hidden" aria-live="polite">
-    <h2 style="font-weight:900;margin:0 0 8px">Welcome to Toolspay</h2>
-    <p class="muted">Create an account or sign in to start trading. Forgot-password will send reset email.</p>
-
-    <div id="authError" class="error" style="margin-top:8px"></div>
-
-    <!-- Signup form -->
-    <div style="margin-top:12px">
-      <label>Full name</label>
-      <input id="nameInp" type="text" placeholder="Your full name"/>
-    </div>
-    <div style="margin-top:8px">
-      <label>Username</label>
-      <input id="unameInp" type="text" placeholder="username (no spaces)"/>
-    </div>
-
-    <div class="row row-2" style="margin-top:10px;">
-      <div>
-        <label>Email</label>
-        <input id="authEmail" type="email" placeholder="you@example.com" autocomplete="email"/>
-      </div>
-      <div>
-        <label>Password</label>
-        <input id="authPass" type="password" placeholder="Password" autocomplete="new-password"/>
-      </div>
-    </div>
-
-    <div style="margin-top:8px">
-      <label>Confirm password</label>
-      <input id="authPass2" type="password" placeholder="Confirm password" autocomplete="new-password"/>
-    </div>
-
-    <div class="row row-2" style="margin-top:12px;">
-      <button id="signUpBtn" class="btn" type="button">Sign up</button>
-      <button id="signInBtn" class="btn-ghost" type="button">Sign in</button>
-    </div>
-
-    <div style="margin-top:10px" class="flex">
-      <button id="forgotBtn" class="btn-muted" type="button">Forgot password</button>
-      <div style="flex:1"></div>
-      <span id="authMsg" class="muted"></span>
-    </div>
-  </section>
-
-  <!-- PROFILE SETUP (shown immediately after signup if missing profile fields) -->
-  <section id="profileSetup" class="card hidden">
-    <h3 style="margin:0 0 8px">Complete your profile</h3>
-    <p class="muted">Please provide display name and username to continue.</p>
-    <div style="margin-top:10px">
-      <label>Full name</label>
-      <input id="psName" placeholder="Full name"/>
-    </div>
-    <div style="margin-top:10px">
-      <label>Username</label>
-      <input id="psUname" placeholder="username"/>
-    </div>
-    <div style="margin-top:12px" class="flex">
-      <button id="saveProfileBtn" class="btn">Save profile</button>
-      <button id="skipProfileBtn" class="btn-ghost">Skip (you can edit later)</button>
-      <span id="psMsg" class="muted"></span>
-    </div>
-  </section>
-
-  <!-- DASHBOARD PAGE -->
-  <section id="dashView" class="hidden">
-    <!-- Stats -->
-    <div class="row row-3">
-      <div class="card">
-        <div class="muted">Available balance</div>
-        <div id="balNgn" class="money" style="font-size:22px">₦0</div>
-        <div class="muted">Withdraw to your bank after trades are paid.</div>
-      </div>
-
-      <div class="card">
-        <div class="muted">Referral link</div>
-        <div id="refLink" style="word-break:break-all"></div>
-        <div style="margin-top:8px" class="flex">
-          <button id="copyRef" class="btn-ghost" type="button">Copy</button>
-          <button id="shareRef" class="btn-ghost" type="button">Share</button>
-        </div>
-        <div class="muted">Earn ₦1000 when your friend completes their first paid trade.</div>
-      </div>
-
-      <div class="card">
-        <div class="muted">Processing time</div>
-        <div id="procTimes" class="flex"></div>
-        <div class="muted">Times set by admin per category.</div>
-      </div>
-    </div>
-
-    <!-- Rates -->
-    <div class="card">
-      <div class="header"><h3 style="margin:0">Today’s Rates</h3></div>
-      <div class="row row-3" style="margin-top:8px">
-        <div><div class="muted">USD → NGN</div><div id="rateUsd" class="money">—</div></div>
-        <div><div class="muted">Gift cards (base)</div><div id="rateGiftBase" class="money">—</div></div>
-        <div><div class="muted">Crypto</div><div id="rateCrypto" class="money">Uses USD→NGN</div></div>
-      </div>
-
-      <div class="divider" style="margin:10px 0; height:1px; background:var(--border)"></div>
-
-      <div class="row row-2">
-        <div>
-          <h4 style="margin:0 0 8px">Gift card rates</h4>
-          <div id="giftRates" class="row"></div>
-        </div>
-        <div>
-          <h4 style="margin:0 0 8px">Online wallet rates</h4>
-          <div id="walletRates" class="row"></div>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-outline-secondary" id="modeToggle" type="button">🌙 Dark</button>
+          <button class="btn btn-sm btn-outline-primary" id="chatBtn" type="button">💬 Chat Admin</button>
+          <a class="btn btn-sm btn-outline-danger d-none" id="logoutBtn" href="#" role="button">Logout</a>
         </div>
       </div>
     </div>
+  </nav>
 
-    <!-- Quick trade entry (gift by default) -->
-    <div class="card">
-      <div class="flex" style="align-items:center;gap:10px">
-        <label style="margin:0">I want to sell</label>
-        <select id="quickType" style="padding:8px;border-radius:8px">
-          <option value="gift">Gift Card</option>
-          <option value="crypto">Crypto</option>
-          <option value="wallet">Online wallet</option>
-        </select>
-        <div style="flex:1"></div>
-        <button id="openTradeBtn" class="btn-ghost">Open trade</button>
-      </div>
-    </div>
+  <!-- Main -->
+  <main class="container my-4">
 
-  </section>
-
-  <!-- WALLET PAGE -->
-  <section id="walletView" class="card hidden">
-    <h3 style="margin:0 0 8px">Crypto Wallets (Admin addresses)</h3>
-    <div class="row row-2">
-      <div>
-        <label>Crypto</label>
-        <select id="cryptoTypeView"><option value="BTC">BTC</option><option value="USDT">USDT</option></select>
-      </div>
-      <div>
-        <label>Network (USDT)</label>
-        <select id="usdtNetView"><option value="">—</option></select>
-      </div>
-    </div>
-
-    <div style="margin-top:10px" class="row row-2">
-      <div>
-        <label>Send to this address</label>
-        <input id="cryptoAddressView" disabled />
-        <div style="margin-top:8px" class="flex">
-          <button id="copyAddrView" class="btn-ghost">Copy address</button>
+    <!-- Gift Cards (FIRST thing they see) -->
+    <section class="card card-rounded mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">Sell Gift Cards</h4>
+          <span class="chip">Fast payout</span>
+        </div>
+        <hr>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Country</label>
+            <select class="form-select" id="giftCountry">
+              <option value="" selected disabled>Choose country</option>
+              <option>USA</option>
+              <option>UK</option>
+              <option>Canada</option>
+              <option>EU</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Brand</label>
+            <select class="form-select" id="giftBrand">
+              <option value="" selected disabled>Choose brand</option>
+              <option>Amazon</option>
+              <option>Apple</option>
+              <option>Google Play</option>
+              <option>Steam</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Face Value ($)</label>
+            <input type="number" class="form-control" id="giftAmount" placeholder="100" min="1">
+          </div>
+          <div class="col-12">
+            <button class="btn brand-btn" id="startGiftTrade">Start Trade</button>
+          </div>
         </div>
       </div>
-      <div>
-        <label>QR</label>
-        <div id="qrBoxView" class="qr center" style="padding:14px;background:#fff;border-radius:8px"></div>
+    </section>
+
+    <!-- Balance + collapsible History (HISTORY stays hidden until clicked) -->
+    <section class="card card-rounded mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+          <div>
+            <h5 class="mb-1">Available Balance (₦)</h5>
+            <div class="fs-4 fw-bold" id="balanceText">₦0</div>
+          </div>
+          <div>
+            <button class="btn btn-outline-secondary" id="toggleHistory">View History</button>
+            <a href="withdraw.html" class="btn btn-primary ms-2">Withdraw</a>
+          </div>
+        </div>
+        <div id="historyWrap" class="mt-3 d-none">
+          <hr>
+          <div id="historyEmpty" class="text-muted">No trades yet.</div>
+          <div id="historyList" class="list-group"></div>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- HISTORY PAGE -->
-  <section id="historyView" class="card hidden">
-    <h3 style="margin:0 0 8px">History</h3>
-    <div id="history" class="row"></div>
-  </section>
+    <!-- Quick links to other pages (Crypto & Online Wallet live on separate pages) -->
+    <section class="row g-3">
+      <div class="col-md-6">
+        <div class="card card-rounded h-100">
+          <div class="card-body d-flex flex-column">
+            <h5>Sell Bitcoin / USDT</h5>
+            <p class="text-muted mb-4">Send crypto and get paid in ₦ quickly.</p>
+            <a href="sell-crypto.html" class="btn btn-outline-dark mt-auto">Open Crypto Page</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card card-rounded h-100">
+          <div class="card-body d-flex flex-column">
+            <h5>Online Wallet Transfer</h5>
+            <p class="text-muted mb-4">Pay to the provided tag and confirm transfer.</p>
+            <a href="online-wallet.html" class="btn btn-outline-dark mt-auto">Open Wallet Page</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-  <!-- PROFILE PAGE -->
-  <section id="profileView" class="card hidden">
-    <h3 style="margin:0 0 8px">Profile</h3>
-    <div style="margin-top:8px">
-      <label>Full name</label>
-      <input id="pName" disabled />
-    </div>
-    <div style="margin-top:8px">
-      <label>Username</label>
-      <input id="pUsername" disabled />
-    </div>
-    <div style="margin-top:8px">
-      <label>Email</label>
-      <input id="pEmail" disabled />
-    </div>
-    <div style="margin-top:8px" class="flex">
-      <button id="editProfileBtn" class="btn">Edit</button>
-      <button id="changePwdBtn" class="btn-ghost">Change password</button>
-    </div>
-  </section>
+  <!-- Floating Chat FAB (also have navbar button) -->
+  <button id="chatFab" class="btn btn-lg brand-btn rounded-pill shadow">💬 Chat Admin</button>
 
-  <!-- PROFILE EDIT modal area (simple inline) -->
-  <section id="profileEdit" class="card hidden">
-    <h4 style="margin:0 0 8px">Edit profile</h4>
-    <div>
-      <label>Full name</label>
-      <input id="eName"/>
-    </div>
-    <div style="margin-top:8px">
-      <label>Username</label>
-      <input id="eUname"/>
-    </div>
-    <div style="margin-top:8px" class="flex">
-      <button id="saveEditBtn" class="btn">Save</button>
-      <button id="cancelEditBtn" class="btn-ghost">Cancel</button>
-      <span id="editMsg" class="muted"></span>
-    </div>
-  </section>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-</main>
-
-<!-- Firebase + App -->
-<script type="module">
-/* =========================
-   Firebase initialization
-   ========================= */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  sendPasswordResetEmail, signOut, updateProfile
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import {
-  getStorage, ref as sRef, uploadBytes, getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-
-/* ==== YOUR CONFIG (exactly as provided) ==== */
-const firebaseConfig = {
-  apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
-  authDomain: "toolspay-54167.firebaseapp.com",
-  projectId: "toolspay-54167",
-  storageBucket: "toolspay-54167.firebasestorage.app",
-  messagingSenderId: "71318117342",
-  appId: "1:71318117342:web:1952711453e19e19281b4f"
-};
-/* ========================================== */
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
-/* ----------------- Small helpers ----------------- */
-const $ = id => document.getElementById(id);
-const sleep = ms => new Promise(r=>setTimeout(r,ms));
-const currency = n => '₦' + (Number(n||0)).toLocaleString();
-
-/* UI refs */
-const splash = $('splash');
-const authView = $('authView');
-const authEmail = $('authEmail');
-const authPass = $('authPass');
-const authPass2 = $('authPass2');
-const nameInp = $('nameInp');
-const unameInp = $('unameInp');
-const signUpBtn = $('signUpBtn');
-const signInBtn = $('signInBtn');
-const forgotBtn = $('forgotBtn');
-const authMsg = $('authMsg');
-const authError = $('authError');
-
-const profileSetup = $('profileSetup');
-const psName = $('psName');
-const psUname = $('psUname');
-const saveProfileBtn = $('saveProfileBtn');
-const skipProfileBtn = $('skipProfileBtn');
-const psMsg = $('psMsg');
-
-const dashView = $('dashView');
-const walletView = $('walletView');
-const historyView = $('historyView');
-const profileView = $('profileView');
-const profileEdit = $('profileEdit');
-
-/* Nav */
-const navDash = $('navDash'), navProfile = $('navProfile'), navHistory = $('navHistory'), navWallet = $('navWallet');
-
-/* Dashboard pieces */
-const balNgn = $('balNgn');
-const refLinkEl = $('refLink');
-const copyRef = $('copyRef');
-const shareRef = $('shareRef');
-const procTimes = $('procTimes');
-const giftRatesBox = $('giftRates');
-const walletRatesBox = $('walletRates');
-const rateUsd = $('rateUsd'), rateGiftBase = $('rateGiftBase'), rateCrypto = $('rateCrypto');
-
-/* Quick trade */
-const quickType = $('quickType'), openTradeBtn = $('openTradeBtn');
-
-/* Wallet view */
-const cryptoTypeView = $('cryptoTypeView'), usdtNetView = $('usdtNetView'), cryptoAddressView = $('cryptoAddressView'), qrBoxView = $('qrBoxView'), copyAddrView = $('copyAddrView');
-
-/* History */
-const historyBox = $('history');
-
-/* Profile */
-const pName = $('pName'), pUsername = $('pUsername'), pEmail = $('pEmail'), editProfileBtn = $('editProfileBtn'), changePwdBtn = $('changePwdBtn');
-const eName = $('eName'), eUname = $('eUname'), saveEditBtn = $('saveEditBtn'), cancelEditBtn = $('cancelEditBtn'), editMsg = $('editMsg');
-
-/* Buttons */
-$('modeBtn').addEventListener('click', ()=>{
-  const cs = document.documentElement.style.colorScheme;
-  if(cs === 'dark') document.documentElement.style.colorScheme = 'light';
-  else document.documentElement.style.colorScheme = 'dark';
-});
-
-/* Chat open */
-function openTawk(){ try{ window.Tawk_API?.maximize(); }catch(e){} }
-$('openChatBtn').onclick = openTawk;
-
-/* Logout */
-$('logoutBtn').onclick = ()=> signOut(auth);
-
-/* Routing (very small hash routes) */
-function setActiveNav(route){
-  [navDash,navProfile,navHistory,navWallet].forEach(el=>el.classList.remove('active'));
-  if(route.startsWith('/profile')) navProfile.classList.add('active');
-  else if(route.startsWith('/history')) navHistory.classList.add('active');
-  else if(route.startsWith('/wallet')) navWallet.classList.add('active');
-  else navDash.classList.add('active');
-}
-function showPage(route){
-  // hide everything
-  [dashView, walletView, historyView, profileView, profileEdit, profileSetup].forEach(s=>s.classList.add('hidden'));
-  if(route.startsWith('/profile')) profileView.classList.remove('hidden');
-  else if(route.startsWith('/history')) historyView.classList.remove('hidden');
-  else if(route.startsWith('/wallet')) walletView.classList.remove('hidden');
-  else dashView.classList.remove('hidden');
-  setActiveNav(route);
-}
-function routeWatcher(){
-  const hash = location.hash || '#/dashboard';
-  const route = hash.slice(1);
-  showPage(route);
-}
-window.addEventListener('hashchange', routeWatcher);
-navDash.onclick = ()=>{ location.hash = '#/dashboard'; };
-navProfile.onclick = ()=>{ location.hash = '#/profile'; };
-navHistory.onclick = ()=>{ location.hash = '#/history'; };
-navWallet.onclick = ()=>{ location.hash = '#/wallet'; };
-routeWatcher();
-
-/* ------------------ Splash helpers ------------------ */
-function hideSplashFast(){
-  splash.classList.add('hidden');
-  setTimeout(()=>{ if(splash.parentNode) splash.style.display='none'; },350);
-}
-/* hard cap: if auth not responded in 2.5s show auth quickly */
-let authResponded = false;
-setTimeout(()=>{
-  if(!authResponded){
-    authView.classList.remove('hidden');
-    hideSplashFast();
-  }
-}, 2500);
-
-/* ------------------ State ------------------ */
-let currentUser = null;
-let usdToNgn = 0;
-let giftRates = {};
-let walletRateMap = {};
-let btcAddress = '';
-let usdtNetworks = [];
-let procTimeMap = {};
-
-/* ------------------ Utilities ------------------ */
-function isEmailValid(email){
-  return typeof email === 'string' && /\S+@\S+\.\S+/.test(email);
-}
-function showError(msg){
-  authError.textContent = msg || '';
-}
-function clearAuthMsg(){ authMsg.textContent=''; authError.textContent=''; }
-
-/* ------------------ QR renderer ------------------ */
-function renderQR(target, text){
-  target.innerHTML = '';
-  if(!text){ target.textContent = '—'; return; }
-  const img = new Image();
-  img.alt = 'QR';
-  img.style.maxWidth = '160px';
-  img.src = `https://chart.googleapis.com/chart?cht=qr&chs=200x200&chl=${encodeURIComponent(text)}`;
-  img.onerror = ()=>{ target.textContent = text; };
-  target.appendChild(img);
-}
-
-/* ------------------ Firestore public data loader ------------------ */
-async function loadPublicData(){
-  try{
-    const r = await getDoc(doc(db,'rates','default'));
-    if(r.exists()){
-      const d = r.data();
-      usdToNgn = Number(d.usdToNgn || 0);
-      rateUsd.textContent = currency(usdToNgn);
-      rateGiftBase.textContent = currency(Number(d.giftcardBase||0)) + ' / $';
-    } else { rateUsd.textContent='—'; rateGiftBase.textContent='—'; }
-  }catch(e){ console.warn('rates load', e); }
-
-  try{
-    const w = await getDoc(doc(db,'wallets','default'));
-    if(w.exists()){
-      const d = w.data();
-      btcAddress = d?.btc?.address || '';
-      usdtNetworks = d?.usdt?.networks || [];
-      usdtNetView.innerHTML = '<option value="">—</option>' + usdtNetworks.map(n=>`<option value="${n.network}">${n.network}</option>`).join('');
+  <!-- App logic -->
+  <script>
+    // Persist & apply color mode
+    const navbar = document.getElementById('mainNavbar');
+    const modeToggle = document.getElementById('modeToggle');
+    function applyMode(mode) {
+      const dark = mode === 'dark';
+      document.body.classList.toggle('bg-dark', dark);
+      document.body.classList.toggle('text-light', dark);
+      navbar.classList.toggle('navbar-dark', dark);
+      navbar.classList.toggle('bg-dark', dark);
+      navbar.classList.toggle('navbar-light', !dark);
+      navbar.classList.toggle('bg-light', !dark);
+      modeToggle.textContent = dark ? '☀️ Light' : '🌙 Dark';
+      localStorage.setItem('tp_mode', dark ? 'dark' : 'light');
     }
-  }catch(e){ console.warn('wallets load', e); }
-
-  try{
-    const a = await getDoc(doc(db,'announcements','default'));
-    procTimes.innerHTML = '';
-    if(a.exists()){
-      (a.data().items||[]).forEach(i=>{
-        const s = document.createElement('span'); s.className='chip'; s.textContent = i; procTimes.appendChild(s);
-      });
-    }
-  }catch(e){}
-
-  try{
-    const gr = await getDoc(doc(db,'giftcardRates','default'));
-    giftRates = gr.exists() ? (gr.data().brands||{}) : {};
-  }catch(e){ giftRates={}; }
-
-  try{
-    const wr = await getDoc(doc(db,'walletRates','default'));
-    walletRateMap = wr.exists() ? (wr.data().types||{}) : {};
-  }catch(e){ walletRateMap={}; }
-
-  renderRateBoxes();
-}
-
-/* render rates */
-function renderRateBoxes(){
-  giftRatesBox.innerHTML = '';
-  Object.entries(giftRates).forEach(([brand,obj])=>{
-    const div = document.createElement('div'); div.className='chip';
-    const countries = obj?.countries||{};
-    const pieces = Object.entries(countries).slice(0,5).map(([cc,rate])=>`${cc}: ₦${rate}/$`);
-    div.textContent = `${brand} — ${pieces.join(' • ')}${Object.keys(countries).length>5?' …':''}`;
-    giftRatesBox.appendChild(div);
-  });
-  if(!Object.keys(giftRates).length) giftRatesBox.textContent = 'No gift rates yet.';
-
-  walletRatesBox.innerHTML = '';
-  Object.entries(walletRateMap).forEach(([type,obj])=>{
-    const div = document.createElement('div'); div.className='chip';
-    const countries = obj?.countries||{};
-    const pieces = Object.entries(countries).slice(0,5).map(([cc,rate])=>`${cc}: ₦${rate}/$`);
-    div.textContent = `${type} — ${pieces.join(' • ')}${Object.keys(countries).length>5?' …':''}`;
-    walletRatesBox.appendChild(div);
-  });
-  if(!Object.keys(walletRateMap).length) walletRatesBox.textContent = 'No wallet rates yet.';
-}
-
-/* ------------------ Signup / Signin flows ------------------ */
-signUpBtn.onclick = async ()=>{
-  clearAuthMsg();
-  const name = (nameInp.value||'').trim();
-  const uname = (unameInp.value||'').trim();
-  const email = (authEmail.value||'').trim();
-  const pass = authPass.value || '';
-  const pass2 = authPass2.value || '';
-  if(!name || !uname || !email || !pass || !pass2){ showError('Please fill all fields.'); return; }
-  if(pass !== pass2){ showError('Passwords do not match.'); return; }
-  if(!isEmailValid(email)){ showError('Please enter a valid email.'); return; }
-  if(uname.includes(' ')){ showError('Username cannot contain spaces.'); return; }
-  authMsg.textContent = 'Creating account...';
-  try{
-    // create account
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    // create user doc with profileIncomplete flag
-    await setDoc(doc(db,'users',cred.user.uid), {
-      email: cred.user.email,
-      createdAt: serverTimestamp(),
-      balance: 0,
-      bank: { bankName:'', acctName:'', acctNo:'' },
-      displayName: name,
-      username: uname,
-      profileComplete: true // we already collected name & username at signup
-    }, { merge:true });
-    authMsg.textContent = 'Account created. Signed in.';
-    // auth state change will carry on
-  }catch(e){
-    console.error(e);
-    showError(e?.message || e?.code || 'Signup error');
-    authMsg.textContent = '';
-  }
-};
-
-signInBtn.onclick = async ()=>{
-  clearAuthMsg();
-  const email = (authEmail.value||'').trim();
-  const pass = authPass.value || '';
-  if(!email || !pass){ showError('Enter email and password.'); return; }
-  authMsg.textContent = 'Signing in...';
-  try{
-    await signInWithEmailAndPassword(auth, email, pass);
-    authMsg.textContent = '';
-  }catch(e){
-    console.error(e);
-    showError(e?.message || e?.code || 'Sign in failed');
-    authMsg.textContent = '';
-  }
-};
-
-forgotBtn.onclick = async ()=>{
-  clearAuthMsg();
-  const email = (authEmail.value||'').trim();
-  if(!isEmailValid(email)){ showError('Enter a valid email to reset.'); return; }
-  try{
-    await sendPasswordResetEmail(auth, email);
-    authMsg.textContent = 'Reset email sent.';
-  }catch(e){
-    showError(e?.message || e?.code || 'Reset failed');
-  }
-};
-
-/* ------------------ Profile setup after signup (if needed) ------------------ */
-skipProfileBtn.onclick = async ()=>{
-  psMsg.textContent = 'Skipped.';
-  profileSetup.classList.add('hidden');
-  authMsg.textContent = 'You can edit profile later in Profile page.';
-};
-saveProfileBtn.onclick = async ()=>{
-  const name = (psName.value||'').trim();
-  const uname = (psUname.value||'').trim();
-  if(!name || !uname){ psMsg.textContent = 'Fill name and username.'; return; }
-  psMsg.textContent = 'Saving...';
-  try{
-    await updateDoc(doc(db,'users', currentUser.uid), { displayName: name, username: uname, profileComplete:true });
-    psMsg.textContent = 'Saved ✓';
-    profileSetup.classList.add('hidden');
-    authMsg.textContent = '';
-    routeWatcher();
-  }catch(e){
-    psMsg.textContent = e?.message || 'Save failed';
-  }
-};
-
-/* ------------------ Watch user data / history / withdrawals ------------------ */
-function watchUserData(uid){
-  // user doc
-  onSnapshot(doc(db,'users',uid),(snap)=>{
-    const d = snap.data()||{};
-    balNgn.textContent = currency(Number(d.balance||0));
-    refLinkEl.textContent = `${location.origin}${location.pathname}?ref=${uid}`;
-    pName.value = d.displayName || '';
-    pUsername.value = d.username || '';
-    pEmail.value = d.email || (auth.currentUser?.email || '');
-  });
-
-  // trades history
-  const q1 = query(collection(db,'trades'), where('uid','==', uid), orderBy('createdAt','desc'));
-  onSnapshot(q1, qs=>{
-    historyBox.innerHTML = '';
-    qs.forEach(docu=>{
-      const t = docu.data();
-      const item = document.createElement('div'); item.className='card';
-      item.innerHTML = `<div style="display:flex;justify-content:space-between;gap:8px"><div><strong>${(t.type||'').toUpperCase()}</strong><div class="muted">${t.brand||t.walletType||''} ${t.country||''}</div></div><div><span class="chip">${t.status||'pending'}</span></div></div>
-        <div style="margin-top:8px" class="muted">${JSON.stringify({ amountUsd:t.amountUsd, amountCrypto:t.amountCrypto, est: t.estimatedNgn })}</div>`;
-      historyBox.appendChild(item);
+    applyMode(localStorage.getItem('tp_mode') || 'light');
+    modeToggle.addEventListener('click', () => {
+      const next = (localStorage.getItem('tp_mode') || 'light') === 'light' ? 'dark' : 'light';
+      applyMode(next);
     });
-  });
 
-  // withdrawals
-  const q2 = query(collection(db,'withdrawals'), where('uid','==', uid), orderBy('createdAt','desc'));
-  onSnapshot(q2, qs=>{
-    if(!qs.empty){
-      const title = document.createElement('div'); title.innerHTML = '<div class="divider" style="height:1px;background:var(--border);margin:8px 0"></div><h4>Your withdrawals</h4>';
-      historyBox.appendChild(title);
-      qs.forEach(docu=>{
-        const w = docu.data();
-        const item = document.createElement('div'); item.className='card';
-        item.innerHTML = `<div style="display:flex;justify-content:space-between"><div><strong>WITHDRAW</strong></div><div class="chip">${w.status||'pending'}</div></div><div style="margin-top:8px">${currency(w.amount)}</div>`;
-        historyBox.appendChild(item);
-      });
+    // Chat handlers (navbar + floating)
+    function openChat() {
+      try { window.Tawk_API && window.Tawk_API.maximize && window.Tawk_API.maximize(); } catch(e) {}
     }
-  });
-}
+    document.getElementById('chatBtn').addEventListener('click', openChat);
+    document.getElementById('chatFab').addEventListener('click', openChat);
 
-/* ------------------ Crypto address view logic ------------------ */
-function refreshWalletView(){
-  if(cryptoTypeView.value === 'BTC'){
-    cryptoAddressView.value = btcAddress || '';
-    renderQR(qrBoxView, btcAddress || '');
-    usdtNetView.value = '';
-    usdtNetView.disabled = true;
-  } else {
-    usdtNetView.disabled = false;
-    const sel = usdtNetworks.find(n=>n.network===usdtNetView.value) || usdtNetworks[0];
-    const addr = sel?.address || '';
-    cryptoAddressView.value = addr;
-    renderQR(qrBoxView, addr);
-  }
-}
-cryptoTypeView.onchange = refreshWalletView;
-usdtNetView.onchange = refreshWalletView;
-copyAddrView.onclick = async ()=> {
-  if(!cryptoAddressView.value) return;
-  try{ await navigator.clipboard.writeText(cryptoAddressView.value); copyAddrView.textContent='Copied ✓'; setTimeout(()=>copyAddrView.textContent='Copy address',900);}catch(e){}
-};
+    // Auth guard + UI state
+    const profileNav = document.getElementById('profileNav');
+    const logoutBtn = document.getElementById('logoutBtn');
 
-/* copy/ref share */
-copyRef.onclick = async ()=>{ try{ await navigator.clipboard.writeText(refLinkEl.textContent); copyRef.textContent='Copied ✓'; setTimeout(()=>copyRef.textContent='Copy',900);}catch(e){} };
-shareRef.onclick = async ()=>{ try{ if(navigator.share) await navigator.share({ title:'Toolspay', text:'Trade on Toolspay', url:refLinkEl.textContent }); else await navigator.clipboard.writeText(refLinkEl.textContent); }catch(e){} };
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        // Not logged in → go to signup page
+        window.location.href = 'signup.html';
+        return;
+      }
+      // Logged in → show profile + logout
+      profileNav.classList.remove('d-none');
+      logoutBtn.classList.remove('d-none');
 
-/* ------------------ Auth state watcher ------------------ */
-onAuthStateChanged(auth, async (user)=>{
-  authResponded = true;
-  if(!user){
-    // show auth
-    currentUser = null;
-    authView.classList.remove('hidden');
-    dashView.classList.add('hidden');
-    profileSetup.classList.add('hidden');
-    profileView.classList.add('hidden');
-    hideSplashFast();
-    return;
-  }
-  currentUser = user;
-  // Ensure user doc exists and check profileComplete
-  try{
-    const uref = doc(db,'users', user.uid);
-    const udoc = await getDoc(uref);
-    if(!udoc.exists()){
-      await setDoc(uref, { email: user.email, createdAt: serverTimestamp(), balance: 0, bank:{}, profileComplete:false }, { merge:true });
-    }
-    const udata = (udoc.exists() ? udoc.data() : {});
-    // load controls
-    await loadPublicData();
-    watchUserData(user.uid);
-    // show proper view
-    authView.classList.add('hidden');
-    // if profile incomplete -> show profile setup
-    if(!udata.profileComplete){
-      profileSetup.classList.remove('hidden');
-      psName.value = udata.displayName || nameInp.value || '';
-      psUname.value = udata.username || unameInp.value || '';
-      hideSplashFast();
-      return;
-    }
-    // else show dashboard
-    profileSetup.classList.add('hidden');
-    profileView.classList.remove('hidden'); // but route will show dashboard
-    routeWatcher();
-    hideSplashFast();
-    // populate wallet view data
-    refreshWalletView();
-  }catch(e){
-    console.error('auth onChange', e);
-    // fallback to auth
-    authView.classList.remove('hidden');
-    hideSplashFast();
-  }
-});
+      // Load minimal user doc (balance) if exists
+      try {
+        const uref = db.collection('users').doc(user.uid);
+        const snap = await uref.get();
+        if (!snap.exists) {
+          // Create the doc once (no email verification required per your request)
+          await uref.set({
+            email: user.email || '',
+            balance: 0,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            bank: { bankName:'', acctName:'', acctNo:'' },
+            firstTradePaid: false
+          }, { merge: true });
+        } else {
+          const d = snap.data() || {};
+          document.getElementById('balanceText').textContent = '₦' + Number(d.balance || 0).toLocaleString();
+        }
 
-/* ------------------ Profile edit flows ------------------ */
-editProfileBtn.onclick = ()=>{
-  profileEdit.classList.remove('hidden');
-  profileView.classList.add('hidden');
-  eName.value = pName.value; eUname.value = pUsername.value;
-};
-cancelEditBtn.onclick = ()=>{
-  profileEdit.classList.add('hidden');
-  profileView.classList.remove('hidden');
-};
-saveEditBtn.onclick = async ()=>{
-  editMsg.textContent = 'Saving...';
-  try{
-    await updateDoc(doc(db,'users', currentUser.uid), { displayName: eName.value.trim(), username: eUname.value.trim() });
-    editMsg.textContent = 'Saved ✓';
-    setTimeout(()=>{ editMsg.textContent=''; profileEdit.classList.add('hidden'); profileView.classList.remove('hidden'); },900);
-  }catch(e){ editMsg.textContent = e?.message || 'Save failed'; }
-};
+        // Load history (latest 10)
+        const q = await db.collection('trades')
+          .where('uid', '==', user.uid)
+          .orderBy('createdAt', 'desc')
+          .limit(10)
+          .get();
 
-/* ------------------ small extras ------------------ */
-openTradeBtn.onclick = ()=>{
-  const t = quickType.value;
-  if(t === 'gift') location.hash = '#/dashboard'; // user will see rates, can click Sell
-  else if(t === 'crypto') location.hash = '#/wallet';
-  else location.hash = '#/wallet';
-};
+        const list = document.getElementById('historyList');
+        const empty = document.getElementById('historyEmpty');
+        list.innerHTML = '';
+        if (q.empty) {
+          empty.classList.remove('d-none');
+        } else {
+          empty.classList.add('d-none');
+          q.forEach(docu => {
+            const t = docu.data();
+            const li = document.createElement('a');
+            li.className = 'list-group-item list-group-item-action';
+            li.innerHTML = `
+              <div class="d-flex w-100 justify-content-between">
+                <strong>${(t.type || 'gift').toUpperCase()}</strong>
+                <small class="text-muted">${t.status || 'pending'}</small>
+              </div>
+              <div class="small text-muted">
+                ${t.brand ? 'Brand: ' + t.brand + ' • ' : ''}
+                ${t.country ? 'Country: ' + t.country + ' • ' : ''}
+                ${t.walletType ? 'Wallet: ' + t.walletType + ' • ' : ''}
+                ${t.network ? 'Net: ' + t.network + ' • ' : ''}
+                ${t.amountUsd ? 'USD: $' + t.amountUsd + ' • ' : ''}
+                ${t.amountCrypto ? 'Crypto: ' + t.amountCrypto + ' • ' : ''}
+                ${t.estimatedNgn ? 'Est: ₦' + Number(t.estimatedNgn).toLocaleString() : ''}
+              </div>
+            `;
+            list.appendChild(li);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
 
-/* Ensure nav shows page on load */
-routeWatcher();
+    // Logout
+    logoutBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try { await auth.signOut(); } catch(e) {}
+      window.location.href = 'signup.html';
+    });
 
-</script>
+    // Toggle history (hidden by default)
+    document.getElementById('toggleHistory').addEventListener('click', () => {
+      document.getElementById('historyWrap').classList.toggle('d-none');
+    });
 
+    // Start gift trade → go to trades page with prefilled query (keeps dashboard tidy)
+    document.getElementById('startGiftTrade').addEventListener('click', () => {
+      const c = document.getElementById('giftCountry').value || '';
+      const b = document.getElementById('giftBrand').value || '';
+      const a = document.getElementById('giftAmount').value || '';
+      if (!c || !b || !a) {
+        alert('Please choose country, brand and amount.');
+        return;
+      }
+      const url = new URL('trades.html', window.location.href);
+      url.searchParams.set('type', 'gift');
+      url.searchParams.set('country', c);
+      url.searchParams.set('brand', b);
+      url.searchParams.set('amount', a);
+      window.location.href = url.toString();
+    });
+  </script>
+
+  <!-- Paste your Tawk widget *below*. Keep it last for speed. 
+  Example:
+  <script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+      s1.async=true;s1.src='https://embed.tawk.to/XXXXXXXX/default';
+      s1.charset='UTF-8';s1.setAttribute('crossorigin','*');
+      s0.parentNode.insertBefore(s1,s0);
+    })();
+  </script>
+  -->
 </body>
-  </html>
+</html>

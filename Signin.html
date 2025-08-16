@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolsPay - Sign In</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f9f9f9;
+      transition: background 0.3s, color 0.3s;
+    }
+    .dark-mode {
+      background: #121212;
+      color: white;
+    }
+    .container {
+      width: 90%;
+      max-width: 400px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+      background: white;
+    }
+    .dark-mode .container {
+      background: #1e1e1e;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .links {
+      text-align: center;
+      margin-top: 12px;
+    }
+    .links a {
+      color: #007bff;
+      text-decoration: none;
+      margin: 0 5px;
+    }
+    .toggle-btn {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Sign In</h2>
+    <input type="email" id="email" placeholder="Enter Email">
+    <input type="password" id="password" placeholder="Enter Password">
+    <button onclick="login()">Sign In</button>
+    <div class="links">
+      <a href="signup.html">Create Account</a> | 
+      <a href="reset.html">Forgot Password?</a>
+    </div>
+    <div class="toggle-btn">
+      <button type="button" onclick="toggleMode()">🌙 / ☀️</button>
+    </div>
+  </div>
+
+  <!-- Firebase + Auth -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
+      authDomain: "toolspay-54167.firebaseapp.com",
+      projectId: "toolspay-54167",
+      storageBucket: "toolspay-54167.appspot.com",
+      messagingSenderId: "71318117342",
+      appId: "1:71318117342:web:1952711453e19e19281b4f"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.getAuth(app);
+
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      firebase.signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          alert("Login Successful!");
+          window.location.href = "dashboard.html";
+        })
+        .catch((error) => {
+          alert("Error: " + error.message);
+        });
+    }
+
+    function toggleMode() {
+      document.body.classList.toggle("dark-mode");
+    }
+  </script>
+</body>
+</html>

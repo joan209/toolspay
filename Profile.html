@@ -1,123 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Customer Profile - Toolspay</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToolsPay - Profile</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f8f9fa;
       margin: 0;
-      padding: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f9f9f9;
+      transition: background 0.3s, color 0.3s;
+    }
+    .dark-mode {
+      background: #121212;
+      color: white;
     }
     .container {
-      max-width: 500px;
-      margin: 50px auto;
-      background: white;
+      width: 90%;
+      max-width: 450px;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+      background: white;
+    }
+    .dark-mode .container {
+      background: #1e1e1e;
     }
     h2 {
       text-align: center;
       margin-bottom: 20px;
     }
-    label {
-      font-weight: bold;
-      margin-top: 10px;
-      display: block;
-    }
-    input, select {
+    input {
       width: 100%;
       padding: 10px;
-      margin-top: 5px;
+      margin: 8px 0;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 8px;
+      font-size: 16px;
     }
     button {
-      margin-top: 20px;
       width: 100%;
-      padding: 10px;
+      padding: 12px;
+      border: none;
       background: #007bff;
       color: white;
-      border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
     }
     button:hover {
       background: #0056b3;
-      cursor: pointer;
     }
-    .qr-section {
-      text-align: center;
-      margin-top: 20px;
-    }
-    img.qr {
-      max-width: 200px;
-      margin-top: 10px;
+    .toggle-btn {
+      margin-top: 15px;
+      display: flex;
+      justify-content: center;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Complete Your Profile</h2>
-    <form id="profileForm">
-      <label for="fullName">Full Name</label>
-      <input type="text" id="fullName" name="fullName" required />
-
-      <label for="username">Username</label>
-      <input type="text" id="username" name="username" required />
-
-      <label for="country">Country</label>
-      <select id="country" name="country" required>
-        <option value="">Select Country</option>
-        <option value="Nigeria">Nigeria</option>
-        <option value="USA">USA</option>
-        <option value="UK">UK</option>
-      </select>
-
-      <div class="qr-section">
-        <h3>Your Wallet QR Code</h3>
-        <img src="crypto-qr.png" alt="Crypto QR Code" class="qr" />
-        <p>Scan to send funds. Admin can update this QR anytime.</p>
-      </div>
-
-      <button type="submit">Save Profile</button>
-    </form>
+    <h2>Your Profile</h2>
+    <input type="text" id="fullname" placeholder="Full Name">
+    <input type="text" id="username" placeholder="Username">
+    <input type="email" id="email" placeholder="Email" disabled>
+    <button onclick="updateProfile()">Update Profile</button>
+    <button onclick="logout()">Logout</button>
+    <div class="toggle-btn">
+      <button type="button" onclick="toggleMode()">🌙 / ☀️</button>
+    </div>
   </div>
 
-  <script type="module">
-    import { auth, db } from './firebase-auth.js';
-    import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
+      authDomain: "toolspay-54167.firebaseapp.com",
+      projectId: "toolspay-54167",
+      storageBucket: "toolspay-54167.appspot.com",
+      messagingSenderId: "71318117342",
+      appId: "1:71318117342:web:1952711453e19e19281b4f"
+    };
 
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "login.html";
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.getAuth(app);
+    const db = firebase.getFirestore(app);
+
+    // Load user profile
+    firebase.onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const docRef = firebase.doc(db, "users", user.uid);
+        const docSnap = await firebase.getDoc(docRef);
+        if (docSnap.exists()) {
+          document.getElementById("fullname").value = docSnap.data().fullname || "";
+          document.getElementById("username").value = docSnap.data().username || "";
+          document.getElementById("email").value = docSnap.data().email || "";
+        }
+      } else {
+        window.location.href = "signin.html";
       }
     });
 
-    document.getElementById('profileForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const fullName = document.getElementById('fullName').value.trim();
-      const username = document.getElementById('username').value.trim();
-      const country = document.getElementById('country').value;
-
+    // Update profile
+    async function updateProfile() {
       const user = auth.currentUser;
       if (user) {
-        await setDoc(doc(db, "users", user.uid), {
-          fullName,
-          username,
-          country,
-          email: user.email
+        await firebase.updateDoc(firebase.doc(db, "users", user.uid), {
+          fullname: document.getElementById("fullname").value,
+          username: document.getElementById("username").value
         });
-        alert('Profile saved successfully!');
-        window.location.href = "customer-dashboard.html";
+        alert("Profile updated!");
       }
-    });
+    }
+
+    // Logout
+    function logout() {
+      firebase.signOut(auth).then(() => {
+        window.location.href = "signin.html";
+      });
+    }
+
+    function toggleMode() {
+      document.body.classList.toggle("dark-mode");
+    }
   </script>
 </body>
 </html>

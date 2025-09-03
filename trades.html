@@ -3,90 +3,102 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trades - Toolspay</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body.dark-mode {
-      background-color: #121212;
-      color: white;
-    }
-    .navbar {
-      margin-bottom: 20px;
-    }
-  </style>
+  <title>Gift Card Trade - ToolsPay</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="firebase-auth.js" defer></script>
+  <script src="trades.js" defer></script>
 </head>
-<body>
+<body class="light">
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-light bg-light" id="navbar">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="dashboard.html">Toolspay</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="trades.html">Trades</a></li>
-          <li class="nav-item"><a class="nav-link" href="wallet.html">Wallet</a></li>
-          <li class="nav-item"><a class="nav-link" href="profile.html" id="profileLink" style="display:none;">Profile</a></li>
-          <li class="nav-item"><a class="nav-link" href="signin.html" id="signinLink">Sign In</a></li>
-          <li class="nav-item"><button class="btn btn-outline-secondary ms-2" onclick="toggleMode()">🌙</button></li>
-        </ul>
-      </div>
-    </div>
+  <nav class="navbar">
+    <div class="logo">TP</div>
+    <ul class="nav-links">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="wallet.html">Wallets</a></li>
+      <li><a href="trades.html" class="active">Gift Cards</a></li>
+      <li><a href="profile.html">Profile</a></li>
+      <li><button id="toggleMode">🌙</button></li>
+      <li><button id="logoutBtn">Logout</button></li>
+    </ul>
   </nav>
 
-  <!-- Trades Section -->
-  <div class="container">
-    <h2 class="mb-4">Trades</h2>
-    <p>Choose what you want to trade instantly.</p>
+  <!-- Gift Card Trade Section -->
+  <section class="container">
+    <h2>Sell Gift Cards</h2>
+    <p>Select your gift card type, enter the card value, and upload pictures.</p>
 
-    <!-- Gift Card Trading -->
-    <div class="card p-3 mb-4">
-      <h4>Gift Card Trading</h4>
-      <form>
-        <div class="mb-3">
-          <label for="giftCardType" class="form-label">Select Gift Card</label>
-          <select class="form-select" id="giftCardType">
-            <option value="amazon">Amazon</option>
-            <option value="itunes">iTunes</option>
-            <option value="google">Google Play</option>
-            <option value="steam">Steam</option>
-          </select>
-        </div>
-        <div class="mb-3">
-          <label for="giftCardAmount" class="form-label">Amount</label>
-          <input type="number" class="form-control" id="giftCardAmount" placeholder="Enter amount">
-        </div>
-        <button type="submit" class="btn btn-primary">Trade Gift Card</button>
-      </form>
-    </div>
+    <form id="tradeForm">
+      <label for="cardType">Gift Card Type:</label>
+      <select id="cardType" required>
+        <option value="">-- Select Card --</option>
+        <option value="amazon">Amazon (₦740/$)</option>
+        <option value="apple">Apple (₦730/$)</option>
+        <option value="google">Google Play (₦720/$)</option>
+        <option value="steam">Steam (₦710/$)</option>
+      </select>
 
-    <!-- Sell Bitcoin -->
-    <div class="card p-3">
-      <h4>Sell Bitcoin</h4>
-      <form>
-        <div class="mb-3">
-          <label for="btcAmount" class="form-label">Amount (BTC)</label>
-          <input type="number" step="0.0001" class="form-control" id="btcAmount" placeholder="Enter BTC amount">
-        </div>
-        <button type="submit" class="btn btn-danger">Sell BTC</button>
-      </form>
-    </div>
-  </div>
+      <label for="amount">Card Value (USD):</label>
+      <input type="number" id="amount" placeholder="Enter value in USD" required>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+      <p id="payout"></p>
+
+      <label for="uploads">Upload Card & Receipt (multiple allowed):</label>
+      <input type="file" id="uploads" accept="image/*" multiple required>
+
+      <button type="submit">Submit Trade</button>
+    </form>
+
+    <button class="chatBtn" onclick="openChat()">💬 Live Chat Admin</button>
+  </section>
+
   <script>
-    function toggleMode() {
-      document.body.classList.toggle("dark-mode");
+    // Rates for cards
+    const cardRates = {
+      amazon: 740,
+      apple: 730,
+      google: 720,
+      steam: 710
+    };
+
+    const cardType = document.getElementById("cardType");
+    const amountInput = document.getElementById("amount");
+    const payoutDisplay = document.getElementById("payout");
+
+    // Calculate payout
+    amountInput.addEventListener("input", updatePayout);
+    cardType.addEventListener("change", updatePayout);
+
+    function updatePayout() {
+      const type = cardType.value;
+      const amount = amountInput.value;
+      if (type && amount) {
+        const payout = amount * cardRates[type];
+        payoutDisplay.textContent = `Expected Payout: ₦${payout.toLocaleString()}`;
+      } else {
+        payoutDisplay.textContent = "";
+      }
     }
 
-    // Simulated auth check
-    const isLoggedIn = true; // replace with Firebase auth check
-    if (isLoggedIn) {
-      document.getElementById("profileLink").style.display = "block";
-      document.getElementById("signinLink").style.display = "none";
+    // Handle trade submit
+    document.getElementById("tradeForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      alert("Trade submitted! Admin will review your card.");
+      // Later: push data & images to Firebase Storage + Firestore
+    });
+
+    // Live chat placeholder
+    function openChat() {
+      alert("Connecting to admin chat...");
     }
+
+    // Dark/Light Mode
+    const toggleBtn = document.getElementById("toggleMode");
+    toggleBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      document.body.classList.toggle("light");
+      toggleBtn.textContent =
+        document.body.classList.contains("dark") ? "☀️" : "🌙";
+    });
   </script>
 </body>
 </html>

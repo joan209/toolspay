@@ -2,195 +2,84 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Customer Dashboard - ToolsPay</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f4f4f4;
-      color: #333;
-    }
-    header {
-      background: #222;
-      color: #fff;
-      padding: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    header h1 { font-size: 20px; }
-    nav a {
-      margin: 0 10px;
-      color: white;
-      text-decoration: none;
-    }
-    nav a:hover { text-decoration: underline; }
-    .toggle-btn {
-      cursor: pointer;
-      background: #444;
-      color: #fff;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 5px;
-    }
-    main { padding: 20px; }
-    .tab {
-      display: none;
-    }
-    .tab.active {
-      display: block;
-    }
-    .balance-box {
-      background: #fff;
-      padding: 15px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    input, select, button {
-      margin: 5px 0;
-      padding: 10px;
-      width: 100%;
-      max-width: 400px;
-    }
-    .dark-mode {
-      background: #111;
-      color: #eee;
-    }
-    .dark-mode header {
-      background: #000;
-    }
-    .dark-mode .balance-box {
-      background: #222;
-      color: #fff;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js"></script>
 </head>
-<body>
-  <header>
-    <h1>ToolsPay Dashboard</h1>
-    <nav>
-      <a href="#" onclick="showTab('giftcards')">Gift Cards</a>
-      <a href="#" onclick="showTab('crypto')">Crypto</a>
-      <a href="#" onclick="showTab('wallets')">Wallets</a>
-      <a href="#" onclick="showTab('history')">History</a>
-      <a href="profile.html">Profile</a>
-      <a href="#" onclick="logout()">Logout</a>
-    </nav>
-    <button class="toggle-btn" onclick="toggleDarkMode()">🌙</button>
-  </header>
+<body class="light">
+  <!-- Navbar -->
+  <nav>
+    <div class="logo">ToolsPay</div>
+    <ul id="nav-links">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="trades.html">Gift Cards</a></li>
+      <li><a href="crypto.html">Crypto</a></li>
+      <li><a href="wallet.html">Wallets</a></li>
+      <li id="profile-link" style="display:none;"><a href="profile.html">Profile</a></li>
+      <li><button id="darkToggle">🌙 / ☀️</button></li>
+      <li><button id="logoutBtn">Logout</button></li>
+    </ul>
+  </nav>
 
+  <!-- Dashboard Content -->
   <main>
-    <div class="balance-box">
-      <h2>Available Balance: ₦0</h2>
-      <button onclick="requestWithdraw()">Withdraw</button>
-    </div>
+    <section class="balance-section">
+      <h2>Available Balance</h2>
+      <p id="user-balance">₦0.00</p>
+      <button id="withdrawBtn">Withdraw</button>
+    </section>
 
-    <!-- Gift Cards -->
-    <div id="giftcards" class="tab active">
-      <h2>Sell Gift Cards</h2>
-      <label>Select Gift Card:</label>
-      <select id="giftCardType">
-        <option>Amazon</option>
-        <option>iTunes</option>
-        <option>Google Play</option>
-        <option>Steam</option>
-      </select>
-      <label>Enter Face Value (₦):</label>
-      <input type="number" id="giftValue"/>
-      <p id="giftRate">Rate: ₦740/$</p>
-      <p id="giftPayout">You Get: ₦0</p>
-      <label>Upload Card Images:</label>
-      <input type="file" id="giftImages" multiple />
-      <button>Submit Trade</button>
-    </div>
+    <section class="trade-options">
+      <h2>Choose what to Trade</h2>
+      <div class="card-grid">
+        <a href="trades.html" class="card">Gift Cards</a>
+        <a href="crypto.html" class="card">Sell Crypto (BTC/USDT)</a>
+        <a href="wallet.html" class="card">Digital Wallets</a>
+      </div>
+    </section>
 
-    <!-- Crypto -->
-    <div id="crypto" class="tab">
-      <h2>Sell Crypto</h2>
-      <label>Select Crypto:</label>
-      <select id="cryptoType">
-        <option>BTC</option>
-        <option>USDT</option>
-      </select>
-      <p>Send to this Wallet:</p>
-      <p id="cryptoWallet">bc1qexampleBTCaddress</p>
-      <img src="btc-qrcode.png" alt="QR Code" width="150"/>
-    </div>
+    <section class="history-section">
+      <h2>Transaction History</h2>
+      <div id="history-list">No history yet.</div>
+    </section>
 
-    <!-- Wallets -->
-    <div id="wallets" class="tab">
-      <h2>Sell Online Wallets</h2>
-      <select>
-        <option>PayPal</option>
-        <option>Zelle</option>
-        <option>Venmo</option>
-        <option>Chime</option>
-      </select>
-      <p>Rate: ₦700/$</p>
-      <input type="number" placeholder="Enter Amount"/>
-      <button>Start Chat with Admin</button>
-    </div>
-
-    <!-- History -->
-    <div id="history" class="tab">
-      <h2>Trade History</h2>
-      <p>No trades yet.</p>
+    <!-- Live Chat -->
+    <div class="chat-support">
+      <button id="chatBtn">💬 Chat with Admin</button>
     </div>
   </main>
 
-  <script type="module">
-    // Firebase config
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+  <script type="module" src="firebase-auth.js"></script>
+  <script>
+    // Dark/Light mode toggle
+    const darkToggle = document.getElementById("darkToggle");
+    const body = document.body;
+    darkToggle.addEventListener("click", () => {
+      body.classList.toggle("dark");
+      body.classList.toggle("light");
+    });
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
-      authDomain: "toolspay-54167.firebaseapp.com",
-      projectId: "toolspay-54167",
-      storageBucket: "toolspay-54167.appspot.com",
-      messagingSenderId: "71318117342",
-      appId: "1:71318117342:web:1952711453e19e19281b4f"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
+    // Show profile only after login
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById("profile-link").style.display = "inline-block";
+      } else {
         window.location.href = "signin.html";
       }
     });
 
-    function logout() {
-      signOut(auth).then(() => {
-        window.location.href = "signin.html";
-      });
-    }
-
-    // Dark mode
-    function toggleDarkMode() {
-      document.body.classList.toggle("dark-mode");
-    }
-
-    // Tabs
-    function showTab(tabId) {
-      document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
-      document.getElementById(tabId).classList.add("active");
-    }
-
-    // Gift card payout calc
-    document.getElementById("giftValue").addEventListener("input", function() {
-      const value = parseFloat(this.value) || 0;
-      const rate = 740;
-      document.getElementById("giftPayout").innerText = "You Get: ₦" + (value * rate);
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      firebase.auth().signOut();
     });
 
-    function requestWithdraw() {
-      alert("Withdraw request sent to Admin.");
-    }
+    // Chat button
+    document.getElementById("chatBtn").addEventListener("click", () => {
+      alert("Chat with admin will open here (to be connected).");
+    });
   </script>
 </body>
 </html>

@@ -1,92 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - Toolspay</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - ToolsPay</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+  
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
+      authDomain: "toolspay-54167.firebaseapp.com",
+      projectId: "toolspay-54167",
+      storageBucket: "toolspay-54167.firebasestorage.app",
+      messagingSenderId: "71318117342",
+      appId: "1:71318117342:web:1952711453e19e19281b4f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
 </head>
-<body class="bg-light">
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">Toolspay Admin</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="admin-dashboard.html">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link" href="admin-users.html">Users</a></li>
-          <li class="nav-item"><a class="nav-link" href="admin-trades.html">Trades</a></li>
-          <li class="nav-item"><a class="nav-link" href="admin-wallet.html">Wallet</a></li>
-          <li class="nav-item"><a class="nav-link" href="index.html">Logout</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Main Content -->
-  <div class="container mt-4">
-    <h2 class="mb-4">Welcome, Admin</h2>
-
-    <!-- Dashboard Summary -->
-    <div class="row mb-4">
-      <div class="col-md-4">
-        <div class="card text-center p-3">
-          <h5>Total Users</h5>
-          <p id="totalUsers">120</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card text-center p-3">
-          <h5>Active Trades</h5>
-          <p id="activeTrades">15</p>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="card text-center p-3">
-          <h5>Wallet Balance</h5>
-          <p id="walletBalance">$25,000</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Support Messages -->
-    <div class="card p-3">
-      <h4>Support Messages</h4>
-      <div id="supportMessages" style="max-height: 250px; overflow-y: auto;">
-        <!-- Example messages -->
-        <div class="border p-2 mb-2">
-          <strong>user1@gmail.com</strong>: Hello Admin, I have an issue with my trade.
-        </div>
-        <div class="border p-2 mb-2">
-          <strong>user2@gmail.com</strong>: Please update the BTC address.
-        </div>
-      </div>
-      <form id="adminReplyForm" class="mt-3">
-        <label for="replyMessage" class="form-label">Reply to User</label>
-        <input type="text" class="form-control" id="replyMessage" placeholder="Type your reply...">
-        <button type="submit" class="btn btn-primary mt-2">Send Reply</button>
-      </form>
-    </div>
+<body class="light">
+  <!-- Splash Screen -->
+  <div id="splash-screen">
+    <h1 class="logo">TP Admin</h1>
+    <p>Loading dashboard...</p>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <h2>Admin Panel</h2>
+    <ul>
+      <li><a href="#" onclick="showPage('overview')">Overview</a></li>
+      <li><a href="#" onclick="showPage('users')">Users</a></li>
+      <li><a href="#" onclick="showPage('trades')">Trades</a></li>
+      <li><a href="#" onclick="showPage('withdrawals')">Withdrawals</a></li>
+      <li><a href="#" onclick="showPage('settings')">Settings</a></li>
+      <li><button id="theme-toggle">🌙</button></li>
+      <li><button onclick="logout()">Logout</button></li>
+    </ul>
+  </nav>
+
+  <!-- Pages -->
+  <main>
+    <!-- Overview -->
+    <section id="overview" class="page active">
+      <h3>📊 Dashboard Overview</h3>
+      <div class="card">Total Users: <span id="totalUsers">0</span></div>
+      <div class="card">Total Trades: <span id="totalTrades">0</span></div>
+      <div class="card">Pending Withdrawals: <span id="pendingWithdrawals">0</span></div>
+    </section>
+
+    <!-- Users -->
+    <section id="users" class="page">
+      <h3>👥 Manage Users</h3>
+      <div id="userList"></div>
+    </section>
+
+    <!-- Trades -->
+    <section id="trades" class="page">
+      <h3>🎟️ Manage Trades</h3>
+      <div id="tradeList"></div>
+    </section>
+
+    <!-- Withdrawals -->
+    <section id="withdrawals" class="page">
+      <h3>💵 Manage Withdrawals</h3>
+      <div id="withdrawalList"></div>
+    </section>
+
+    <!-- Settings -->
+    <section id="settings" class="page">
+      <h3>⚙️ Settings</h3>
+      <p>Update rates for gift cards, wallets, and crypto.</p>
+      <div class="card">
+        <label>Gift Card Rates:</label>
+        <textarea id="giftCardRates"></textarea>
+        <button onclick="saveGiftCardRates()">Save</button>
+      </div>
+      <div class="card">
+        <label>Wallet Rates:</label>
+        <textarea id="walletRates"></textarea>
+        <button onclick="saveWalletRates()">Save</button>
+      </div>
+      <div class="card">
+        <label>Crypto Wallets & QR Codes:</label>
+        <textarea id="cryptoWallets"></textarea>
+        <button onclick="saveCryptoWallets()">Save</button>
+      </div>
+    </section>
+  </main>
+
   <script>
-    // Handle Admin Replies
-    document.getElementById("adminReplyForm").addEventListener("submit", function(e){
-      e.preventDefault();
-      let msg = document.getElementById("replyMessage").value;
-      if(msg.trim() === "") return;
-      let container = document.getElementById("supportMessages");
-      let newMsg = document.createElement("div");
-      newMsg.classList.add("border","p-2","mb-2","bg-light");
-      newMsg.innerHTML = "<strong>Admin</strong>: " + msg;
-      container.appendChild(newMsg);
-      document.getElementById("replyMessage").value = "";
-      container.scrollTop = container.scrollHeight;
+    // Splash
+    window.onload = () => {
+      setTimeout(() => document.getElementById("splash-screen").style.display = "none", 1000);
+    };
+
+    // Page Switcher
+    function showPage(id) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    // Theme Toggle
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      document.body.classList.toggle("light");
     });
+
+    // Auth Check
+    auth.onAuthStateChanged(user => {
+      if (!user) window.location.href = "signin.html";
+    });
+
+    function logout() {
+      auth.signOut();
+    }
+
+    // Example Firestore Fetch
+    function loadOverview() {
+      db.collection("users").get().then(snap => {
+        document.getElementById("totalUsers").innerText = snap.size;
+      });
+      db.collection("trades").get().then(snap => {
+        document.getElementById("totalTrades").innerText = snap.size;
+      });
+      db.collection("withdrawals").where("status","==","pending").get().then(snap => {
+        document.getElementById("pendingWithdrawals").innerText = snap.size;
+      });
+    }
+    loadOverview();
+
+    function saveGiftCardRates() {
+      const data = document.getElementById("giftCardRates").value;
+      db.collection("settings").doc("giftCardRates").set({data});
+      alert("Gift card rates saved.");
+    }
+    function saveWalletRates() {
+      const data = document.getElementById("walletRates").value;
+      db.collection("settings").doc("walletRates").set({data});
+      alert("Wallet rates saved.");
+    }
+    function saveCryptoWallets() {
+      const data = document.getElementById("cryptoWallets").value;
+      db.collection("settings").doc("cryptoWallets").set({data});
+      alert("Crypto wallets saved.");
+    }
   </script>
 </body>
 </html>

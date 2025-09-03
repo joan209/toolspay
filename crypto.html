@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sell Crypto - ToolsPay</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="firebase-auth.js" defer></script>
+  <script src="crypto.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+</head>
+<body class="light">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">TP</div>
+    <ul class="nav-links">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="wallet.html">Wallets</a></li>
+      <li><a href="trades.html">Gift Cards</a></li>
+      <li><a href="crypto.html" class="active">Crypto</a></li>
+      <li><a href="profile.html">Profile</a></li>
+      <li><button id="toggleMode">🌙</button></li>
+      <li><button id="logoutBtn">Logout</button></li>
+    </ul>
+  </nav>
+
+  <!-- Crypto Trade Section -->
+  <section class="container">
+    <h2>Sell Crypto</h2>
+    <p>Select cryptocurrency, view wallet QR code, and enter your trade details.</p>
+
+    <form id="cryptoForm">
+      <label for="cryptoType">Select Cryptocurrency:</label>
+      <select id="cryptoType" required>
+        <option value="">-- Select Coin --</option>
+        <option value="btc">Bitcoin (₦97,000/$)</option>
+        <option value="usdt">USDT (₦1,500/$)</option>
+      </select>
+
+      <div id="walletInfo" style="display:none;">
+        <h3>Send to Wallet:</h3>
+        <p id="walletAddress"></p>
+        <canvas id="qrcode"></canvas>
+      </div>
+
+      <label for="cryptoAmount">Amount to Sell:</label>
+      <input type="number" id="cryptoAmount" placeholder="Enter amount" required>
+
+      <p id="cryptoPayout"></p>
+
+      <button type="submit">Confirm Trade</button>
+    </form>
+
+    <button class="chatBtn" onclick="openChat()">💬 Live Chat Admin</button>
+  </section>
+
+  <script>
+    // Wallets & rates (you can edit wallet addresses here)
+    const cryptoData = {
+      btc: {
+        rate: 97000, // per $1 of BTC
+        wallet: "bc1qexampleyourbtcaddress"
+      },
+      usdt: {
+        rate: 1500, // per 1 USDT
+        wallet: "0xexampleyourusdtaddress"
+      }
+    };
+
+    const cryptoType = document.getElementById("cryptoType");
+    const walletInfo = document.getElementById("walletInfo");
+    const walletAddress = document.getElementById("walletAddress");
+    const qrCanvas = document.getElementById("qrcode");
+    const cryptoAmount = document.getElementById("cryptoAmount");
+    const payoutDisplay = document.getElementById("cryptoPayout");
+
+    // Show wallet when coin selected
+    cryptoType.addEventListener("change", () => {
+      const type = cryptoType.value;
+      if (type) {
+        walletInfo.style.display = "block";
+        walletAddress.textContent = cryptoData[type].wallet;
+
+        // Generate QR code
+        QRCode.toCanvas(qrCanvas, cryptoData[type].wallet, function (error) {
+          if (error) console.error(error);
+        });
+      } else {
+        walletInfo.style.display = "none";
+      }
+      updatePayout();
+    });
+
+    // Calculate payout
+    cryptoAmount.addEventListener("input", updatePayout);
+    function updatePayout() {
+      const type = cryptoType.value;
+      const amount = cryptoAmount.value;
+      if (type && amount) {
+        const payout = amount * cryptoData[type].rate;
+        payoutDisplay.textContent = `Expected Payout: ₦${payout.toLocaleString()}`;
+      } else {
+        payoutDisplay.textContent = "";
+      }
+    }
+
+    // Handle submit
+    document.getElementById("cryptoForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      alert("Trade request submitted! Admin will verify your payment.");
+      // Later: Push to Firebase
+    });
+
+    // Chat
+    function openChat() {
+      alert("Connecting to admin chat...");
+    }
+
+    // Dark/Light Mode
+    const toggleBtn = document.getElementById("toggleMode");
+    toggleBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+      document.body.classList.toggle("light");
+      toggleBtn.textContent =
+        document.body.classList.contains("dark") ? "☀️" : "🌙";
+    });
+  </script>
+</body>
+</html>

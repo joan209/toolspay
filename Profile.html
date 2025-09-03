@@ -3,134 +3,119 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToolsPay - Profile</title>
+  <title>Toolspay - Profile</title>
   <style>
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      background: #f5f5f5;
+      margin: 0; padding: 0;
+      display: flex; justify-content: center; align-items: center;
       height: 100vh;
-      background: #f9f9f9;
       transition: background 0.3s, color 0.3s;
     }
-    .dark-mode {
-      background: #121212;
-      color: white;
-    }
+    .dark-mode { background: #121212; color: #f1f1f1; }
     .container {
-      width: 90%;
-      max-width: 450px;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
       background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 380px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
     }
-    .dark-mode .container {
-      background: #1e1e1e;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+    .dark-mode .container { background: #1e1e1e; }
+    h2 { margin-bottom: 20px; text-align: center; }
+    label { display: block; margin-top: 10px; }
     input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
+      width: 100%; padding: 10px;
+      margin-top: 5px; border: 1px solid #ccc;
+      border-radius: 5px;
     }
     button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      background: #007bff;
-      color: white;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
+      margin-top: 20px; width: 100%; padding: 12px;
+      background: #007bff; border: none;
+      color: white; border-radius: 5px;
+      font-size: 16px; cursor: pointer;
     }
-    button:hover {
-      background: #0056b3;
-    }
-    .toggle-btn {
-      margin-top: 15px;
-      display: flex;
-      justify-content: center;
+    button:hover { background: #0056b3; }
+    .toggle-mode {
+      margin-top: 15px; text-align: center;
+      cursor: pointer; font-size: 14px; color: #007bff;
     }
   </style>
 </head>
 <body>
+
   <div class="container">
-    <h2>Your Profile</h2>
-    <input type="text" id="fullname" placeholder="Full Name">
-    <input type="text" id="username" placeholder="Username">
-    <input type="email" id="email" placeholder="Email" disabled>
-    <button onclick="updateProfile()">Update Profile</button>
-    <button onclick="logout()">Logout</button>
-    <div class="toggle-btn">
-      <button type="button" onclick="toggleMode()">🌙 / ☀️</button>
-    </div>
+    <h2>Complete Your Profile</h2>
+    <label>Full Name</label>
+    <input type="text" id="fullName" placeholder="Enter your full name">
+
+    <label>Username</label>
+    <input type="text" id="username" placeholder="Enter your username">
+
+    <label>Bank Name</label>
+    <input type="text" id="bankName" placeholder="Enter your bank name">
+
+    <label>Account Number</label>
+    <input type="text" id="accountNumber" placeholder="Enter your account number">
+
+    <label>Phone Number</label>
+    <input type="text" id="phone" placeholder="Enter your phone number">
+
+    <button onclick="saveProfile()">Save Profile</button>
+    <div class="toggle-mode" onclick="toggleMode()">🌙 Toggle Dark/Light</div>
   </div>
 
   <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+
   <script>
+    // ✅ Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
       authDomain: "toolspay-54167.firebaseapp.com",
       projectId: "toolspay-54167",
-      storageBucket: "toolspay-54167.appspot.com",
+      storageBucket: "toolspay-54167.firebasestorage.app",
       messagingSenderId: "71318117342",
       appId: "1:71318117342:web:1952711453e19e19281b4f"
     };
 
     const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.getAuth(app);
-    const db = firebase.getFirestore(app);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-    // Load user profile
-    firebase.onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const docRef = firebase.doc(db, "users", user.uid);
-        const docSnap = await firebase.getDoc(docRef);
-        if (docSnap.exists()) {
-          document.getElementById("fullname").value = docSnap.data().fullname || "";
-          document.getElementById("username").value = docSnap.data().username || "";
-          document.getElementById("email").value = docSnap.data().email || "";
-        }
-      } else {
-        window.location.href = "signin.html";
-      }
-    });
+    // ✅ Save profile
+    function saveProfile() {
+      const fullName = document.getElementById("fullName").value;
+      const username = document.getElementById("username").value;
+      const bankName = document.getElementById("bankName").value;
+      const accountNumber = document.getElementById("accountNumber").value;
+      const phone = document.getElementById("phone").value;
 
-    // Update profile
-    async function updateProfile() {
       const user = auth.currentUser;
-      if (user) {
-        await firebase.updateDoc(firebase.doc(db, "users", user.uid), {
-          fullname: document.getElementById("fullname").value,
-          username: document.getElementById("username").value
-        });
-        alert("Profile updated!");
+      if (!user) {
+        alert("Not logged in!");
+        return;
       }
-    }
 
-    // Logout
-    function logout() {
-      firebase.signOut(auth).then(() => {
-        window.location.href = "signin.html";
+      db.collection("users").doc(user.uid).set({
+        fullName, username, bankName, accountNumber, phone, email: user.email
+      })
+      .then(() => {
+        alert("Profile saved successfully!");
+        window.location.href = "dashboard.html"; // ✅ Redirect to trade dashboard
+      })
+      .catch(error => {
+        alert("Error saving profile: " + error.message);
       });
     }
 
+    // ✅ Dark/Light Mode
     function toggleMode() {
       document.body.classList.toggle("dark-mode");
     }
   </script>
+
 </body>
 </html>

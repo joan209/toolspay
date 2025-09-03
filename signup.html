@@ -3,23 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sign Up - Toolspay</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Toolspay - Sign Up</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0; padding: 0;
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
+    .dark-mode {
+      background: #121212; color: #f1f1f1;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+      width: 350px;
+      text-align: center;
+    }
+    .dark-mode .container { background: #1e1e1e; }
+    h2 { margin-bottom: 20px; }
+    input {
+      width: 100%; padding: 10px;
+      margin: 10px 0; border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      width: 100%; padding: 12px;
+      background: #28a745; border: none;
+      color: white; border-radius: 5px;
+      cursor: pointer; font-size: 16px;
+    }
+    button:hover { background: #1e7e34; }
+    .toggle-mode {
+      margin-top: 15px; cursor: pointer;
+      font-size: 14px; color: #007bff;
+    }
+    a {
+      display: block; margin-top: 10px;
+      color: #007bff; text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
+
   <div class="container">
     <h2>Create Account</h2>
-    <form id="signupForm">
-      <input type="text" id="name" placeholder="Full Name" required>
-      <input type="text" id="username" placeholder="Username" required>
-      <input type="email" id="email" placeholder="Email" required>
-      <input type="password" id="password" placeholder="Password" required>
-      <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
-      <button type="submit">Sign Up</button>
-    </form>
-    <p>Already have an account? <a href="signin.html">Sign In</a></p>
+    <input type="email" id="email" placeholder="Enter Email" required>
+    <input type="password" id="password" placeholder="Enter Password" required>
+    <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+    <button onclick="signup()">Sign Up</button>
+    <a href="signin.html">Already have an account? Sign In</a>
+    <div class="toggle-mode" onclick="toggleMode()">🌙 Toggle Dark/Light</div>
   </div>
 
-  <script type="module" src="firebase-auth.js"></script>
+  <!-- Firebase App -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+
+  <script>
+    // ✅ Your Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD-BIOpzkQBtpW1LQk7Rf3c-ZvyIbvEc7c",
+      authDomain: "toolspay-54167.firebaseapp.com",
+      projectId: "toolspay-54167",
+      storageBucket: "toolspay-54167.firebasestorage.app",
+      messagingSenderId: "71318117342",
+      appId: "1:71318117342:web:1952711453e19e19281b4f"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // ✅ Signup function
+    function signup() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+
+      if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(() => {
+          window.location.href = "profile.html"; // redirect to profile setup
+        })
+        .catch(error => {
+          alert("Signup Failed: " + error.message);
+        });
+    }
+
+    // ✅ Dark/Light Mode
+    function toggleMode() {
+      document.body.classList.toggle("dark-mode");
+    }
+  </script>
+
 </body>
 </html>

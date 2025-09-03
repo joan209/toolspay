@@ -1,0 +1,138 @@
+/* === General Styles === */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: #f9f9f9;
+  color: #222;
+  transition: background 0.3s, color 0.3s;
+}
+
+body.dark {
+  background: #121212;
+  color: #eee;
+}
+
+h1, h2, h3 {
+  margin: 10px 0;
+}
+
+/* === Splash Screen === */
+#splash-screen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: #111;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  z-index: 1000;
+}
+
+#splash-screen .logo {
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+}
+
+/* === Navbar === */
+.navbar {
+  background: #007bff;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  align-items: center;
+}
+
+.navbar h2 {
+  margin: 0;
+}
+
+.navbar ul {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar li {
+  margin-left: 15px;
+}
+
+.navbar a,
+.navbar button {
+  color: white;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.navbar button:hover,
+.navbar a:hover {
+  text-decoration: underline;
+}
+
+/* === Pages === */
+.page {
+  display: none;
+  padding: 20px;
+}
+
+.page.active {
+  display: block;
+}
+
+/* === Cards === */
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 10px 0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+body.dark .card {
+  background: #1e1e1e;
+  color: #eee;
+}
+
+/* === Buttons === */
+button {
+  padding: 8px 14px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  background: #007bff;
+  color: white;
+  font-size: 0.9rem;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+#theme-toggle {
+  font-size: 1.2rem;
+  padding: 5px 10px;
+}
+
+/* === Mobile Friendly === */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .navbar ul {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .navbar li {
+    margin: 10px 0;
+  }
+}

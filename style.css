@@ -1,25 +1,153 @@
-*{box-sizing:border-box} body{margin:0;font-family:system-ui,Arial;background:#f7f7fb;color:#111}
-a{color:#111}
-.container{max-width:1100px;margin:0 auto;padding:16px}
-.card{background:#fff;border:1px solid #eee;border-radius:12px;padding:16px;margin:12px 0}
-.subcard{background:#fafafa;border:1px dashed #ddd;border-radius:12px;padding:12px;margin:8px 0}
-.row{display:grid;gap:10px}
-@media(min-width:720px){.row{grid-template-columns:repeat(3,1fr)}}
-input,select,textarea,button{width:100%;padding:10px;border:1px solid #ddd;border-radius:10px}
-button{cursor:pointer}
-.btn-primary{background:#000;color:gold;border:2px solid gold}
-.btn-ghost{background:#eee}
-.muted{color:#666;font-size:12px}
-.hidden{display:none}
-.topbar{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #eee;background:#fff}
-.topbar.dark{background:#0b1220;color:#fff}
-.brand{font-weight:800}
-.spacer{flex:1}
-.auth-wrap{max-width:420px;margin:40px auto;padding:0 16px}
-.bullets{padding-left:18px} .bullets li{margin:6px 0}
-.small{font-size:12px}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{padding:6px 10px;border:1px solid #ddd;border-radius:999px;background:#fff;font-size:12px}
-.qr{margin-top:8px}
-.calc{margin:10px 0}
-.list{border:1px dashed #ddd;border-radius:12px;padding:10px}
+/* General */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f9f9f9;
+  color: #333;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* Dark Mode */
+body.dark {
+  background: #121212;
+  color: #f1f1f1;
+}
+
+/* Navbar */
+nav {
+  background: #0056b3;
+  color: white;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+nav .logo {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+}
+nav ul li {
+  display: inline;
+}
+nav ul li a, nav ul li button {
+  color: white;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+nav ul li button:hover, nav ul li a:hover {
+  text-decoration: underline;
+}
+
+/* Main Layout */
+main {
+  padding: 1rem;
+}
+
+/* Sections */
+section {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.2rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+body.dark section {
+  background: #1e1e1e;
+}
+
+/* Balance */
+.balance-section {
+  text-align: center;
+}
+.balance-section h2 {
+  margin-bottom: 0.5rem;
+}
+#user-balance {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+#withdrawBtn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+#withdrawBtn:hover {
+  background: #218838;
+}
+
+/* Trade Options */
+.trade-options h2 {
+  margin-bottom: 0.8rem;
+}
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+.card {
+  display: block;
+  background: #0056b3;
+  color: white;
+  text-align: center;
+  padding: 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+}
+.card:hover {
+  background: #003d80;
+}
+
+/* History */
+.history-section h2 {
+  margin-bottom: 0.5rem;
+}
+#history-list {
+  font-size: 0.9rem;
+  color: #555;
+}
+body.dark #history-list {
+  color: #ddd;
+}
+
+/* Chat Button */
+.chat-support {
+  text-align: right;
+}
+#chatBtn {
+  background: #ffc107;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+#chatBtn:hover {
+  background: #e0a800;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  nav ul {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .card-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
